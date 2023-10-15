@@ -94,8 +94,8 @@ class LoginWindow(QMainWindow):
         image_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         image_label.setAlignment(Qt.AlignCenter)
         image_label.setFixedHeight(225)
-
         inner_layout.addWidget(image_label)
+
         inner_layout.addSpacing(10)
 
         self.username_edit = QLineEdit()

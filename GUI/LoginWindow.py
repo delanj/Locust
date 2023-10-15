@@ -1,35 +1,13 @@
 import sys
-
 import cv2
+from IPython.external.qt_for_kernel import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
-    QHBoxLayout, QFrame, QTableWidgetItem, QTableWidget
-from PyQt5.QtGui import QPixmap, QPainter, QImage
+    QHBoxLayout, QFrame, QTableWidgetItem, QTableWidget, QGraphicsDropShadowEffect
+from PyQt5.QtGui import QPixmap, QPainter, QImage, QBitmap, QColor, QPalette
 from PyQt5.QtCore import Qt, QTimer
-
 from Entities.Employee import Employee
 import MainWindow
 
-
-
-class BackgroundWidget(QWidget):
-    def __init__(self, image_path):
-        super().__init__()
-        self.image_path = image_path
-        self.opacity = 100
-
-    def setOpacity(self, opacity):
-        self.opacity = opacity
-        self.update()  # Call update to trigger a repaint
-
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        pixmap = QPixmap(self.image_path)
-
-        # Apply opacity
-        #painter.setOpacity(self.opacity)
-
-        painter.drawPixmap(self.rect(), pixmap)
 
 class LoginWindow(QMainWindow):
     def __init__(self):
@@ -37,23 +15,26 @@ class LoginWindow(QMainWindow):
 
         self.setWindowTitle("Login")
         self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
+        centralWidget = QWidget()
+        centralWidget.setStyleSheet("background-color: rgb(95, 95, 95);")
+        layout = QVBoxLayout()
 
-        # Create a central widget to hold everything
-        central_widget = BackgroundWidget("Icons/276b002d-a460-4fa9-96db-a69f4fee3b71.jpg")
-        self.setCentralWidget(central_widget)
+        innerWidget = QWidget()
+        innerWidget.setStyleSheet("background-color: rgb(50, 50, 60); border-radius: 30px;")
+        innerLayout = QVBoxLayout(innerWidget)
+        innerLayout.setAlignment(Qt.AlignCenter)
 
-        # Create a vertical layout for the central widget
-        parent_layout = QVBoxLayout(central_widget)
-        parent_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
 
-        # Create a transparent frame to hold the login elements
-        frame = QFrame()
-        frame.setStyleSheet("background-color: rgba(0, 0, 0, 150);")  # Black box with transparency
-        parent_layout.addWidget(frame)
+        innerWidget.setFixedWidth(350)
+        innerWidget.setFixedHeight(600)
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(30)
+        shadow.setOffset(3,3)
 
-        # Inside the frame, add your login elements (labels, buttons, etc.)
-        inner_layout = QVBoxLayout(frame)
-        inner_layout.addSpacing(200)
+        shadowColor = QColor(0, 0, 0)
+        #shadow.setColor(shadowColor)
+        # adding shadow to the label
+        innerWidget.setGraphicsEffect(shadow)
 
         label = QLabel("LocUST")
         label.setStyleSheet('font-size: 56pt; '
@@ -64,54 +45,68 @@ class LoginWindow(QMainWindow):
 
         label.setFixedHeight(75)
         label.setAlignment(Qt.AlignCenter)
-        inner_layout.addWidget(label)
-        inner_layout.addSpacing(15)
+        innerLayout.addWidget(label)
 
-        # Add an image at the top (existing image)
+
         image_label = QLabel(self)
-        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.jpg")  # Replace with your image path
+        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")  # Replace with your image path
         image_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         image_label.setAlignment(Qt.AlignCenter)
         image_label.setFixedHeight(225)
+        innerLayout.addWidget(image_label)
 
-        inner_layout.addWidget(image_label)
-        inner_layout.addSpacing(50)
+        self.invalid = QLabel("")
+        self.invalid.setAlignment(Qt.AlignCenter)
+        innerLayout.addWidget(self.invalid)
+        innerLayout.addSpacing(15)
 
         self.username_edit = QLineEdit()
         self.username_edit.setPlaceholderText("Username")
-        self.username_edit.setFixedWidth(300)
-        inner_layout.addWidget(self.username_edit)
+        self.username_edit.setStyleSheet("background: transparent; border: 1px solid transparent; border-bottom: 1px solid white; "
+                                         "selection-background-color: transparent; outline: none;")
+        self.username_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
 
+
+
+
+        self.username_edit.setFixedWidth(250)
+        self.username_edit.setFixedHeight(30)
+        innerLayout.addWidget(self.username_edit)
         self.password_edit = QLineEdit()
         self.password_edit.setPlaceholderText("Password")
+        self.password_edit.setStyleSheet("background: transparent; border: none; border-bottom: 1px solid white; "
+                                         "selection-background-color: transparent; ")
         self.password_edit.setEchoMode(QLineEdit.Password)
-        self.password_edit.setFixedWidth(300)
-        inner_layout.addWidget(self.password_edit)
+        self.password_edit.setFixedWidth(250)
+        self.password_edit.setFixedHeight(30)
+        self.password_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
+        innerLayout.addWidget(self.password_edit)
 
-        inner_layout.addSpacing(25)
 
-        layout2 = QHBoxLayout()  # Create layout2
+
+        layout2 = QHBoxLayout()
 
         login_button = QPushButton("Login")
         login_button.setFixedWidth(150)
-        login_button.setStyleSheet("background-color: rgb(0, 0, 0);")
+        login_button.setFixedHeight(40)
+        login_button.setStyleSheet("background-color: white; color:black; border-radius: 20px;")
         login_button.clicked.connect(self.login)
 
+        innerLayout.addSpacing(30)
+
+
+
         layout2.addWidget(login_button)  # Add the button to layout2
-
-        inner_layout.addLayout(layout2)  # Add layout2 to the parent layout
-
-        inner_layout.setAlignment(Qt.AlignCenter)
-
-        inner_layout.addStretch()
+        innerLayout.addLayout(layout2)  # Add layout2 to the parent layout
 
 
 
 
 
 
-
-
+        layout.addWidget(innerWidget, alignment=Qt.AlignCenter)
+        centralWidget.setLayout(layout)
+        self.setCentralWidget(centralWidget)
 
     def login(self):
         dbe = Employee.EmployeeDatabase("../Entities/Employee/jsonFile/employee.json")
@@ -119,28 +114,23 @@ class LoginWindow(QMainWindow):
         global e
 
         for i in dbe.load_employees():
-
-
-
             username = self.username_edit.text()
             password = self.password_edit.text()
 
             if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
                 print("Login Successful")
-
                 e = i.getEmployee()
                 self.w = MainWindow.MainWindow(e)
                 self.w.showFullScreen()
                 self.close()  # Close the login window
-
-
-
             else:
                 print("Login Failed")
+                self.invalid.setText("Login failed. Please check your credentials.")
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()
     window.showFullScreen()  # Show the window in full screen
-
     sys.exit(app.exec_())

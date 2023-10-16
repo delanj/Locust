@@ -8,24 +8,37 @@ from PyQt5.QtCore import Qt, QTimer
 from Entities.Employee import Employee
 import MainWindow
 
-class CustomWidget(QWidget):
+
+
+class CustomWidgetGradient(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         gradient = QLinearGradient(0, 0, 0, self.height())
-        color1 = QColor(0, 0, 0)
-        gradient.setColorAt(0, QColor(color1))
-        color2 = QColor(40, 40, 43)
-        gradient.setColorAt(1, QColor(color2))
+        gradient.setColorAt(0, QColor(40, 40, 43))
+        gradient.setColorAt(1, QColor(0, 0, 0))
         painter.setBrush(gradient)
         painter.drawRect(self.rect())
+
+class CustomWidgetPicture(QWidget):
+    def __init__(self, background_path):
+        super().__init__()
+        self.background_image = QPixmap(background_path)
+        self.setAutoFillBackground(True)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(0, 0, self.background_image.scaled(self.size()))  # Ensure image fills the widget
+
 
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Login")
+        self.showFullScreen()
+
         #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
-        centralWidget = CustomWidget()
+        centralWidget = CustomWidgetPicture("../GUI/Icons/Untitled design (3).png")
 
 
 

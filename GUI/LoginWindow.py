@@ -38,7 +38,7 @@ class LoginWindow(QMainWindow):
         self.showFullScreen()
 
         #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
-        centralWidget = CustomWidgetPicture("../GUI/Icons/Untitled design (3).png")
+        centralWidget = CustomWidgetPicture("../GUI/Icons/Untitled design (11).png")
 
 
 

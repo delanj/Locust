@@ -9,6 +9,7 @@ import dlib
 import pickle
 import Entities.IndirectUser.User
 import shutil
+from Database.datFiles import database
 
 
 """
@@ -446,14 +447,23 @@ class MainWindow(QMainWindow):
         self.moveFile(f"../Database/AddLocal/{self.faceEncoding.text()}",
                       f"../Database/IndirectUsers/face_encodings/{self.faceEncoding.text()}")
 
-
-
-
-
-
         #self.removeFiles()
-        self.close()
 
+
+        db_conn = database.db
+        coll_ref = db_conn.collection("indirectUser")
+        coll_ref.add({
+            "id":self.idLineEdit.text(),
+            "firstName":self.firstNameLineEdit.text(),
+            "lastName":self.lastNameLineEdit.text(),
+            "gender":self.genderLineEdit.text(),
+            "company":self.companyLineEdit.text(),
+            "title":self.titleLineEdit.text()
+        })
+
+        print("data added successfully")
+
+        self.close()
 
     def cancel(self):
         self.removeFiles()

@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdi
 from PyQt5.QtGui import QPixmap, QPainter, QImage, QBitmap, QColor, QPalette, QLinearGradient, QBrush
 from PyQt5.QtCore import Qt, QTimer
 from Entities.Employee import Employee
+from Database.datFiles import database
+
 import MainWindow
 
 
@@ -133,23 +135,44 @@ class LoginWindow(QMainWindow):
         self.setCentralWidget(centralWidget)
 
     def login(self):
-        dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
-        employee = Employee.Employee
-        global e
 
-        for i in dbe.load_employees():
-            username = self.username_edit.text()
-            password = self.password_edit.text()
-
-            if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
+        inputEmail = self.username_edit.text()
+        inputPass = self.password_edit.text()
+        db_conn = database.db
+        coll_ref = db_conn.collection("employee")
+        docs = coll_ref.stream()
+        for doc in docs:
+            data = doc.to_dict()
+            doc_ref = db_conn.collection("employee").document(doc.id)
+            uName = data.get('employeeID')
+            passC = data.get('passcode')
+            print(uName)
+            print(passC)
+            if inputEmail == uName and inputPass == passC:
                 print("Login Successful")
-                e = i.getEmployee()
-                self.w = MainWindow.MainWindow(e)
+                self.w = MainWindow.MainWindow()
                 self.w.showFullScreen()
-                self.close()  # Close the login window
+                self.close()
+
             else:
                 print("Login Failed")
-                self.invalid.setText("Login failed. Please check your credentials.")
+        # dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
+        # employee = Employee.Employee
+        # global e
+        #
+        # for i in dbe.load_employees():
+        #     username = self.username_edit.text()
+        #     password = self.password_edit.text()
+        #
+        #     if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
+        #         print("Login Successful")
+        #         e = i.getEmployee()
+        #         self.w = MainWindow.MainWindow(e)
+        #         self.w.showFullScreen()
+        #         self.close()  # Close the login window
+        #     else:
+        #         print("Login Failed")
+        #         self.invalid.setText("Login failed. Please check your credentials.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

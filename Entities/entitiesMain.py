@@ -1,10 +1,10 @@
 from Entities.IndirectUser import User
 from Entities.Employee import Employee
 
-dbu = User.UserDatabase("IndirectUser/jsonFile/users.json")
+dbu = User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
 user = User.User
 
-dbe = Employee.EmployeeDatabase("Employee/jsonFile/employee.json")
+dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
 employee = Employee.Employee
 
 # #Example Display Users

@@ -14,10 +14,12 @@ class CustomWidgetGradient(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor(40, 40, 43))
-        gradient.setColorAt(1, QColor(0, 0, 0))
+        gradient.setColorAt(0, QColor(250, 250, 250))
+        gradient.setColorAt(1, QColor(230, 230, 230))
         painter.setBrush(gradient)
         painter.drawRect(self.rect())
+
+
 
 class CustomWidgetPicture(QWidget):
     def __init__(self, background_path):
@@ -29,27 +31,25 @@ class CustomWidgetPicture(QWidget):
         painter = QPainter(self)
         painter.drawPixmap(0, 0, self.background_image.scaled(self.size()))  # Ensure image fills the widget
 
-
+# Slogan
+# Unlocking the future with every Face
+# Identity made simple security made strong
+#
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Login")
         self.showFullScreen()
-
         #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
-        centralWidget = CustomWidgetPicture("../GUI/Icons/Untitled design (11).png")
-
-
-
+        centralWidget = CustomWidgetGradient()
 
         layout = QVBoxLayout()
 
         innerWidget = QWidget()
-        innerWidget.setStyleSheet("background-color: rgb(40, 40, 43); border-radius: 30px;")
+        innerWidget.setStyleSheet("background-color: white; border-radius: 30px;")
         innerLayout = QVBoxLayout(innerWidget)
         innerLayout.setAlignment(Qt.AlignCenter)
-
 
         innerWidget.setFixedWidth(350)
         innerWidget.setFixedHeight(600)
@@ -65,9 +65,10 @@ class LoginWindow(QMainWindow):
         label = QLabel("LocUST")
         label.setStyleSheet('font-size: 56pt; '
                             'font-family: Copperplate;'
-                            'color: white; '
+                            'color: black; '
                             'padding: 6px;'
-                            'min-width: 10;')
+                            'min-width: 10;'
+                            'color: black;')
 
         label.setFixedHeight(75)
         label.setAlignment(Qt.AlignCenter)
@@ -83,40 +84,35 @@ class LoginWindow(QMainWindow):
 
         self.invalid = QLabel("")
         self.invalid.setAlignment(Qt.AlignCenter)
-        self.invalid.setStyleSheet("color: White;")
+        self.invalid.setStyleSheet("color: black;")
         innerLayout.addWidget(self.invalid)
         innerLayout.addSpacing(15)
 
         self.username_edit = QLineEdit()
         self.username_edit.setPlaceholderText("Username")
-        self.username_edit.setStyleSheet("background: transparent; border: 1px solid transparent; border-bottom: 1px solid white; "
-                                         "selection-background-color: transparent; outline: none; color: white;")
+        self.username_edit.setStyleSheet("background: transparent; border: 1px solid transparent; border-bottom: 1px solid black; "
+                                         "selection-background-color: transparent; outline: none; color: black;")
         self.username_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-
-
-
 
         self.username_edit.setFixedWidth(250)
         self.username_edit.setFixedHeight(30)
         innerLayout.addWidget(self.username_edit)
         self.password_edit = QLineEdit()
         self.password_edit.setPlaceholderText("Password")
-        self.password_edit.setStyleSheet("background: transparent; border: none; border-bottom: 1px solid white; "
-                                         "selection-background-color: transparent; color: white; ")
+        self.password_edit.setStyleSheet("background: transparent; border: none; border-bottom: 1px solid black; "
+                                         "selection-background-color: transparent; color: black; ")
         self.password_edit.setEchoMode(QLineEdit.Password)
         self.password_edit.setFixedWidth(250)
         self.password_edit.setFixedHeight(30)
         self.password_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         innerLayout.addWidget(self.password_edit)
 
-
-
         layout2 = QHBoxLayout()
 
         login_button = QPushButton("Login")
         login_button.setFixedWidth(150)
         login_button.setFixedHeight(40)
-        login_button.setStyleSheet("background-color: white; color:black; border-radius: 20px;")
+        login_button.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
         login_button.clicked.connect(self.login)
 
         innerLayout.addSpacing(30)
@@ -126,12 +122,9 @@ class LoginWindow(QMainWindow):
         innerLayout.addSpacing(30)
 
         copright = QLabel("©2023 LocUST.inc ")
-        copright.setStyleSheet("color: white;")
+        copright.setStyleSheet("color: black;")
         copright.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
         innerLayout.addWidget(copright)
-
-
-
 
 
 
@@ -140,7 +133,7 @@ class LoginWindow(QMainWindow):
         self.setCentralWidget(centralWidget)
 
     def login(self):
-        dbe = Employee.EmployeeDatabase("../Entities/Employee/jsonFile/employee.json")
+        dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
         employee = Employee.Employee
         global e
 
@@ -157,8 +150,6 @@ class LoginWindow(QMainWindow):
             else:
                 print("Login Failed")
                 self.invalid.setText("Login failed. Please check your credentials.")
-
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

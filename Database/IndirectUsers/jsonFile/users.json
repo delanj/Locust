@@ -1,0 +1,54 @@
+[
+    {
+        "id": "0001",
+        "firstName": "Nickholas",
+        "lastName": "Delavallierre",
+        "gender": "Male",
+        "company": "LocUST",
+        "title": "Developer",
+        "photos": "0001_0.jpg",
+        "faceEncodings": "0001_0.npy"
+    },
+    {
+        "id": "0002",
+        "firstName": "Jimmy",
+        "lastName": "k",
+        "gender": "Male",
+        "company": "LocUST",
+        "title": "Developer",
+        "photos": [
+            "0002_0.jpg"
+        ],
+        "faceEncodings": []
+    },
+    {
+        "id": "0005",
+        "firstName": "Ty",
+        "lastName": "Hing",
+        "gender": "M",
+        "company": "Bank of America",
+        "title": "Pope",
+        "photos": "0005_0.jpg",
+        "faceEncodings": "0005_0.pkl"
+    },
+    {
+        "id": "0006",
+        "firstName": "Anna",
+        "lastName": "Saez Pacios",
+        "gender": "Female",
+        "company": "hola",
+        "title": "adios",
+        "photos": "0006_0.jpg",
+        "faceEncodings": "0006_0.pkl"
+    },
+    {
+        "id": "0007",
+        "firstName": "Alix",
+        "lastName": "Le Saux",
+        "gender": "F",
+        "company": "France",
+        "title": "President",
+        "photos": "0007_0.jpg",
+        "faceEncodings": "0007_0.pkl"
+    }
+]

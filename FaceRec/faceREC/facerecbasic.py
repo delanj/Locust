@@ -6,7 +6,7 @@ import numpy as np
 video_capture = cv2.VideoCapture(1)
 
 # Load a sample picture and learn how to recognize it.
-nick_img = face_recognition.load_image_file("../Entities/IndirectUser/photos/0001_10.jpg")
+nick_img = face_recognition.load_image_file("../../Database/IndirectUsers/photos/0001_10.jpg")
 nick_face_encoding = face_recognition.face_encodings(nick_img)[0]
 
 # Create arrays of known face encodings and their names

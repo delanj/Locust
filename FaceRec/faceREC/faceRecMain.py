@@ -14,8 +14,8 @@ def faceRecognitionMain():
         Returns:
         - Entities instance: The user instance of the recognized person, or None if no match is found.
         """
-    output_file = "../Entities/IndirectUser/face_encodings/"  # Path to the face encoding directory
-    user_db = UserDatabase("../Entities/IndirectUser/jsonFile/users.json")  # Initialize the user database
+    output_file = "../../Database/IndirectUsers/face_encodings/"  # Path to the face encoding directory
+    user_db = UserDatabase("../../Database/IndirectUsers/jsonFile/users.json")  # Initialize the user database
 
 
     print(user_db)

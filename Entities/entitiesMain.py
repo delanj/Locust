@@ -19,4 +19,3 @@ employee = Employee.Employee
 # for i in dbe.load_employees():
 #     print(i.title)
 
-dbu.addPhoto("0002")

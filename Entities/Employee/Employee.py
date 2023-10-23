@@ -1,3 +1,4 @@
+import inspect
 import json
 
 
@@ -17,6 +18,7 @@ class Employee:
         e = Employee(self.employeeID, self.firstName, self.lastName, self.gender, self.title,
                      self.passcode, self.phoneNumber, self.email, self.hireDate)
         return e
+
 
 class deskTechnician(Employee):
     def __init__(self, techID, employeeID, firstName, lastName, gender, title, passcode, phoneNumber, email, hireDate):
@@ -103,4 +105,29 @@ class EmployeeDatabase:
                 return e
         return None
 
+    def save_employees(self):
+        employees_data = []
+
+        for employee in self.employees:
+            employee_data = {
+                "employeeID": employee.employeeID,
+                "firstName": employee.firstName,
+                "lastName": employee.lastName,
+                "gender": employee.gender,
+                "title": employee.title,
+                "passcode": employee.passcode,
+                "phoneNumber": employee.phoneNumber,
+                "email": employee.email,
+                "hireDate": employee.hireDate
+            }
+
+            if isinstance(employee, deskTechnician):
+                employee_data["techID"] = employee.techID
+            elif isinstance(employee, securityManager):
+                employee_data["managerID"] = employee.managerID
+
+            employees_data.append(employee_data)
+
+        with open(self.json_file_path, "w") as json_file:
+            json.dump(employees_data, json_file, indent=4)
 

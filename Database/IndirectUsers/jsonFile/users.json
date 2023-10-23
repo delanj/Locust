@@ -16,10 +16,8 @@
         "gender": "Male",
         "company": "LocUST",
         "title": "Developer",
-        "photos": [
-            "0002_0.jpg"
-        ],
-        "faceEncodings": []
+        "photos": "0002_0.jpg",
+        "faceEncodings": ""
     },
     {
         "id": "0005",

@@ -1,3 +1,4 @@
+import inspect
 import json
 import os
 import cv2
@@ -19,6 +20,7 @@ class User:
         person = User(self.id, self.firstName, self.lastName, self.gender,
                       self.company, self.title, self.photos, self.faceEncoding)
         return person
+
 
 class UserDatabase:
     def __init__(self, json_file_path):
@@ -93,82 +95,6 @@ class UserDatabase:
                 self.save_users()
                 return True
         return False
-
-
-    def addPhoto(self, user):
-        profile = self.get_user_by_id(user)
-        profile = User.getUser(profile)
-        photos = []
-        for filename in os.listdir("../Entities/IndirectUser/photos"):
-            if filename.endswith((".jpg", ".jpeg", ".png", ".gif")) and filename.startswith(profile.id):
-                photos.append(filename)
-        photoName = f"{profile.id}_{len(photos)}.jpg"
-
-        faceEncoding = []
-        for filename in os.listdir("../Entities/IndirectUser/face_encodings"):
-            if filename.endswith((".npy")) and filename.startswith(profile.id):
-                faceEncoding.append(filename)
-
-
-        file_path = f"../Entities/IndirectUser/photos/{profile.id}_{len(photos)}.jpg"
-        try:
-            cap = cv2.VideoCapture(0)
-
-            if not cap.isOpened():
-                print("Error: Could not open webcam")
-                return False
-
-            while True:
-                ret, frame = cap.read()
-                cv2.imshow("Camera", frame)
-                key = cv2.waitKey(1)
-
-                if key == ord('s'):
-                    cv2.imwrite(file_path, frame)
-                    print(f"Photo saved to {file_path}")
-                    photos.append(photoName)
-                    break
-                # Press 'q' to quit
-                elif key == ord('q'):
-                    break
-
-            cap.release()
-            cv2.destroyAllWindows()
-
-
-        except Exception as e:
-            print(f"Error: {e}")
-
-        input_image_path = f'../Entities/IndirectUser/photos/{photoName}'
-
-        faceEnc = photoName.split(".")
-        faceEncodingFile = f"{faceEnc[0]}.npy"
-        output_file_path = f'../Entities/IndirectUser/face_encodings/{faceEncodingFile}'
-
-        # Load the input image
-        image = face_recognition.load_image_file(input_image_path)
-
-        # Find face locations and encodings
-        face_locations = face_recognition.face_locations(image)
-        face_encodings = face_recognition.face_encodings(image, face_locations)
-
-        if face_encodings:
-            # Save the face encoding to a .npy file
-            np.save(output_file_path, face_encodings[0])  # Assuming there's only one face in the image
-
-        faceEncoding.append(faceEncodingFile)
-
-        # id ,firstName, lastName, gender, company, title, photos, faceEncoding
-        updatedUserData = {
-            "firstName": profile.firstName,
-            "lastName": profile.lastName,
-            "gender": profile.gender,
-            "company": profile.company,
-            "title": profile.title,
-            "photos": photos,
-            "faceEncoding": faceEncoding
-        }
-        self.edit_user(profile.id, updatedUserData)
 
 
 

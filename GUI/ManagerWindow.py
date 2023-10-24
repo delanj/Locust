@@ -866,8 +866,7 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    if __name__ == "__main__":
-        app = QApplication(sys.argv)
-        window = MainWindow()  # Instantiate HeaderWidget directly
-        window.show()
-        sys.exit(app.exec_())
+    app = QApplication(sys.argv)
+    window = MainWindow()  # Instantiate HeaderWidget directly
+    window.show()
+    sys.exit(app.exec_())

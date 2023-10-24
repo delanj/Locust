@@ -3,23 +3,11 @@
         "id": "0001",
         "firstName": "Nickholas",
         "lastName": "Delavallierre",
-        "gender": "Male",
+        "gender": "M",
         "company": "LocUST",
         "title": "Developer",
         "photos": "0001_0.jpg",
         "faceEncodings": "0001_0.npy"
-    },
-    {
-        "id": "0002",
-        "firstName": "Jimmy",
-        "lastName": "k",
-        "gender": "Male",
-        "company": "LocUST",
-        "title": "Developer",
-        "photos": [
-            "0002_0.jpg"
-        ],
-        "faceEncodings": []
     },
     {
         "id": "0005",
@@ -50,5 +38,25 @@
         "title": "President",
         "photos": "0007_0.jpg",
         "faceEncodings": "0007_0.pkl"
+    },
+    {
+        "id": "0008",
+        "firstName": "Francisco",
+        "lastName": "Bejarano",
+        "gender": "M",
+        "company": "Company",
+        "title": "HIm",
+        "photos": "0008_0.jpg",
+        "faceEncodings": "0008_0.pkl"
+    },
+    {
+        "id": "0009",
+        "firstName": "Thomas",
+        "lastName": "Boyce",
+        "gender": "Male",
+        "company": "Fanduel",
+        "title": "The Honored One",
+        "photos": "0009_0.jpg",
+        "faceEncodings": "0009_0.pkl"
     }
 ]

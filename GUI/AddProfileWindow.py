@@ -81,12 +81,12 @@ class MainWindow(QMainWindow):
         self.showFullScreen()
         central_widget = CustomWidgetGradient()
         central_widget.setStyleSheet("background-color: rgb(230, 230, 230);")
-        central_layout = QVBoxLayout(central_widget)
-        central_layout.setContentsMargins(0, 0, 0, 0)
+        u_central_layout = QVBoxLayout(central_widget)
+        u_central_layout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(central_widget)
 
         headerWidget = QWidget()
-        central_layout.addWidget(headerWidget)
+        u_central_layout.addWidget(headerWidget)
         headerWidget.setStyleSheet("background-color: white")
         mainHeaderLayout = QVBoxLayout(headerWidget)
 
@@ -153,25 +153,25 @@ class MainWindow(QMainWindow):
 
 
 
-        main_layout = QHBoxLayout()
-        central_layout.addLayout(main_layout)
+        u_main_layout = QHBoxLayout()
+        u_central_layout.addLayout(u_main_layout)
 
-        leftLayout = QVBoxLayout()
-        leftLayout.addSpacing(50)
-        main_layout.addLayout(leftLayout)
-        leftLayoutRow1 = QHBoxLayout()
-        leftLayoutRow2 = QHBoxLayout()
-        leftLayoutRow3 = QHBoxLayout()
-        leftLayoutRow4 = QHBoxLayout()
-        leftLayout.addLayout(leftLayoutRow1)
-        leftLayout.addLayout(leftLayoutRow2)
-        leftLayout.addLayout(leftLayoutRow3)
-        leftLayout.addLayout(leftLayoutRow4)
+        u_leftLayout = QVBoxLayout()
+        u_leftLayout.addSpacing(50)
+        u_main_layout.addLayout(u_leftLayout)
+        uleftLayoutRow1 = QHBoxLayout()
+        uleftLayoutRow2 = QHBoxLayout()
+        uleftLayoutRow3 = QHBoxLayout()
+        uleftLayoutRow4 = QHBoxLayout()
+        u_leftLayout.addLayout(uleftLayoutRow1)
+        u_leftLayout.addLayout(uleftLayoutRow2)
+        u_leftLayout.addLayout(uleftLayoutRow3)
+        u_leftLayout.addLayout(uleftLayoutRow4)
 
-        leftLayoutRow1.setAlignment(Qt.AlignLeft)
-        leftLayoutRow2.setAlignment(Qt.AlignLeft)
-        leftLayoutRow3.setAlignment(Qt.AlignLeft)
-        leftLayoutRow4.setAlignment(Qt.AlignLeft)
+        uleftLayoutRow1.setAlignment(Qt.AlignLeft)
+        uleftLayoutRow2.setAlignment(Qt.AlignLeft)
+        uleftLayoutRow3.setAlignment(Qt.AlignLeft)
+        uleftLayoutRow4.setAlignment(Qt.AlignLeft)
 
 
 
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
         self.idLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         self.idLineEdit.setFixedWidth(100)
         idLayout.addWidget(self.idLineEdit)
-        leftLayoutRow1.addLayout(idLayout)
+        uleftLayoutRow1.addLayout(idLayout)
         idLayout.addSpacing(50)
         idLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -201,7 +201,7 @@ class MainWindow(QMainWindow):
         self.firstNameLineEdit.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
         self.firstNameLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         firstNameLayout.addWidget(self.firstNameLineEdit)
-        leftLayoutRow2.addLayout(firstNameLayout)
+        uleftLayoutRow2.addLayout(firstNameLayout)
         firstNameLayout.addSpacing(50)
         firstNameLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
         self.lastNameLineEdit.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black;')
         self.lastNameLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         lastNameLayout.addWidget(self.lastNameLineEdit)
-        leftLayoutRow2.addLayout(lastNameLayout)
+        uleftLayoutRow2.addLayout(lastNameLayout)
         lastNameLayout.addSpacing(50)
         lastNameLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -230,7 +230,7 @@ class MainWindow(QMainWindow):
         self.genderLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         self.genderLineEdit.setFixedWidth(100)
         genderLayout.addWidget(self.genderLineEdit)
-        leftLayoutRow2.addLayout(genderLayout)
+        uleftLayoutRow2.addLayout(genderLayout)
         genderLayout.addSpacing(50)
         genderLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         self.companyLineEdit.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black;')
         self.companyLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         companyLayout.addWidget(self.companyLineEdit)
-        leftLayoutRow3.addLayout(companyLayout)
+        uleftLayoutRow3.addLayout(companyLayout)
         companyLayout.addSpacing(50)
         companyLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
         self.titleLineEdit.setStyleSheet('background-color: white; padding: 5px; border: 1px solid lableColor; color:black')
         self.titleLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
         titleLayout.addWidget(self.titleLineEdit)
-        leftLayoutRow3.addLayout(titleLayout)
+        uleftLayoutRow3.addLayout(titleLayout)
         titleLayout.addSpacing(50)
         titleLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -273,7 +273,7 @@ class MainWindow(QMainWindow):
         self.photo.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black;')
         self.photo.setAttribute(Qt.WA_MacShowFocusRect, 0);
         photoLayout.addWidget(self.photo)
-        leftLayoutRow4.addLayout(photoLayout)
+        uleftLayoutRow4.addLayout(photoLayout)
         photoLayout.addSpacing(25)
         photoLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -287,7 +287,7 @@ class MainWindow(QMainWindow):
         self.faceEncoding.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black;')
         self.faceEncoding.setAttribute(Qt.WA_MacShowFocusRect, 0);
         faceEncodingLayout.addWidget(self.faceEncoding)
-        leftLayoutRow4.addLayout(faceEncodingLayout)
+        uleftLayoutRow4.addLayout(faceEncodingLayout)
         faceEncodingLayout.addSpacing(25)
         faceEncodingLayout.setContentsMargins(10, 10, 10, 10)
 
@@ -297,16 +297,16 @@ class MainWindow(QMainWindow):
 
 
 
-        rightLayout = QVBoxLayout()
-        main_layout.addLayout(rightLayout)
+        urightLayout = QVBoxLayout()
+        u_main_layout.addLayout(urightLayout)
 
-        rightLayout.addSpacing(50)
+        urightLayout.addSpacing(50)
         self.webcam_label = QLabel(self)
         self.webcam_label.setStyleSheet("background-color: transparent;")
         self.webcam_label.setFixedSize(700, 500)
         self.webcam_label.setContentsMargins(10, 10, 10, 10)
 
-        rightLayout.addWidget(self.webcam_label)
+        urightLayout.addWidget(self.webcam_label)
         self.cap = cv2.VideoCapture(0)
         self.webcam_timer = QTimer(self)
         self.webcam_timer.timeout.connect(self.update_webcam_feed)
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
 
         self.captured_photo_label = QLabel(self)
         self.captured_photo_label.setFixedSize(700, 500)
-        rightLayout.addWidget(self.captured_photo_label)
+        urightLayout.addWidget(self.captured_photo_label)
         self.captured_photo_label.setVisible(False)
 
         self.photo_button = QPushButton("Take Photo")
@@ -326,20 +326,20 @@ class MainWindow(QMainWindow):
         takePhotoButtonLayout = QVBoxLayout()
         takePhotoButtonLayout.addWidget(self.photo_button)
         takePhotoButtonLayout.setAlignment(Qt.AlignCenter)
-        rightLayout.addLayout(takePhotoButtonLayout)
-        rightLayout.addSpacing(50)
-        rightLayout.addStretch()
+        urightLayout.addLayout(takePhotoButtonLayout)
+        urightLayout.addSpacing(50)
+        urightLayout.addStretch()
 
-        leftLayoutRow5 = QHBoxLayout()
-        leftLayout.addLayout(leftLayoutRow5)
+        uleftLayoutRow5 = QHBoxLayout()
+        u_leftLayout.addLayout(uleftLayoutRow5)
 
         addButton = QPushButton("Add")
         addButton.setFixedWidth(150)
         addButton.setFixedHeight(40)
         addButton.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white;")
         addButton.clicked.connect(self.addUser)
-        leftLayoutRow5.addWidget(addButton)
-        leftLayoutRow5.addSpacing(75)
+        uleftLayoutRow5.addWidget(addButton)
+        uleftLayoutRow5.addSpacing(75)
 
 
         cancelButton = QPushButton("Cancel")
@@ -347,15 +347,15 @@ class MainWindow(QMainWindow):
         cancelButton.setFixedHeight(40)
         cancelButton.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white;")
         cancelButton.clicked.connect(self.cancel)
-        leftLayoutRow5.addWidget(cancelButton)
-        leftLayoutRow5.setAlignment(Qt.AlignLeft)
-        leftLayoutRow5.setContentsMargins(10,10,10,10)
+        uleftLayoutRow5.addWidget(cancelButton)
+        uleftLayoutRow5.setAlignment(Qt.AlignLeft)
+        uleftLayoutRow5.setContentsMargins(10,10,10,10)
 
 
 
-        leftLayout.addStretch()
+        u_leftLayout.addStretch()
 
-        central_widget.setLayout(central_layout)
+        central_widget.setLayout(u_central_layout)
 
 
         self.capturing_photo = False

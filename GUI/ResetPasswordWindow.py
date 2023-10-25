@@ -156,6 +156,21 @@ class LoginWindow(QMainWindow):
         input_new_password = self.new_password_edit.text()
         input_confirm_password = self.confirm_new_password_edit.text()
 
+        db_conn = database.db
+        coll_ref = db_conn.collection("employee")
+        docs = coll_ref.stream()
+        for doc in docs :
+            data = doc.to_dict()
+            user = data.get("employeeID")
+            if user == input_user:
+                doc_ref = coll_ref.document(doc.id)
+                if input_new_password == input_confirm_password:
+                    doc_ref.update({"passcode": input_new_password})
+                else:
+                    print("Error: Make sure passwords match")
+            else:
+                print("Employee not found")
+        print("Reset successful")
 
 
 if __name__ == "__main__":

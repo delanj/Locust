@@ -118,10 +118,12 @@ class WebcamHandler(QWidget):
 
             # Draw rectangles and labels on the frame
             left, top, right, bottom = face_location.left(), face_location.top(), face_location.right(), face_location.bottom()
-            cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
+            #cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
             if match_found:
-                cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 128, 0), 2)
+                cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 0), 2)
             else:
+                cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
                 cv2.putText(frame, "Unknown", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
         return frame, face_names

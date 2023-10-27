@@ -58,5 +58,15 @@
         "title": "The Honored One",
         "photos": "0009_0.jpg",
         "faceEncodings": "0009_0.pkl"
+    },
+    {
+        "id": "0010",
+        "firstName": "Valeria",
+        "lastName": "Rodriguez",
+        "gender": "Female",
+        "company": "Valeria.inc",
+        "title": "CEO",
+        "photos": "0010_0.jpg",
+        "faceEncodings": "0010_0.pkl"
     }
 ]

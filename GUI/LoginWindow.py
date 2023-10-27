@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPixmap, QPainter, QImage, QBitmap, QColor, QPalette, QL
 from PyQt5.QtCore import Qt, QTimer
 from Entities.Employee import Employee
 import MainWindow
+import ManagerWindow
 
 
 
@@ -142,11 +143,22 @@ class LoginWindow(QMainWindow):
             password = self.password_edit.text()
 
             if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
-                print("Login Successful")
-                e = i.getEmployee()
-                self.w = MainWindow.MainWindow(e)
-                self.w.showFullScreen()
-                self.close()  # Close the login window
+                if i.title == "Security Manager":
+                    print("Login Successful")
+                    e = i.getEmployee()
+                    self.w = ManagerWindow.ManagerWindow(e)
+                    self.w.showFullScreen()
+                    self.close()  # Close the login window
+
+
+                if i.title == "Desk Technician":
+                    print("Login Successful")
+
+                    self.w = MainWindow.MainWindow()
+                    self.w.showFullScreen()
+                    self.close()  # Close the login window
+
+
             else:
                 print("Login Failed")
                 self.invalid.setText("Login failed. Please check your credentials.")

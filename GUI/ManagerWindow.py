@@ -4,19 +4,22 @@ import json
 import os
 import sys
 import cv2
-from PyQt5.QtCore import QTimer, Qt, QDateTime, QDate, QTime
+from PyQt5.QtCore import QTimer, Qt, QDateTime, QDate, QTime, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QLinearGradient, QColor, QPen, QFont
+from PyQt5.QtMultimedia import QCamera, QCameraImageCapture
+from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, \
     QPushButton, QSpacerItem, QSizePolicy, QFrame, QDesktopWidget, QDateTimeEdit, QCalendarWidget, QTableView, \
-    QToolButton, QTableWidget, QTableWidgetItem
+    QToolButton, QTableWidget, QTableWidgetItem, QGroupBox, QSpinBox, QComboBox, QDialogButtonBox, QFormLayout, QLayout, \
+    QMessageBox, QFileDialog
 import dlib
 import pickle
-
 from PyQt5.uic.properties import QtWidgets
-
 import Entities.IndirectUser.User
 import Entities.Employee.Employee
 import shutil
+import LoginWindow
+import MainWindow
 
 
 """
@@ -33,8 +36,6 @@ xSmall_font_size = '20px'
 dbu = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
 # Users
 User = Entities.IndirectUser.User.User
-
-
 # Link to data base
 dbe = Entities.Employee.Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
 #Employees
@@ -43,10 +44,8 @@ Employee = Entities.Employee.Employee.Employee
 userColumnLength = len(dbu.users)
 userRowLength = inspect.getsource(User.__init__).count("self.")
 
-
 employeeColumnLength = len(dbe.employees)
 employeeRowLength = inspect.getsource(Employee.__init__).count("self.")
-
 
 
 xLarge_font_size = '75px'
@@ -72,7 +71,6 @@ class BlackLine(QFrame):
         self.setFixedHeight(3)
         self.setStyleSheet("color: black; background-color:black;")
         self.setContentsMargins(0,0,0,0)
-
 class FadingLine(QFrame):
     def __init__(self):
         super().__init__()
@@ -91,7 +89,6 @@ class FadingLine(QFrame):
             }
             """
         )
-
 class HeaderWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -143,17 +140,12 @@ class HeaderWidget(QWidget):
         fadingLine = FadingLine()
         mainLayout.addWidget(fadingLine)
         mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
-
-
-class MainWindow(QMainWindow):
+class ManagerWindow(QMainWindow):
     def __init__(self, employee=None):
         super().__init__()
         self.employee = employee
         self.showMaximized()
         self.showFullScreen()
-
-
-
 
         central_widget = CustomWidgetGradient()
         headerWidget = HeaderWidget()
@@ -164,12 +156,9 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(central_layout)
         self.setCentralWidget(central_widget)
 
-
         mainLayout = QHBoxLayout()
         central_layout.addLayout(mainLayout)
         blackLine = BlackLine()
-
-
 
         #SIZE#
         screen_geometry = QApplication.desktop().screenGeometry()
@@ -179,98 +168,84 @@ class MainWindow(QMainWindow):
 
 
 
+
         #Left container------------------------------------------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------
         # Size for left widget
         leftWidgetWidth = window_width / 5 # Width
-        # Height
 
         leftWidget = QWidget()
         leftWidget.setStyleSheet("background-color:white;")
         leftWidget.setMaximumWidth(int(leftWidgetWidth))
-        #leftWidget.setFixedHeight()
-
 
         leftLayout = QVBoxLayout(leftWidget)
         leftLayout.setAlignment(Qt.AlignLeft)
-        #leftLayout.setStretchFactor(central_layout, 1)
-        # Left content
-        #---------------------------------------------------
-        # QLabel to display the current date
-        self.date_label = QLabel(self)
-        self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
-        self.update_date_label()
 
-        # QLabel to display the current time
-        self.time_label = QLabel(self)
-        self.time_label.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
-        self.update_time_label()
+        def dateTimeWidget():
+            dateTimeW = QWidget()
+            dateTimeL = QVBoxLayout(dateTimeW)
 
-        #Add widget to layout-------------------------
-        leftLayout.addWidget(self.date_label)
-        leftLayout.addWidget(self.time_label)
+            self.date_label = QLabel(self)
+            self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
+            self.update_date_label()
 
+            self.time_label = QLabel(self)
+            self.time_label.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
+            self.update_time_label()
 
+            dateTimeL.addWidget(self.date_label)
+            dateTimeL.addWidget(self.time_label)
+            return dateTimeW
 
+        leftLayout.addWidget(dateTimeWidget())
 
+        def logs():
+            logsWidget = QWidget()
+            logsWidget.setStyleSheet("background-color: transparent")
+            logsWidget.setContentsMargins(0, 0, 10, 0)
+            logsWidget.setFixedWidth(int(leftWidgetWidth))
 
+            logsLayout = QVBoxLayout(logsWidget)
+            logsLayout.setAlignment(Qt.AlignTop)
 
+            logLabel = QLabel("Logs")
+            logLabel.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
+            logsLayout.addWidget(logLabel)
 
-        # Logs
-        # --------------------------------------------------------------------------------------------------------------
-        logsWidget = QWidget()
-        logsWidget.setStyleSheet("background-color: transparent")
-        logsWidget.setContentsMargins(0, 0, 10, 0)
-        logsWidget.setFixedWidth(int(leftWidgetWidth))
+            logsLayout.addWidget(blackLine)
 
-        logsLayout = QVBoxLayout(logsWidget)
-        logsLayout.setAlignment(Qt.AlignTop)
+            userButton = CustomButton("Indirect Users")
+            userButton.clicked.connect(self.on_user_button_clicked)
 
-        logLabel = QLabel("Logs")
-        logLabel.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
-        logsLayout.addWidget(logLabel)
+            employeeButton = CustomButton("Employee")
+            employeeButton.clicked.connect(self.on_employee_button_clicked)
 
-        logsLayout.addWidget(blackLine)
-        class CustomButton(QPushButton):
-            def __init__(self, text):
-                super().__init__(text)
-                self.initUI()
-                #self.setFixedWidth(int(leftWidgetWidth))
-            def initUI(self):
-                self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
-                                   "background-color: #F5F5F5; border-radius: 5px; color: black;")
-            def enterEvent(self, event):
-                # When the mouse hovers over the label, change its color to indicate that it's clickable
-                self.setStyleSheet("border: 1px solid #AAAAAA; padding: 10px; "
-                                   "background-color: #E0E0E0; border-radius: 5px; color: black;")
-            def leaveEvent(self, event):
-                # When the mouse leaves the label, revert its color
-                self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
-                                   "background-color: #F5F5F5; border-radius: 5px; color: black;")
+            logsButton = CustomButton("Logs")
+            logsButton.clicked.connect(self.on_logs_button_clicked)
 
-        userButton = CustomButton("Indirect Users")
-        userButton.clicked.connect(self.on_user_button_clicked)
-
-        employeeButton = CustomButton("Employee")
-        employeeButton.clicked.connect(self.on_employee_button_clicked)
-
-        logsButton = CustomButton("Logs")
-        logsButton.clicked.connect(self.on_logs_button_clicked)
-
-        logsLayout.addWidget(userButton)
-        logsLayout.addWidget(employeeButton)
-        logsLayout.addWidget(logsButton)
+            logsLayout.addWidget(userButton)
+            logsLayout.addWidget(employeeButton)
+            logsLayout.addWidget(logsButton)
+            return logsWidget
 
 
-        leftLayout.addWidget(logsWidget)
+
+        leftLayout.addWidget(logs())
         leftLayout.addStretch()
 
-        addUserButton = QPushButton("button")
-        addUserButton.setFixedSize(150, 40)
-        addUserButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        faceRecButton = CustomButton("Facial Recognition")
+        faceRecButton.clicked.connect(self.faceRec)
+        leftLayout.addWidget(faceRecButton)
+
+        addUserButton = CustomButton("Add User")
         addUserButton.clicked.connect(self.add_user)
         leftLayout.addWidget(addUserButton)
+
+        logoutButton = CustomButton("Logout")
+        logoutButton.clicked.connect(self.logout)
+        leftLayout.addWidget(logoutButton)
+
 
 
         # Middle container---------------------------------------------------------------------------------------------
@@ -287,19 +262,21 @@ class MainWindow(QMainWindow):
         middleLayout.setAlignment(Qt.AlignTop)
 
         # Middle content
-        displayWidget = QWidget()
-        displayWidget.setStyleSheet("background-color: white")
-        displayWidget.setFixedWidth(int(middleWidgetWidth))
+        self.displayWidget = QWidget()
+        self.displayWidget.setStyleSheet("background-color: white")
+        self.displayWidget.setFixedWidth(int(middleWidgetWidth))
+
+        self.middleWindowWidthSize = int(self.displayWidget.size().width())
+        self.middleWindowHeightSize =  int(self.displayWidget.size().height())
+
+        self.displayLayout = QVBoxLayout(self.displayWidget)
+        middleLayout.addWidget(self.displayWidget)
 
 
 
 
-        self.displayLayout = QVBoxLayout(displayWidget)
 
-
-
-        middleLayout.addWidget(displayWidget)
-        middleLayout.setStretchFactor(displayWidget, 1)
+        middleLayout.setStretchFactor(self.displayWidget, 1)
 
 
         # Right container----------------------------------------------------------------------------------------------
@@ -346,8 +323,6 @@ class MainWindow(QMainWindow):
                 if event.button() == Qt.LeftButton:
                     print(f"{self.text()} was clicked!")
 
-
-
         # Adding new clickable labels as tickets
         ticketLabel1 = ClickableLabel("Ticket 1")
         ticketLabel2 = ClickableLabel("Ticket 2")
@@ -357,9 +332,6 @@ class MainWindow(QMainWindow):
         ticketLayout.addWidget(ticketLabel2)
         ticketLayout.addWidget(ticketLabel3)
         ticketLayout.addWidget(ticketLabel4)
-
-
-
 
         rightLayout.addWidget(ticketWidget)
         createTicketButton = QPushButton("Create Ticket")
@@ -407,55 +379,87 @@ class MainWindow(QMainWindow):
         mainLayout.addWidget(rightWidget)
         #mainLayout.setStretchFactor(rightWidget, 1)
 
-
-
-
-
-
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_date_label)
         self.timer.timeout.connect(self.update_time_label)
         self.timer.start(60000)  # Update every 60000 milliseconds (1 minute)
 
-    # ...
-
+    def clearLayout(self):
+        self.current_displayed_type = None
+        for i in reversed(range(self.displayLayout.count())):
+            widget = self.displayLayout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
     def update_date_label(self):
         # Update the QLabel with the current date
         current_date = QDate.currentDate().toString("dddd, MMMM dd, yyyy")
         self.date_label.setText(current_date)
-
     def update_time_label(self):
         # Update the QLabel with the current time
         current_time = QTime.currentTime().toString("hh:mm AP")
         self.time_label.setText(current_time)
 
+    def on_user_button_clicked(self):
+        self.clearLayout()
+        print("user")
+        self.tableWidget = TableWidget(context="Indirect User Button", parent=self)
+        self.displayLayout.addWidget(self.tableWidget)
+        self.tableWidget.removeRequested.connect(self.removeUserWidget)
+    def on_employee_button_clicked(self):
+        self.clearLayout()
+        print("employee")
+        self.tableWidget = TableWidget(context="Employee Button", parent=self)
+        self.displayLayout.addWidget(self.tableWidget)
+        self.tableWidget.removeRequested.connect(self.removeUserWidget)
+    def on_logs_button_clicked(self):
+        self.clearLayout()
+        print("logs")
+        self.tableWidget = TableWidget(context="Logs", parent=self)
+        self.displayLayout.addWidget(self.tableWidget)
+        self.tableWidget.removeRequested.connect(self.removeUserWidget)
 
-    def createTable(self, rowLength=None, columnLength=None, objects=None,):
-        container = QWidget()
-        layout = QVBoxLayout()
-        container.setLayout(layout)
+    def faceRec(self):
+        self.faceRecWindow = MainWindow.MainWindow()
+        self.faceRecWindow.showFullScreen()
+        self.close()  # Close the login window
 
-        self.table_widget = QTableWidget()
-        table_stylesheet = """
-            QTableWidget {
-                gridline-color: #d4d4d4; /* Light gray gridlines */
-                border: none;
-                color: black; /* Text color for table items */
-            }
-            QHeaderView::section {
-                background-color: #e6e6e6; /* Light gray header */
-                padding: 4px;
-                border: 1px solid #d4d4d4;
-                font-weight: bold;
-                color: black; /* Text color for headers */
-            }
-            QLineEdit { color: black; }
-        """
-        self.table_widget.setStyleSheet(table_stylesheet)
+    def add_user(self):
+        self.clearLayout()
+        self.userWidget = addUser(self)
+        self.displayLayout.addWidget(self.userWidget)
+        self.userWidget.removeRequested.connect(self.removeUserWidget)
 
-        self.table_widget.setRowCount(rowLength)
-        self.table_widget.setColumnCount(columnLength)
+    def removeUserWidget(self):
+            self.userWidget.setParent(None)  # Detach the widget from the main window
+            self.userWidget.deleteLater()
 
+    def logout(self):
+        self.loginWindow = LoginWindow.LoginWindow()
+        self.loginWindow.showFullScreen()
+        self.close()
+
+class CustomButton(QPushButton):
+    def __init__(self, text):
+        super().__init__(text)
+        self.initUI()
+        #self.setFixedWidth(int(leftWidgetWidth))
+    def initUI(self):
+        self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
+                           "background-color: #F5F5F5; border-radius: 5px; color: black;")
+    def enterEvent(self, event):
+        # When the mouse hovers over the label, change its color to indicate that it's clickable
+        self.setStyleSheet("border: 1px solid #AAAAAA; padding: 10px; "
+                           "background-color: #E0E0E0; border-radius: 5px; color: black;")
+    def leaveEvent(self, event):
+        # When the mouse leaves the label, revert its color
+        self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
+                           "background-color: #F5F5F5; border-radius: 5px; color: black;")
+class TableWidget(QWidget):
+    removeRequested = pyqtSignal()
+
+    def __init__(self, context, parent=None):
+        super().__init__(parent)
+        self.context = context
 
         self.employee_mapping = {
             "Employee ID": "employeeID",
@@ -480,76 +484,160 @@ class MainWindow(QMainWindow):
             "Face Encoding": "faceEncoding"
         }
 
-        if all(isinstance(obj, Employee) for obj in objects):
-            headers = list(self.employee_mapping.keys())
-        elif all(isinstance(obj, User) for obj in objects):
-            headers = list(self.user_mapping.keys())
+        self.initUI()
 
-        else:
-            raise ValueError("Invalid object type")
+    def initUI(self):
+        self.mainLayout = QVBoxLayout(self)
+        self.setLayout(self.mainLayout)
 
-        self.table_widget.setHorizontalHeaderLabels(headers)
+        if self.context == "Indirect User Button":
+            self.indirectUserFiles()
+        if self.context == "Employee Button":
+            self.employeeFiles()
+        if self.context == "Logs":
+            self.logs()
 
-        for row, obj in enumerate(objects):
-            if isinstance(obj, Employee):
-                mapping = self.employee_mapping
-            elif isinstance(obj, User):
-                mapping = self.user_mapping
-            else:
-                mapping = {header: header for header in headers}  # For logs, assuming header matches attribute name
+    def _styleTable(self):
+        table_stylesheet = """
+            QTableWidget {
+                gridline-color: #d4d4d4; /* Light gray gridlines */
+                border: none;
+                color: black; /* Text color for table items */
+                background-color:white;
+            }
+            QHeaderView::section {
+                background-color: #e6e6e6; /* Light gray header */
+                padding: 4px;
+                border: 1px solid #d4d4d4;
+                font-weight: bold;
+                color: black; /* Text color for headers */
+            }
 
-            for column, header in enumerate(headers):
-                attribute_name = mapping[header]
-                item = getattr(obj, attribute_name, '')
-                cell = QTableWidgetItem(
-                    str(item))  # Convert item to string to ensure compatibility with QTableWidgetItem
-                self.table_widget.setItem(row, column, cell)
+        """
+        searchbar_stylesheet = """
+            QLineEdit {
+                background-color: white;
+                color: black; /* Text color */
+                border: 1px solid #d4d4d4; /* Light gray border to match the table gridlines */
+                padding: 4px; /* Padding similar to header sections */
+            }
+            QLineEdit:focus {
+                border: 1px solid #a4a4a4; /* Slightly darker border for focus state */
+            }
+            QLineEdit::placeholder {
+                color: #a4a4a4; /* Placeholder text color */
+            }
+        """
+        self.search_line_edit.setStyleSheet(searchbar_stylesheet)
+        self.table_widget.setStyleSheet(table_stylesheet)
 
-        layout.addWidget(self.table_widget)  #
+    def createTable(self, rowLength, columnLength, objects):
+        container, layout = self.setup_container_and_layout()
 
-        buttonLayout = QHBoxLayout()
-        layout.addLayout(buttonLayout)
+        self.search_line_edit = QLineEdit()
+        self.search_line_edit.setPlaceholderText("Search...")
+        layout.addWidget(self.search_line_edit)
 
-        self.saveButton = QPushButton("Save")
-        self.saveButton.setFixedSize(150, 40)
-        self.saveButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
-        self.saveButton.clicked.connect(self.on_save_button_clicked)
-        buttonLayout.addWidget(self.saveButton)
+        self.table_widget = self.setup_table_widget(columnLength, rowLength, objects)
+        layout.addWidget(self.table_widget)
 
-        self.closeButton = QPushButton("Close")
-        self.closeButton.setFixedSize(150, 40)
-        self.closeButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
-        self.closeButton.clicked.connect(self.on_close_button_clicked)
-        buttonLayout.addWidget(self.closeButton)
+        self.add_buttons_to_layout(layout)
 
-        buttonLayout.setAlignment(Qt.AlignLeft)
+        # Connect the textChanged signal to your search function
+        self.search_line_edit.textChanged.connect(self._on_search)
 
-        return container  # Return the container holding both the table and the button
+        return container
 
-    def csv_widget(self, csv_path):
+    def setup_container_and_layout(self):
         container = QWidget()
         layout = QVBoxLayout()
         container.setLayout(layout)
+        return container, layout
 
-        # Create the QTableWidget
-        table_widget = QTableWidget()
+    def setup_table_widget(self, columnLength, rowLength, objects):
+        self.table_widget = QTableWidget()
+        self._styleTable()
+        self.table_widget.setRowCount(rowLength)
+        self.table_widget.setColumnCount(columnLength)
+        headers, mapping = self.get_headers_and_mapping(objects)
+        self.table_widget.setHorizontalHeaderLabels(headers)
+        self.populate_table_with_data(objects, headers, mapping, self.table_widget)
+        return self.table_widget
 
-        table_stylesheet = """
-                    QTableWidget {
-                        gridline-color: #d4d4d4; /* Light gray gridlines */
-                        border: none;
-                        color: black; /* Text color for table items */
-                    }
-                    QHeaderView::section {
-                        background-color: #e6e6e6; /* Light gray header */
-                        padding: 4px;
-                        border: 1px solid #d4d4d4;
-                        font-weight: bold;
-                        color: black; /* Text color for headers */
-                    }
-                """
-        table_widget.setStyleSheet(table_stylesheet)
+    def get_headers_and_mapping(self, objects):
+        if all(isinstance(obj, Employee) for obj in objects):
+            return list(self.employee_mapping.keys()), self.employee_mapping
+        elif all(isinstance(obj, User) for obj in objects):
+            return list(self.user_mapping.keys()), self.user_mapping
+        else:
+            raise ValueError("Invalid object type")
 
+    def populate_table_with_data(self, objects, headers, mapping, table_widget):
+        for row, obj in enumerate(objects):
+            for column, header in enumerate(headers):
+                attribute_name = mapping[header]
+                item = getattr(obj, attribute_name, '')
+                cell = QTableWidgetItem(str(item))
+                table_widget.setItem(row, column, cell)
+
+    def add_buttons_to_layout(self, layout):
+        """Add buttons to the provided layout."""
+        button_layout = self._createButtonLayout()
+        layout.addLayout(button_layout)
+
+    def _createButtonLayout(self):
+        buttonLayout = QHBoxLayout()
+        buttonLayout.setAlignment(Qt.AlignLeft)
+        saveButtonStyle = "background-color: black; color:white; border-radius: 20px;"
+        self._addButton(buttonLayout, "Save", self.on_save_button_clicked, saveButtonStyle)
+        self._addButton(buttonLayout, "Close", self.on_close_button_clicked, saveButtonStyle)
+        return buttonLayout
+
+    def _addButton(self, layout, text, callback, style):
+        button = QPushButton(text)
+        button.setFixedSize(150, 40)
+        button.setStyleSheet(style)
+        button.clicked.connect(callback)
+        layout.addWidget(button)
+
+    def indirectUserFiles(self):
+        self.current_displayed_type = User
+        loaded_users = [user.getUser() for user in dbu.load_users()]
+        self.original_users = list(loaded_users)
+        container = self.createTable(len(loaded_users), 8, loaded_users)
+        self.mainLayout.addWidget(container)
+
+    def employeeFiles(self):
+        self.current_displayed_type = Employee
+        loaded_employees = [Employee.getEmployee() for Employee in dbe.load_employees()]
+        self.original_employees = list(loaded_employees)
+        container = self.createTable(len(loaded_employees), 9, loaded_employees)
+        self.mainLayout.addWidget(container)
+
+    def logs(self):
+        csv_path = "../Database/Logs/log.csv"
+        self.mainLayout.addWidget(self.csv_widget(csv_path))
+
+    def csv_widget(self, csv_path):
+        container = QWidget()
+        layout = QVBoxLayout(container)
+
+        self.search_line_edit = QLineEdit()
+        self.search_line_edit.setPlaceholderText("Search...")
+        layout.addWidget(self.search_line_edit)
+
+        self.table_widget = QTableWidget()
+        self._styleTable()
+        self._populateTableFromCSV(csv_path)
+        layout.addWidget(self.table_widget)
+        layout.addLayout(self._createButtonLayout())
+
+        self.search_line_edit.textChanged.connect(self._on_search)
+
+        container.setLayout(layout)
+        return container
+
+    def _populateTableFromCSV(self, csv_path):
         data = []
         try:
             with open(csv_path, 'r') as csvfile:
@@ -557,83 +645,21 @@ class MainWindow(QMainWindow):
                 data = list(csvreader)
         except FileNotFoundError:
             print("CSV file not found or path is incorrect.")
-            return container  # Return empty container if error
+            return
 
-        # Set the header labels using the first row from the CSV file
-        table_widget.setHorizontalHeaderLabels(data[0])
+        if not data:
+            print("CSV is empty.")
+            return
 
-        # Set the number of rows (minus the header) and columns
-        table_widget.setRowCount(len(data) - 1)
-        table_widget.setColumnCount(len(data[0]))
+        headers = data[0]
+        self.table_widget.setColumnCount(len(headers))
+        self.table_widget.setHorizontalHeaderLabels(headers)
 
-        # Populate the table with data, skipping the header row
+        self.table_widget.setRowCount(len(data) - 1)
         for i, row in enumerate(data[1:]):
             for j, value in enumerate(row):
                 item = QTableWidgetItem(value)
-                table_widget.setItem(i, j, item)
-
-        # Add the table widget to the layout
-        layout.addWidget(table_widget)
-
-
-
-        buttonLayout = QHBoxLayout()
-        layout.addLayout(buttonLayout)
-
-        self.saveButton = QPushButton("Save")
-        self.saveButton.setFixedSize(150, 40)
-        self.saveButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
-        self.saveButton.clicked.connect(self.on_save_button_clicked)
-        buttonLayout.addWidget(self.saveButton)
-
-        self.closeButton = QPushButton("Close")
-        self.closeButton.setFixedSize(150, 40)
-        self.closeButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
-        self.closeButton.clicked.connect(self.on_close_button_clicked)
-        buttonLayout.addWidget(self.closeButton)
-
-        buttonLayout.setAlignment(Qt.AlignLeft)
-
-        return container  # Return the container holding both the table and the button
-
-    def on_user_button_clicked(self):
-        self.current_displayed_type = None
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        self.current_displayed_type = User
-        loaded_users = [user.getUser() for user in dbu.load_users()]
-        self.original_users = list(loaded_users)
-
-        container = self.createTable(objects=loaded_users, columnLength=8, rowLength=len(loaded_users))
-        self.displayLayout.addWidget(container)
-    def on_employee_button_clicked(self):
-        self.current_displayed_type = None
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        self.current_displayed_type = Employee
-        loaded_employees = [Employee.getEmployee() for Employee in dbe.load_employees()]
-        self.original_employees = list(loaded_employees)
-
-        container = self.createTable(objects=loaded_employees, columnLength=9, rowLength=len(loaded_employees))
-        self.displayLayout.addWidget(container)
-
-    def on_logs_button_clicked(self):
-        self.current_displayed_type = None
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        # Create and add the employee table (and close button)
-        csv_path = '../Database/Logs/log.csv'  # Update this to your CSV file's path
-        container = self.csv_widget(csv_path)
-        self.displayLayout.addWidget(container)
+                self.table_widget.setItem(i, j, item)
 
     def on_save_button_clicked(self):
         # Check the type of object currently displayed
@@ -642,6 +668,7 @@ class MainWindow(QMainWindow):
             obj_type = Employee
             original_objects = self.original_employees
             db = dbe
+            print("emp")
         elif self.current_displayed_type == User:
             mapping = self.user_mapping
             obj_type = User
@@ -674,7 +701,7 @@ class MainWindow(QMainWindow):
                     attributes[attribute_name] = table_value
 
             # Create a new object using the updated attributes from the temporary dictionary
-            # Assuming both User and Employee have same constructor signature
+            # Assuming both User and Employee have the same constructor signature
             updated_object = obj_type(**attributes)
             updated_objects.append(updated_object)
 
@@ -690,183 +717,421 @@ class MainWindow(QMainWindow):
         sender = self.sender()
         parent_widget = sender.parent()
         parent_widget.deleteLater()
+
+    def _on_search(self):
+        search_text = self.search_line_edit.text().lower()
+        for i in range(self.table_widget.rowCount()):
+            row_matches = False
+            for j in range(self.table_widget.columnCount()):
+                item = self.table_widget.item(i, j)
+                if item and search_text in item.text().lower():
+                    row_matches = True
+                    break
+            self.table_widget.setRowHidden(i, not row_matches)
+
     def on_close_button_clicked(self):
-        sender = self.sender()
-        parent_widget = sender.parent()
-        parent_widget.deleteLater()
+        # Define the behavior for when the close button is clicked
+        # For example, if you just want to close the widget:
+        self.close()
+class addUser(QWidget):
+    removeRequested = pyqtSignal()
 
-    def add_user(self):
-        self.current_displayed_type = None
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.initUI()
+    def initUI(self):
+        """Initializes the UI components."""
+        self.mainLayout = QVBoxLayout(self)
+        self.qBox()
+        self.setLayout(self.mainLayout)
+
+    def qBox(self):
+        """Creates the 'Add User' group box with its layout and styles."""
+        self._initialize_widgets()
+        self._style_widgets()
+        self._create_form()
+        self.mainLayout.addWidget(self.groupBox)
+    def _initialize_widgets(self):
+        """Initializes the widgets used in the 'Add User' group box."""
+        # Group box
+        self.groupBox = QGroupBox("Add User")
+
+        # Line edits
+        self.id = self._create_line_edit()
+        self.firstName = self._create_line_edit()
+        self.lastName = self._create_line_edit()
+        self.company = self._create_line_edit()
+        self.title = self._create_line_edit()
+        self.photo = self._create_line_edit(readonly=True)
+        self.faceEncoding = self._create_line_edit(readonly=True)
+
+        # Gender combo box
+        self.genderComboBox = QComboBox()
+        self.genderComboBox.addItems(["Male", "Female"])
+        self.genderComboBox.setCurrentIndex(-1)
+
+    def _create_line_edit(self, readonly=False):
+        """Creates a QLineEdit with some default attributes."""
+        le = QLineEdit()
+        le.setAttribute(Qt.WA_MacShowFocusRect, 0)
+        le.setReadOnly(readonly)
+        return le
+
+    def _style_widgets(self):
+        groupBoxStylesheet = """
+            QGroupBox {
+                color: black;
+                border: 2px solid black;
+                border-radius: 15px;
+                margin-top: 10px;
+                padding: 20px;
+                font-size: 25px;
+                background-color: #FAFAFA;
+            }
+
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 5px 20px;
+                background-color: black;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+                font-weight: bold;
+                color: white;
+            }
+
+            QLabel {
+                qproperty-alignment: AlignCenter;
+                color: black;
+                background-color: transparent;
+                font-weight: bold;
+                font-size: 18px;
+                margin: 5px 0;
+            }
+
+            QComboBox {
+                color: black;
+                background-color: white;
+                font-size: 20px;  /* Increased font size */
+                padding: 10px 15px;  /* Adjusted padding for more space */
+                border: 1px solid black;
+                border-radius: 10px;  /* Slightly larger radius for larger box */
+                margin: 5px 0;
+                min-height: 20px;  /* Explicitly set a minimum height if needed */
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+
+                border: none;  /* Removes the borders */
+                outline: none;
+
+            }
+
+            QComboBox::drop-down {
+                width: 20px;  /* Adjust if needed to make drop-down arrow region bigger */
+
+            }
+
+            QComboBox::down-arrow {
+                width: 20px;
+                height: 20px;
+            }
+
+            QComboBox:hover {
+                border: 1px solid black;
+            }
+
+            QLineEdit {
+                color: black;
+                font-size: 22px;
+                padding: 5px 10px;
+                border: 1px solid black;
+                border-radius: 8px;
+                background-color: #FFFFFF;
+                margin: 5px 0;
+            }
+
+            QLineEdit:hover {
+                border: 1px solid black;
+            }
+
+            QPushButton {
+                color: white;
+                font-size: 20px;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 20px;
+                background-color: black;
+                margin-left: 10px; /* Spacing between buttons */
+                margin-right: 10px; /* Spacing between buttons */
+            }
+
+            QPushButton:hover {
+                background-color: #E5154A;
+            }
+
+            QPushButton:pressed {
+                background-color: #C4123D;
+            }
+
+            QPushButton:disabled {
+                background-color: #DDDDDD;
+                color: #AAAAAA;
+            }
+            """
+
+        self.groupBox.setStyleSheet(groupBoxStylesheet)
+
+    def _create_form(self):
+        """Creates the form layout inside the 'Add User' group box."""
+        formLayout = QFormLayout()
+        formLayout.setFormAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        formLayout.addRow(QLabel("User ID: "), self.id)
+        formLayout.addRow(QLabel("First Name: "), self.firstName)
+        formLayout.addRow(QLabel("Last Name: "), self.lastName)
+        formLayout.addRow(QLabel("Gender: "), self.genderComboBox)
+        formLayout.addRow(QLabel("Company Name: "), self.company)
+        formLayout.addRow(QLabel("Title: "), self.title)
+        formLayout.addRow(QLabel("Photo: "), self.photo)
+        formLayout.addRow(QLabel("Face Encoding: "), self.faceEncoding)
+
+        buttonLayout = self._create_button_layout()
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(formLayout)
+        mainLayout.addLayout(buttonLayout)
+        mainLayout.addStretch()
+        self.groupBox.setLayout(mainLayout)
+
+    def _create_button_layout(self):
+        """Creates and returns the button layout."""
+        self.openCameraButton = self._create_button("Open Cam", self.openCamera, size=(175, 40))
+        self.saveProfileButton = self._create_button("Save Profile", self.saveNewUser, size=(175, 40), hide_initially=True)
+        cancelButton = self._create_button("Cancel", self.emitRemoveRequest, size=(175, 40))
+
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addStretch()
+        buttonLayout.addWidget(self.openCameraButton)
+        buttonLayout.addWidget(self.saveProfileButton)
+        buttonLayout.addWidget(cancelButton)
+        buttonLayout.addStretch()
+
+        return buttonLayout
+
+    def _create_button(self, label, slot, size=(150, 40), hide_initially=False):
+        """Utility function to create a styled QPushButton."""
+        btn = QPushButton(label)
+        btn.setFixedSize(*size)
+        btn.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        btn.clicked.connect(slot)
+        if hide_initially:
+            btn.hide()
+        return btn
+
+    def camInit(self):
+        # OpenCV camera initialization
+        self.cap = cv2.VideoCapture(0)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updateFrame)
+        self.camLayout = QVBoxLayout()
+        self.displayLabel = QLabel(self)
+        self.camLayout.addWidget(self.displayLabel)
+        self.camButtonLayout = QHBoxLayout()
+        self.initTakePhotoButton = QPushButton("Take Photo")
+        self.initTakePhotoButton.setFixedSize(150, 40)
+        self.initTakePhotoButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        self.camButtonLayout.addWidget(self.initTakePhotoButton)
+        self.initTakePhotoButton.clicked.connect(self.capturePhoto)
+
+        self.retakePhotoButton = QPushButton("Retake Photo")
+        self.retakePhotoButton.setFixedSize(150, 40)
+        self.retakePhotoButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        self.camButtonLayout.addWidget(self.retakePhotoButton)
+        self.retakePhotoButton.clicked.connect(self.retakePhoto)
+        self.retakePhotoButton.hide()
+
+        self.savePhotoButton = QPushButton("Save Photo")
+        self.savePhotoButton.setFixedSize(150, 40)
+        self.savePhotoButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        self.camButtonLayout.addWidget(self.savePhotoButton)
+        self.savePhotoButton.clicked.connect(self.saveAndReturn)
+        self.savePhotoButton.hide()
+
+        self.camLayout.addLayout(self.camButtonLayout)
+        self.mainLayout.addLayout(self.camLayout)
+    def cancelAction(self):
+        parent = self.parent()
+        if isinstance(parent, MainWindow):
+            parent.clearLayout()
+
+    def camInit(self):
+        self.cap = cv2.VideoCapture(0)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updateFrame)
+
+        self.setupCameraUI()
+
+    def setupCameraUI(self):
+        self.camLayout = QVBoxLayout()
+        self.displayLabel = QLabel(self)
+        self.camLayout.addWidget(self.displayLabel)
+
+        self.camButtonLayout = QHBoxLayout()
+        self.initTakePhotoButton = self.createButton("Take Photo", self.capturePhoto)
+        self.retakePhotoButton = self.createButton("Retake Photo", self.retakePhoto, False)
+        self.savePhotoButton = self.createButton("Save Photo", self.saveAndReturn, False)
+
+        self.camButtonLayout.addWidget(self.initTakePhotoButton)
+        self.camButtonLayout.addWidget(self.retakePhotoButton)
+        self.camButtonLayout.addWidget(self.savePhotoButton)
+        self.camLayout.addLayout(self.camButtonLayout)
+
+        self.mainLayout.addLayout(self.camLayout)
+
+    def createButton(self, text, slot, is_visible=True):
+        button = QPushButton(text)
+        button.setFixedSize(150, 40)
+        button.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        button.clicked.connect(slot)
+        button.setVisible(is_visible)
+        return button
+
+    def openCamera(self):
+        self.camInit()
+        self.groupBox.hide()
+        self.timer.start(30)
+
+    def updateFrame(self):
+        ret, frame = self.cap.read()
+        if ret:
+            self.displayImage(frame)
+
+    def displayImage(self, frame):
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        self.current_qimage = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(self.current_qimage)
+        scaled_pixmap = pixmap.scaled(self.displayLabel.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.displayLabel.setPixmap(scaled_pixmap)
+
+    def capturePhoto(self):
+        self.timer.stop()
+        self.currentPhoto = self.current_qimage.copy()
+        self.toggleCameraButtons(False, True, True)
+
+    def retakePhoto(self):
+        self.toggleCameraButtons(True, False, False)
+        self.timer.start(30)
+
+    def toggleCameraButtons(self, init_visible, retake_visible, save_visible):
+        self.initTakePhotoButton.setVisible(init_visible)
+        self.retakePhotoButton.setVisible(retake_visible)
+        self.savePhotoButton.setVisible(save_visible)
+
+    def saveAndReturn(self):
+        directory = "../Database/AddLocal"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        file_path = os.path.join(directory, f"{self.id.text()}_0.jpg")
+        self.currentPhoto.save(file_path)
+        self.savePKL()
+
+        self.closeCameraUI()
+
+    def closeCameraUI(self):
+        self.timer.stop()
+        self.cap.release()
+        self.displayLabel.clear()
+        self.toggleCameraButtons(False, False, False)
+
+        self.saveProfileButton.show()
+        self.openCameraButton.hide()
 
 
-        ucentral_widget = QWidget()
-        u_central_layout = QVBoxLayout(ucentral_widget)
-        u_central_layout.setContentsMargins(0, 0, 0, 0)
-        u_main_layout = QHBoxLayout()
-        u_central_layout.addLayout(u_main_layout)
 
-        u_leftLayout = QVBoxLayout()
-        u_leftLayout.addSpacing(50)
-        u_main_layout.addLayout(u_leftLayout)
-        uleftLayoutRow1 = QHBoxLayout()
-        uleftLayoutRow2 = QHBoxLayout()
-        uleftLayoutRow3 = QHBoxLayout()
-        uleftLayoutRow4 = QHBoxLayout()
-        u_leftLayout.addLayout(uleftLayoutRow1)
-        u_leftLayout.addLayout(uleftLayoutRow2)
-        u_leftLayout.addLayout(uleftLayoutRow3)
-        u_leftLayout.addLayout(uleftLayoutRow4)
+        for widget in reversed(self.camLayout.children()):
+            widget.deleteLater()
 
-        uleftLayoutRow1.setAlignment(Qt.AlignLeft)
-        uleftLayoutRow2.setAlignment(Qt.AlignLeft)
-        uleftLayoutRow3.setAlignment(Qt.AlignLeft)
-        uleftLayoutRow4.setAlignment(Qt.AlignLeft)
+        self.photo.setText(f"{self.id.text()}_0.jpg")
+        self.faceEncoding.setText(f"{self.id.text()}_0.pkl")
+        self.groupBox.show()
 
-        # id
-        idLayout = QVBoxLayout()
-        idLabel = QLabel("ID")
-        idLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        idLayout.addWidget(idLabel)
-        self.idLineEdit = QLineEdit()
-        self.idLineEdit.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-        self.idLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        self.idLineEdit.setFixedWidth(100)
-        idLayout.addWidget(self.idLineEdit)
-        uleftLayoutRow1.addLayout(idLayout)
-        idLayout.addSpacing(50)
-        idLayout.setContentsMargins(10, 10, 10, 10)
+    def closeEvent(self, event):
+        if hasattr(self, 'cap') and self.cap.isOpened():
+            self.cap.release()
+            self.removeFiles()
 
-        # firstName
-        firstNameLayout = QVBoxLayout()
-        firstNameLabel = QLabel("First Name")
-        firstNameLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        firstNameLayout.addWidget(firstNameLabel)
-        self.firstNameLineEdit = QLineEdit()
-        self.firstNameLineEdit.setMaximumWidth(250)
-        self.firstNameLineEdit.setStyleSheet(
-            f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-        self.firstNameLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        firstNameLayout.addWidget(self.firstNameLineEdit)
-        uleftLayoutRow2.addLayout(firstNameLayout)
-        firstNameLayout.addSpacing(50)
-        firstNameLayout.setContentsMargins(10, 10, 10, 10)
+    def cancelAction(self):
+        parent = self.parent()
+        if isinstance(parent, MainWindow):
+            parent.clearLayout()
 
-        # lastName
-        lastNameLayout = QVBoxLayout()
-        lastNameLabel = QLabel("Last Name")
-        lastNameLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        lastNameLayout.addWidget(lastNameLabel)
-        self.lastNameLineEdit = QLineEdit()
-        self.lastNameLineEdit.setMaximumWidth(250)
-        self.lastNameLineEdit.setStyleSheet(
-            f'background-color: white; padding: 5px; border: 1px solid black; color:black;')
-        self.lastNameLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        lastNameLayout.addWidget(self.lastNameLineEdit)
-        uleftLayoutRow2.addLayout(lastNameLayout)
-        lastNameLayout.addSpacing(50)
-        lastNameLayout.setContentsMargins(10, 10, 10, 10)
+    # ----- User Data Management -----
 
-        # gender
-        genderLayout = QVBoxLayout()
-        genderLabel = QLabel("Gender")
-        genderLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        genderLayout.addWidget(genderLabel)
-        self.genderLineEdit = QLineEdit()
-        self.genderLineEdit.setStyleSheet(
-            f'background-color: white; padding: 5px; border: 1px solid black; color:black;')
-        self.genderLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        self.genderLineEdit.setFixedWidth(100)
-        genderLayout.addWidget(self.genderLineEdit)
-        uleftLayoutRow2.addLayout(genderLayout)
-        genderLayout.addSpacing(50)
-        genderLayout.setContentsMargins(10, 10, 10, 10)
+    def saveNewUser(self):
+        newUser = User(
+            id=self.id.text(),
+            firstName=self.firstName.text(),
+            lastName=self.lastName.text(),
+            gender=self.genderComboBox.currentText(),
+            company=self.company.text(),
+            title=self.title.text(),
+            photos=self.photo.text(),
+            faceEncoding=self.faceEncoding.text()
+        )
 
-        # company
-        companyLayout = QVBoxLayout()
-        companyLabel = QLabel("Company")
-        companyLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        companyLayout.addWidget(companyLabel)
-        self.companyLineEdit = QLineEdit()
-        self.companyLineEdit.setMaximumWidth(315)
-        self.companyLineEdit.setStyleSheet(
-            'background-color: white; padding: 5px; border: 1px solid black; color:black;')
-        self.companyLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        companyLayout.addWidget(self.companyLineEdit)
-        uleftLayoutRow3.addLayout(companyLayout)
-        companyLayout.addSpacing(50)
-        companyLayout.setContentsMargins(10, 10, 10, 10)
+        dbu.add_user(newUser)
 
-        # title
-        titleLayout = QVBoxLayout()
-        titleLabel = QLabel("Title")
-        titleLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        titleLayout.addWidget(titleLabel)
-        self.titleLineEdit = QLineEdit()
-        self.titleLineEdit.setMaximumWidth(315)
-        self.titleLineEdit.setStyleSheet(
-            'background-color: white; padding: 5px; border: 1px solid lableColor; color:black')
-        self.titleLineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        titleLayout.addWidget(self.titleLineEdit)
-        uleftLayoutRow3.addLayout(titleLayout)
-        titleLayout.addSpacing(50)
-        titleLayout.setContentsMargins(10, 10, 10, 10)
+        self.moveFile(f"../Database/AddLocal/{self.photo.text()}",
+                      f"../Database/IndirectUsers/photos/{self.photo.text()}")
+        self.moveFile(f"../Database/AddLocal/{self.faceEncoding.text()}",
+                      f"../Database/IndirectUsers/face_encodings/{self.faceEncoding.text()}")
+        self.emitRemoveRequest()
+    def savePKL(self):
+        file_path = f"../Database/AddLocal/{self.id.text()}_0.jpg"
+        # Save plk
+        face_detector = dlib.get_frontal_face_detector()
+        shape_predictor = dlib.shape_predictor("../Database/datFiles/shape_predictor_68_face_landmarks.dat")
+        face_recognizer = dlib.face_recognition_model_v1(
+            "../Database/datFiles/dlib_face_recognition_resnet_model_v1.dat")
+        # Load the image
+        image = dlib.load_rgb_image(file_path)
+        faces = face_detector(image)  # Detect faces in the image
 
-        # photos
-        photoLayout = QVBoxLayout()
-        photoLabel = QLabel("Photo")
-        photoLabel.setMaximumWidth(200)
-        photoLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        photoLayout.addWidget(photoLabel)
-        self.photo = QLabel()
-        self.photo.setMaximumWidth(200)
-        self.photo.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black;')
-        self.photo.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        photoLayout.addWidget(self.photo)
-        uleftLayoutRow4.addLayout(photoLayout)
-        photoLayout.addSpacing(25)
-        photoLayout.setContentsMargins(10, 10, 10, 10)
+        known_face_data = {
+            "name": f"{self.id.text()}_0",
+            "face_descriptors": [],
+            "image_path": file_path,
+        }
 
-        # faceEncoding
-        faceEncodingLayout = QVBoxLayout()
-        faceEncodingLabel = QLabel("Face Encoding")
-        faceEncodingLabel.setStyleSheet(
-            f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color: black;')
-        faceEncodingLayout.addWidget(faceEncodingLabel)
-        self.faceEncoding = QLabel()
-        self.faceEncoding.setMaximumWidth(200)
-        self.faceEncoding.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black;')
-        self.faceEncoding.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        faceEncodingLayout.addWidget(self.faceEncoding)
-        uleftLayoutRow4.addLayout(faceEncodingLayout)
-        faceEncodingLayout.addSpacing(25)
-        faceEncodingLayout.setContentsMargins(10, 10, 10, 10)
+        for face in faces:
+            shape = shape_predictor(image, face)
+            face_descriptor = face_recognizer.compute_face_descriptor(image, shape)
+            known_face_data["face_descriptors"].append(face_descriptor)
+        # Save the known_face_data to a pickle file
+        pickle_file_path = f"../Database/AddLocal/{self.id.text()}_0.pkl"  # Choose a filename for your pickle file
+        with open(pickle_file_path, "wb") as f:
+            pickle.dump(known_face_data, f)
+        self.faceEncoding.setText(f"{self.id.text()}_0.pkl")
+    def moveFile(self, source, destination):
+        shutil.move(source, destination)
 
+    def removeFiles(self):
+        folder_path = '../Database/AddLocal'
+        if os.path.exists(folder_path):
+            for file in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, file)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
 
-
-
-        self.displayLayout.addWidget(ucentral_widget)
-
-
-
-
-
-
-
-
+    def emitRemoveRequest(self):
+        self.removeFiles()
+        self.removeRequested.emit()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()  # Instantiate HeaderWidget directly
+    window = ManagerWindow()  # Instantiate HeaderWidget directly
     window.show()
     sys.exit(app.exec_())

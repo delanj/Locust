@@ -11,7 +11,7 @@ import numpy as np
 
 from IPython.external.qt_for_kernel import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, \
-    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget, QLineEdit
+    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget, QLineEdit, QTextEdit
 from PyQt5.QtGui import QPixmap, QImage, QColor, QFont, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QDate, QTime
 import Entities.IndirectUser.User
@@ -395,6 +395,21 @@ class MainWindow(QMainWindow):
             button.clicked.connect(connect)
             return button
 
+        def createLabel(text):
+            label = QLabel(text)
+            label.setStyleSheet(
+                f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
+            label.setAlignment(Qt.AlignTop)
+            label.setFixedHeight(40)
+            return label  # Added return statement
+
+        def createLabelField():
+            label = QLabel()
+            label.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
+            label.setAlignment(Qt.AlignTop)
+            label.setFixedHeight(40)
+            return label  # Added return statement
+
         def FaceRecInfo():
             faceRecInfoWidget = QWidget()
             faceRecInfoWidget.setFixedWidth(leftWidgetWidth)
@@ -402,22 +417,6 @@ class MainWindow(QMainWindow):
 
             infoBox = QVBoxLayout()
             faceRecInfoWidget.setLayout(infoBox)
-
-
-            def createLabel(text):
-                label = QLabel(text)
-                label.setStyleSheet(
-                    f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-                label.setAlignment(Qt.AlignTop)
-                label.setFixedHeight(40)
-                return label  # Added return statement
-
-            def createLabelField():
-                label = QLabel()
-                label.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-                label.setAlignment(Qt.AlignTop)
-                label.setFixedHeight(40)
-                return label  # Added return statement
 
             def dateTimeWidget():
                 dateTimeW = QWidget()
@@ -509,20 +508,52 @@ class MainWindow(QMainWindow):
 
             navBox = QVBoxLayout()
 
-            L = QLabel("test")
-            navBox.addWidget(L)
+            subject = createLabel("Subject")
+
+
+
+            #Layout
+
 
             navWidget.setLayout(navBox)
-
             return navWidget
 
         def Tickets():
             ticketWidget = QWidget()
-
             ticketBox = QVBoxLayout()
 
-            L = QLabel("test")
-            ticketBox.addWidget(L)
+
+
+            try:
+                name = createLabel(f"Name: {self.employee.firstName} {self.employee.lastName}")
+                id = createLabel(f"ID: {self.employee.employeeID}")
+            except:
+                name = createLabel("Name: None")
+                id = createLabel("ID: None")
+
+
+            subject = createLabel("Subject: ")
+            self.subjectText = QLineEdit()
+            self.subjectText.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black; font-size: 24pt; font-family: Copperplate;')
+
+
+            description = createLabel("Description: ")
+            self.descriptionText = QTextEdit()
+            self.descriptionText.setStyleSheet('background-color: white; padding: 5px; border: 1px solid black; color:black; font-size: 24pt; font-family: Copperplate;')
+
+            acceptButton = createButton("Submit",self.submitTicket)
+
+
+            # Layout
+            ticketBox.addWidget(name)
+            ticketBox.addWidget(id)
+            ticketBox.addWidget(subject)
+            ticketBox.addWidget(self.subjectText)
+            ticketBox.addWidget(description)
+            ticketBox.addWidget(self.descriptionText)
+            ticketBox.addWidget(acceptButton)
+
+
 
             ticketWidget.setLayout(ticketBox)
 
@@ -613,6 +644,37 @@ class MainWindow(QMainWindow):
 
         except:
             print("error")
+
+    def submitTicket(self):
+        try:
+            current_time = datetime.now()
+            formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
+            print(formatted_time)
+            empName = f"{self.employee.firstName} {self.employee.lastName}"
+            empID = self.employee.employeeID
+            subjectHeader = "Subject: "
+            subject = self.subjectText.text()
+            descriptionHeader = "Description: "
+            description = self.descriptionText.toPlainText()
+            print(description)
+
+            fileName = f"../Database/Tickets/{subject}_{str(formatted_time)}.txt"
+
+            with open(fileName, 'w') as file:  # 'a' mode is for appending to the file, use 'w' to overwrite the file
+                file.write("Timestamp: " + formatted_time + '\n')
+                file.write("Employee Name: " + empName + '\n')
+                file.write("Employee ID: " + empID + '\n')
+                file.write(subjectHeader + subject + '\n')
+                file.write(descriptionHeader + description + '\n')
+                file.write('-' * 40 + '\n')  # Add a separator line for clarity
+
+            self.subjectText.clear()
+            self.descriptionText.clear()
+
+
+        except Exception as e:
+            print(f"Error: {e}")
+
 
 
 

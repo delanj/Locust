@@ -11,7 +11,7 @@ from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, \
     QPushButton, QSpacerItem, QSizePolicy, QFrame, QDesktopWidget, QDateTimeEdit, QCalendarWidget, QTableView, \
     QToolButton, QTableWidget, QTableWidgetItem, QGroupBox, QSpinBox, QComboBox, QDialogButtonBox, QFormLayout, QLayout, \
-    QMessageBox, QFileDialog
+    QMessageBox, QFileDialog, QTextEdit
 import dlib
 import pickle
 from PyQt5.uic.properties import QtWidgets
@@ -303,35 +303,98 @@ class ManagerWindow(QMainWindow):
         # ticketLayout.addWidget(blackLine)
 
         class ClickableLabel(QLabel):
-            def __init__(self, text):
+            def __init__(self, text, filepath, displayLayout, ticketLayout):
                 super().__init__(text)
-                self.setFixedWidth(int(rightWidget.size().width()/1.3))
-                buttonH = int((rightWidget.size().width()/1.3) / 4)
+                self.filepath = filepath
+                self.displayLayout = displayLayout
+                self.ticketLayout = ticketLayout
+                self.setFixedWidth(int(rightWidget.size().width() / 1.3))
+                buttonH = int((rightWidget.size().width() / 1.3) / 4)
                 self.setFixedHeight(buttonH)
-                #self.setAlignment(Qt.AlignLeft)
-                self.setStyleSheet("border: 1px solid #CCCCCC; padding: 0px; "
-                                   "background-color: #F5F5F5; border-radius: 5px; color:black;")
+                self.setStyleSheet(
+                    "border: 1px solid #CCCCCC; padding: 0px; background-color: #F5F5F5; border-radius: 5px; color:black;"
+                )
+
+            def createButton(self, text, connect):
+                button = QPushButton(text)
+                button.setFixedSize(100, 40)
+                button.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white")
+                button.clicked.connect(connect)
+                return button
+
             def enterEvent(self, event):
-                # When the mouse hovers over the label, change its color to indicate that it's clickable
-                self.setStyleSheet("border: 1px solid #AAAAAA; padding: 0px; "
-                                   "background-color: #E0E0E0; border-radius: 5px; color:black;")
+                # When the mouse hovers over the label, change its color
+                self.setStyleSheet(
+                    "border: 1px solid #AAAAAA; padding: 0px; background-color: #E0E0E0; border-radius: 5px; color:black;"
+                )
+
             def leaveEvent(self, event):
-                # When the mouse leaves the label, revert its color
-                self.setStyleSheet("border: 1px solid #CCCCCC; padding: 0px; "
-                                   "background-color: #F5F5F5; border-radius: 5px; color:black;")
+                # Revert color when mouse leaves the label
+                self.setStyleSheet(
+                    "border: 1px solid #CCCCCC; padding: 0px; background-color: #F5F5F5; border-radius: 5px; color:black;"
+                )
+
             def mousePressEvent(self, event):
+                self.clearLayout()
                 if event.button() == Qt.LeftButton:
-                    print(f"{self.text()} was clicked!")
+                    fileContentDisplay = QTextEdit()
+                    with open(self.filepath, 'r') as file:
+                        contents = file.read()
+                        fileContentDisplay.setText(contents)
+                        self.displayLayout.addWidget(fileContentDisplay)
+
+                        buttonBox = QHBoxLayout()
+                        resolvedButton = self.createButton("Resolved", self.resolveTicket)
+                        buttonBox.addWidget(resolvedButton)
+                        self.displayLayout.addWidget(resolvedButton)
+
+            def clearLayout(self):
+                self.current_displayed_type = None
+                for i in reversed(range(self.displayLayout.count())):
+                    widget = self.displayLayout.itemAt(i).widget()
+                    if widget is not None:
+                        widget.deleteLater()
+
+            def resolveTicket(self):
+                try:
+                    # 1. Delete the file
+                    os.remove(self.filepath)
+
+                    # 2. Clear the ticket (label) that represents this file
+                    self.deleteLater()
+
+                    # 3. Clear the displayed content and the resolved button
+                    self.clearLayout()
+
+                except Exception as e:
+                    print(f"Error while resolving ticket: {e}")
+
+            def clearTickets(self):
+                # Clears the tickets (labels) from the ticketLayout
+                for i in reversed(range(self.ticketLayout.count())):
+                    widget = self.ticketLayout.itemAt(i).widget()
+                    if widget is not None:
+                        widget.deleteLater()
+
+        def add_tickets_to_layout(directory, layout, displayLayout):
+            try:
+                # List all files in the directory
+                files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+
+                # For each text file, create a label and add to the layout
+                for file in files:
+                    if file.endswith('.txt'):
+                        label_text = os.path.splitext(file)[0]  # Gets the file name without extension
+                        filepath = os.path.join(directory, file)  # Full path to the file
+                        label = ClickableLabel(label_text, filepath, displayLayout, layout)
+                        layout.addWidget(label)
+
+            except Exception as e:
+                print(f"Error while adding tickets to layout: {e}")
 
         # Adding new clickable labels as tickets
-        ticketLabel1 = ClickableLabel("Ticket 1")
-        ticketLabel2 = ClickableLabel("Ticket 2")
-        ticketLabel3 = ClickableLabel("Ticket 3")
-        ticketLabel4 = ClickableLabel("Ticket 4")
-        ticketLayout.addWidget(ticketLabel1)
-        ticketLayout.addWidget(ticketLabel2)
-        ticketLayout.addWidget(ticketLabel3)
-        ticketLayout.addWidget(ticketLabel4)
+        directory = "../Database/Tickets"
+        add_tickets_to_layout(directory, ticketLayout, self.displayLayout)
 
         rightLayout.addWidget(ticketWidget)
         createTicketButton = QPushButton("Create Ticket")
@@ -340,10 +403,7 @@ class ManagerWindow(QMainWindow):
         createTicketButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
 
         rightLayout.addWidget(createTicketButton)
-
         rightLayout.addStretch()
-
-
 
         # Calendar
         # --------------------------------------------------------------------------------------------------------------

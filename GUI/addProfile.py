@@ -1,6 +1,8 @@
 import csv
 import pickle
 import sys
+from datetime import datetime
+
 import cv2
 import os
 
@@ -9,11 +11,24 @@ import numpy as np
 
 from IPython.external.qt_for_kernel import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, \
-    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget
+    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage, QColor, QFont, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QDate, QTime
 import Entities.IndirectUser.User
 import LoginWindow
+
+
+xLarge_font_size = '75px'
+large_font_size = '60px'
+medium_font_size = '30px'
+small_font_size = '25px'
+xSmall_font_size = '20px'
+tiny_font_size = "18px"
+
+# Link to data base
+db = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
+# Entities
+user = Entities.IndirectUser.User.User
 
 class CustomWidgetGradient(QWidget):
     def paintEvent(self, event):
@@ -42,12 +57,12 @@ class FadingLine(QFrame):
             }
             """
         )
-# Link to data base
-db = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
-# Entities
-user = Entities.IndirectUser.User.User
+
+
+
 class WebcamHandler(QWidget):
     user_updated = pyqtSignal(object)
+    setUser = pyqtSignal(object)
     def __init__(self):
         super().__init__()
         self.webcam_label = QLabel(self)
@@ -109,12 +124,15 @@ class WebcamHandler(QWidget):
                             name = face_names[-1]
                             user = i
                             self.user_updated.emit(user)
+                            self.setUser.emit(user)
+
 
                     break
 
             if not match_found:
                 face_names.append("Unknown")
                 self.user_updated.emit(None)
+                self.setUser.emit(None)
 
             # Draw rectangles and labels on the frame
             left, top, right, bottom = face_location.left(), face_location.top(), face_location.right(), face_location.bottom()
@@ -138,74 +156,119 @@ class WebcamHandler(QWidget):
             self.webcam_label.setPixmap(pixmap)
             if not face_names:
                 self.user_updated.emit(False)
-class TableView(QWidget):
-    def __init__(self):
-        super().__init__()
-        layout = QVBoxLayout()
-        table_widget = QTableWidget(self)
-        table_widget.setColumnCount(7)
-        table_widget.setHorizontalHeaderLabels(
-            ["Timestamp", "TechID", "UserID", "FirstName", "LastName", "Company", "Title"])
-        table_widget.setStyleSheet("background-color: black;")
+                self.setUser.emit(None)
 
-        # Read data from CSV file
+
+class CSVViewer(QWidget):
+    def __init__(self, csv_path, enable_search=True, parent=None):
+        super(CSVViewer, self).__init__(parent)
+        self.csv_path = csv_path
+        self.enable_search = enable_search
+        self._setup_ui()
+
+    def _styleTable(self):
+        table_stylesheet = """
+            QTableWidget {
+                gridline-color: #d4d4d4; /* Light gray gridlines */
+                border: none;
+                color: black; /* Text color for table items */
+                background-color:white;
+            }
+            QHeaderView::section {
+                background-color: #e6e6e6; /* Light gray header */
+                padding: 4px;
+                border: 1px solid #d4d4d4;
+                font-weight: bold;
+                color: black; /* Text color for headers */
+            }
+
+        """
+        searchbar_stylesheet = """
+            QLineEdit {
+                background-color: white;
+                color: black; /* Text color */
+                border: 1px solid #d4d4d4; /* Light gray border to match the table gridlines */
+                padding: 4px; /* Padding similar to header sections */
+            }
+            QLineEdit:focus {
+                border: 1px solid #a4a4a4; /* Slightly darker border for focus state */
+            }
+            QLineEdit::placeholder {
+                color: #a4a4a4; /* Placeholder text color */
+            }
+        """
+        self.search_line_edit.setStyleSheet(searchbar_stylesheet)
+        self.table_widget.setStyleSheet(table_stylesheet)
+
+    def _setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        if self.enable_search:
+            self.search_line_edit = QLineEdit()
+            self.search_line_edit.setPlaceholderText("Search...")
+            layout.addWidget(self.search_line_edit)
+            self.search_line_edit.textChanged.connect(self._on_search)
+
+        self.table_widget = QTableWidget()
+        self._styleTable()
+        # Call your _styleTable function if available.
+        # self._styleTable()
+        self._populate_table_from_csv(self.csv_path)
+        layout.addWidget(self.table_widget)
+
+        # Assuming you have a _createButtonLayout function that returns a layout.
+        # layout.addLayout(self._createButtonLayout())
+
+        self.setLayout(layout)
+
+    def _populate_table_from_csv(self, csv_path):
         data = []
         try:
-            with open('../Database/Logs/log.csv', 'r') as csvfile:
+            with open(csv_path, 'r') as csvfile:
                 csvreader = csv.reader(csvfile)
                 data = list(csvreader)
         except FileNotFoundError:
             print("CSV file not found or path is incorrect.")
-            sys.exit(1)
+            return
 
-        # Set the number of rows in the table
-        table_widget.setRowCount(len(data))
+        if not data:
+            print("CSV is empty.")
+            return
 
-        # Set the column widths to spread them out
-        column_widths = [150, 150, 150, 150, 150, 150, 150]  # Adjust these values as needed
-        for i in range(len(column_widths)):
-            table_widget.setColumnWidth(i, column_widths[i])
+        headers = data[0]
+        self.table_widget.setColumnCount(len(headers))
+        self.table_widget.setHorizontalHeaderLabels(headers)
 
-        # Populate the table with data
-        for i, row in enumerate(data):
+        self.table_widget.setRowCount(len(data) - 1)
+        for i, row in enumerate(data[1:]):
             for j, value in enumerate(row):
                 item = QTableWidgetItem(value)
-                table_widget.setItem(i, j, item)
+                self.table_widget.setItem(i, j, item)
 
-        table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
-        layout.addWidget(table_widget)
-        self.setLayout(layout)
+    def _on_search(self):
+        # Implement your search logic here.
+        # You might need to repopulate or filter the table based on search criteria.
+        pass
 
-class MainWindow(QMainWindow):
-    def __init__(self, employee=None):
-        super().__init__()
-        self.employee = employee
-        self.showMaximized()
-        self.showFullScreen()
-        central_widget = CustomWidgetGradient()
-        self.setCentralWidget(central_widget)
 
-        fadingLine = FadingLine()
+class HeaderWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.initUI()
 
-        desktop = QDesktopWidget()
+    def initUI(self):
+        self.setStyleSheet("background-color: white")
+
+        # Main layout
+        mainLayout = QVBoxLayout(self)
+        headerLayout = QHBoxLayout()
+        mainLayout.addLayout(headerLayout)
+
+
         screen_geometry = QApplication.desktop().screenGeometry()
-        screen_width = desktop.screenGeometry().width()
         window_width = screen_geometry.width()
 
-        headerWidget = QWidget()
-        headerWidget.setStyleSheet("background-color: white")
-        central_layout = QVBoxLayout(central_widget)
-        central_layout.setContentsMargins(0, 0, 0, 0)
-        central_layout.addWidget(headerWidget)
-        central_layout.setAlignment(Qt.AlignTop)
 
-        mainHeaderLayout = QVBoxLayout(headerWidget)
-        headerWidget.setFixedHeight(150)
-        headerLayout = QHBoxLayout()
-        mainHeaderLayout.addLayout(headerLayout)
-
-        labels_container_size = 200 + 30 + 50
-        middleLabels = labels_container_size / 2
         middleWindow = window_width / 2
 
         # Create a container for the labels
@@ -215,41 +278,84 @@ class MainWindow(QMainWindow):
 
         label = QLabel("L")
         label.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color:black;')
-        label.setFixedSize(42, 50)
+
         image_label = QLabel(self)
         pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")  # Replace with your image path
         image_label.setPixmap(pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         image_label.setFixedSize(60, 60)
+
         label2 = QLabel("cUST")
         label2.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color: black;')
-        label2.setFixedSize(200, 50)
+
 
         # Add the labels to the container layout
-        labels_layout.addSpacing(int(middleWindow) - int(middleLabels))
+        labelsSize = (label.sizeHint().width() + image_label.sizeHint().width() + label2.sizeHint().width()) / 2
+        # Set to middle of the window
+        labels_layout.addSpacing(int(middleWindow) - int(labelsSize))
         labels_layout.addWidget(label)
         labels_layout.addWidget(image_label)
         labels_layout.addWidget(label2)
         labels_layout.addStretch()
         # Add the labels container to the header layout
         headerLayout.addWidget(labels_container)
-        mainHeaderLayout.addWidget(fadingLine)
-        mainHeaderLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
 
+        fadingLine = FadingLine()
+        mainLayout.addWidget(fadingLine)
+        mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self, employee=None):
+        super().__init__()
+        self.employee = employee
+        screen_geometry = QApplication.desktop().screenGeometry()
+        self.window_width = int(screen_geometry.width() - 40)
+        self.headerWidget = HeaderWidget()
+        self.setupUI()
+
+    def setupUI(self):
+        self.showMaximized()
+        self.showFullScreen()
+
+        central_widget = CustomWidgetGradient()
+
+        central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.addWidget(self.headerWidget)
+        central_layout.setAlignment(Qt.AlignTop)
+        central_widget.setLayout(central_layout)
+        self.setCentralWidget(central_widget)
 
 
         main_layout = QHBoxLayout()
-
         central_layout.addLayout(main_layout)
 
+        self.webcam_handler = WebcamHandler()
+        main_layout.addWidget(self.leftWidgetContainer())
+        main_layout.addWidget(self.rightWidgetContainer())
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_date_label)
+        self.timer.timeout.connect(self.update_time_label)
+        self.timer.start(60000)  # Update every 60000 milliseconds (1 minute)
+
+    def leftWidgetContainer(self):
+        leftWidget = QWidget()
         leftLayout = QVBoxLayout()
+        leftWidget.setLayout(leftLayout)
         leftLayout.setAlignment(Qt.AlignLeft)
         leftLayout.setContentsMargins(0, 0, 0, 0)
-        main_layout.addLayout(leftLayout)
+
+        leftWidget.setStyleSheet("background:white;")
+
+        leftWidgetWidth = int(self.window_width / 5)
+
+        leftWidget.setFixedWidth(leftWidgetWidth)
 
         self.leftTabs = QTabWidget()
 
         self.leftTabs.setStyleSheet("""
-        
+
             QTabWidget{
             background:white;
             }
@@ -267,11 +373,12 @@ class MainWindow(QMainWindow):
                 padding: 5px;
                 margin: 2px;
                 background-color:black;
+                color:white;
             }
             QTabBar::tab:selected, QTabBar::tab:hover {
                 background: #F9F9F9; /* Active tab or hover color */
                 color:black;
-                
+
             }
             QTabBar::tab:selected {
                 font: bold; /* Font of the active tab */
@@ -281,106 +388,125 @@ class MainWindow(QMainWindow):
             }
         """)
 
+        def createButton(text, connect):
+            button = QPushButton(text)
+            button.setFixedSize(100, 40)
+            button.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white")
+            button.clicked.connect(connect)
+            return button
+
         def FaceRecInfo():
             faceRecInfoWidget = QWidget()
-            faceRecInfoWidget.setStyleSheet("background-color: white;")
+            faceRecInfoWidget.setFixedWidth(leftWidgetWidth)
+
+
             infoBox = QVBoxLayout()
             faceRecInfoWidget.setLayout(infoBox)
-            faceRecInfoWidget.setFixedWidth(300)
+
+
+            def createLabel(text):
+                label = QLabel(text)
+                label.setStyleSheet(
+                    f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
+                label.setAlignment(Qt.AlignTop)
+                label.setFixedHeight(40)
+                return label  # Added return statement
+
+            def createLabelField():
+                label = QLabel()
+                label.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
+                label.setAlignment(Qt.AlignTop)
+                label.setFixedHeight(40)
+                return label  # Added return statement
+
+            def dateTimeWidget():
+                dateTimeW = QWidget()
+                dateTimeL = QVBoxLayout(dateTimeW)
+
+                self.date_label = QLabel(self)
+                self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
+                self.update_date_label()
+
+                self.time_label = QLabel(self)
+                self.time_label.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
+                self.update_time_label()
+
+                dateTimeL.addWidget(self.date_label)
+                dateTimeL.addWidget(self.time_label)
+                return dateTimeW
+
+            def infoContiner():
+
+                layout = QVBoxLayout()
+
+                layout.addWidget(dateTimeWidget())
+
+                # Picture
+                self.picture = QLabel(self)
+                self.picturePixmap = QPixmap("Picture/file.jpg")
+                self.picture.setPixmap(self.picturePixmap.scaled(150, 150))
+                self.picture.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+                self.picture.setMaximumHeight(150)
+
+                # Name
+                self.nameLabel = createLabel("Name: ")
+                self.name = createLabelField()
+
+                # Gender
+                self.genderLabel = createLabel("Gender: ")
+                self.gender = createLabelField()
+
+                # ID
+                self.idLabel = createLabel("ID: ")
+                self.id = createLabelField()
+
+                # Company
+                self.companyLabel = createLabel("Company: ")
+                self.company = createLabelField()
+
+                # Title
+                self.titleLabel = createLabel("Title: ")
+                self.title = createLabelField()
+
+                # Button box
+                buttonBox = QHBoxLayout()
+                acceptButton = createButton("Accept", self.acceptHandle)
+                rejectButton = createButton("Reject", self.rejectHandle)
+                buttonBox.addWidget(acceptButton)
+                buttonBox.addWidget(rejectButton)
+
+                # Set Layout
+                layout.addWidget(self.picture)
+
+                layout.addWidget(self.nameLabel)
+                layout.addWidget(self.name)
+
+                layout.addWidget(self.genderLabel)
+                layout.addWidget(self.gender)
+
+                layout.addWidget(self.idLabel)
+                layout.addWidget(self.id)
+
+                layout.addWidget(self.companyLabel)
+                layout.addWidget(self.company)
+
+                layout.addWidget(self.titleLabel)
+                layout.addWidget(self.title)
+                layout.addStretch()
+                layout.addLayout(buttonBox)
 
 
 
-            self.picture = QLabel(self)
-            self.picturePixmap = QPixmap("Picture/file.jpg")
-            self.picture.setPixmap(self.picturePixmap.scaled(150, 150))
-            self.picture.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
-            self.picture.setMaximumHeight(150)
-            infoBox.addWidget(self.picture)
+                return layout
+
+            infoBox.addLayout(infoContiner())
             infoBox.addSpacing(10)
-
-
-            self.name = QLabel("Name:")
-            self.name.setAlignment(Qt.AlignTop)
-            self.name.setFixedHeight(20)
-            self.name.setStyleSheet(f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-            infoBox.addWidget(self.name)
-            infoBox.addSpacing(5)
-            self.nameLabel = QLabel()
-            self.nameLabel.setAlignment(Qt.AlignTop)
-            self.nameLabel.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-            self.nameLabel.setFixedHeight(35)
-            infoBox.addWidget(self.nameLabel)
-            infoBox.addSpacing(20)
-
-            infoBox.setSpacing(0)
-
-            infoBox.setSpacing(10)
-
-
-            self.gender = QLabel("Gender:")
-            self.gender.setStyleSheet(f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-            self.gender.setFixedHeight(20)
-            infoBox.addWidget(self.gender)
-            self.genderLabel = QLabel()
-            self.genderLabel.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-            self.genderLabel.setFixedHeight(35)
-            infoBox.addWidget(self.genderLabel)
-            infoBox.addSpacing(20)
-
-            self.id = QLabel("ID:")
-            self.id.setStyleSheet(f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-            self.id.setFixedHeight(20)
-            infoBox.addWidget(self.id)
-            self.idLabel = QLabel()
-            self.idLabel.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-            self.idLabel.setFixedHeight(35)
-            infoBox.addWidget(self.idLabel)
-            infoBox.addSpacing(20)
-
-            self.company = QLabel("Company:")
-            self.company.setStyleSheet(f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-            self.company.setFixedHeight(20)
-            infoBox.addWidget(self.company)
-            self.companyLabel = QLabel()
-            self.companyLabel.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-            self.companyLabel.setFixedHeight(35)
-            infoBox.addWidget(self.companyLabel)
-            infoBox.addSpacing(20)
-
-            self.title = QLabel("Title:")
-            self.title.setStyleSheet(f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
-            self.title.setFixedHeight(20)
-            infoBox.addWidget(self.title)
-            self.tittleLabel = QLabel()
-            self.tittleLabel.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
-            self.tittleLabel.setFixedHeight(35)
-            infoBox.addWidget(self.tittleLabel)
-            infoBox.addStretch()
-
-            buttonBox = QHBoxLayout()
-            infoBox.addLayout(buttonBox)
-
-            acceptButton = QPushButton("Accept")
-            acceptButton.setFixedWidth(100)
-            acceptButton.setFixedHeight(40)
-            acceptButton.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white")
-            acceptButton.clicked.connect(self.acceptHandle)
-            buttonBox.addWidget(acceptButton)
-
-            rejectButton = QPushButton("Reject")
-            rejectButton.setFixedWidth(100)
-            rejectButton.setFixedHeight(40)
-            rejectButton.setStyleSheet("background-color: black; color: black; border-radius: 20px; color:white")
-            rejectButton.clicked.connect(self.rejectHandle)
-            buttonBox.addWidget(rejectButton)
-
-            #leftLayout.addWidget(leftWidget, alignment=Qt.AlignLeft)
 
             return faceRecInfoWidget
 
         def Nav():
             navWidget = QWidget()
-            navWidget.setStyleSheet("background-color: white;")
+
             navBox = QVBoxLayout()
 
             L = QLabel("test")
@@ -392,7 +518,7 @@ class MainWindow(QMainWindow):
 
         def Tickets():
             ticketWidget = QWidget()
-            ticketWidget.setStyleSheet("background-color: white;")
+
             ticketBox = QVBoxLayout()
 
             L = QLabel("test")
@@ -402,93 +528,96 @@ class MainWindow(QMainWindow):
 
             return ticketWidget
 
-
         self.leftTabs.addTab(FaceRecInfo(), "Face Rec")
         self.leftTabs.addTab(Nav(), "Nav")
         self.leftTabs.addTab(Tickets(), "Tickets")
         leftLayout.addWidget(self.leftTabs)
 
+        return leftWidget
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def rightWidgetContainer(self):
+        rightWidget = QWidget()
         rightLayout = QVBoxLayout()
+        rightWidget.setLayout(rightLayout)
+        rightLayout.setAlignment(Qt.AlignLeft)
+        rightLayout.setContentsMargins(0, 0, 0, 0)
 
-        main_layout.addLayout(rightLayout)
-        main_layout.addStretch()
-
-        self.webcam_handler = WebcamHandler()
+        self.webcam_handler.setUser.connect(self.setUser)
         self.webcam_handler.user_updated.connect(self.updateUser)
-        camWidth = window_width - 315
-        self.webcam_handler.setFixedSize(int(camWidth), 550)
-
-
-
         rightLayout.addWidget(self.webcam_handler, alignment=Qt.AlignLeft | Qt.AlignTop)
 
+        self.csv_viewer = CSVViewer("../Database/Logs/log.csv", enable_search=True)
 
-        table_view = TableView()
-        table_view.setFixedHeight(175)
-        table_view.setFixedWidth(screen_width - 315)
-
-        rightLayout.addStretch()
-        rightLayout.addWidget(table_view, alignment=Qt.AlignLeft)
-
-        self.space = QLabel("Title")
-        main_layout.addWidget(self.space)
-
-
+        rightLayout.addWidget(self.csv_viewer)
+        return rightWidget
 
     def updateUser(self, user):
         if user:
             new_pixmap = QPixmap("../Database/IndirectUsers/photos/" + user.photos)  # Load the new image
             self.picture.setPixmap(new_pixmap.scaled(150, 150))
-            self.nameLabel.setText(f"{user.firstName} {user.lastName}")
-            self.genderLabel.setText(user.gender)
-            self.idLabel.setText(user.id)
-            self.companyLabel.setText(user.company)
-            self.tittleLabel.setText(user.title)
+            self.name.setText(f"{user.firstName} {user.lastName}")
+            self.gender.setText(user.gender)
+            self.id.setText(user.id)
+            self.company.setText(user.company)
+            self.title.setText(user.title)
         if not user:
             new_pixmap = QPixmap("Picture/file.jpg")  # Load the new image
             self.picture.setPixmap(new_pixmap.scaled(150, 150))
-            self.nameLabel.setText("")
-            self.genderLabel.setText("")
-            self.idLabel.setText("")
-            self.companyLabel.setText("")
-            self.tittleLabel.setText("")
+            self.name.setText("")
+            self.gender.setText("")
+            self.id.setText("")
+            self.company.setText("")
+            self.title.setText("")
         if user == None:
             new_pixmap = QPixmap("Picture/file.jpg")  # Load the new image
             self.picture.setPixmap(new_pixmap.scaled(150, 150))
-            self.nameLabel.setText("Unknown")
-            self.genderLabel.setText("Unknown")
-            self.idLabel.setText("Unknown")
-            self.companyLabel.setText("Unknown")
-            self.tittleLabel.setText("Unknown")
+            self.name.setText("Unknown")
+            self.gender.setText("Unknown")
+            self.id.setText("Unknown")
+            self.company.setText("Unknown")
+            self.title.setText("Unknown")
+
+    def update_date_label(self):
+        # Update the QLabel with the current date
+        current_date = QDate.currentDate().toString("dddd, MMMM dd, yyyy")
+        self.date_label.setText(current_date)
+    def update_time_label(self):
+        # Update the QLabel with the current time
+        current_time = QTime.currentTime().toString("hh:mm AP")
+        self.time_label.setText(current_time)
 
     def rejectHandle(self):
         self.close()
 
+    def setUser(self, user):
+        self.current_user = user
+
     def acceptHandle(self):
-        self.close()
+        try:
+            user = self.current_user
+
+            current_time = datetime.now()
+            formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+
+            data_to_append = [formatted_time,
+                              self.employee.employeeID,
+                              user.id,
+                              user.firstName,
+                              user.lastName,
+                              user.company,
+                              user.title]
+
+
+            with open('../Database/Logs/log.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(data_to_append)
+
+        except:
+            print("error")
+
+
 
 
 if __name__ == "__main__":

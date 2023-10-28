@@ -143,9 +143,11 @@ class LoginWindow(QMainWindow):
             password = self.password_edit.text()
 
             if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
+
+                e = i.getEmployee()
                 if i.title == "Security Manager":
                     print("Login Successful")
-                    e = i.getEmployee()
+
                     self.w = ManagerWindow.ManagerWindow(e)
                     self.w.showFullScreen()
                     self.close()  # Close the login window
@@ -154,7 +156,7 @@ class LoginWindow(QMainWindow):
                 if i.title == "Desk Technician":
                     print("Login Successful")
 
-                    self.w = MainWindow.MainWindow()
+                    self.w = MainWindow.MainWindow(e)
                     self.w.showFullScreen()
                     self.close()  # Close the login window
 

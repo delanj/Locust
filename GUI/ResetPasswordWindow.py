@@ -155,7 +155,8 @@ class LoginWindow(QMainWindow):
         input_user = self.username_edit.text()
         input_new_password = self.new_password_edit.text()
         input_confirm_password = self.confirm_new_password_edit.text()
-
+        dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
+        
         db_conn = database.db
         coll_ref = db_conn.collection("employee")
         docs = coll_ref.stream()
@@ -171,6 +172,7 @@ class LoginWindow(QMainWindow):
             else:
                 print("Employee not found")
         print("Reset successful")
+
 
 
 if __name__ == "__main__":

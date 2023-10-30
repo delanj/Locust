@@ -58,8 +58,6 @@ class FadingLine(QFrame):
             """
         )
 
-
-
 class WebcamHandler(QWidget):
     user_updated = pyqtSignal(object)
     setUser = pyqtSignal(object)
@@ -153,11 +151,17 @@ class WebcamHandler(QWidget):
             bytes_per_line = 3 * width
             q_image = QImage(frame_with_faces.data, width, height, bytes_per_line, QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(q_image)
+
+            # Resize the pixmap to fit the label while maintaining the aspect ratio
+            pixmap = pixmap.scaled(self.webcam_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.webcam_label.setPixmap(pixmap)
+            self.webcam_label.setAlignment(Qt.AlignCenter)  # Center the pixmap if it doesn't occupy the full space
+
+
+
             if not face_names:
                 self.user_updated.emit(False)
                 self.setUser.emit(None)
-
 
 class CSVViewer(QWidget):
     def __init__(self, csv_path, enable_search=True, parent=None):
@@ -250,7 +254,6 @@ class CSVViewer(QWidget):
         # You might need to repopulate or filter the table based on search criteria.
         pass
 
-
 class HeaderWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -302,7 +305,6 @@ class HeaderWidget(QWidget):
         fadingLine = FadingLine()
         mainLayout.addWidget(fadingLine)
         mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
-
 
 class MainWindow(QMainWindow):
     def __init__(self, employee=None):
@@ -369,7 +371,7 @@ class MainWindow(QMainWindow):
                 border-bottom: none;
                 border-top-left-radius: 10px;
                 border-top-right-radius: 10px;
-                min-width: 100px;
+                min-width: 50px;
                 padding: 5px;
                 margin: 2px;
                 background-color:black;
@@ -400,14 +402,14 @@ class MainWindow(QMainWindow):
             label.setStyleSheet(
                 f'background-color: transparent; font-size: 24pt; font-family: Copperplate; color:black;')
             label.setAlignment(Qt.AlignTop)
-            label.setFixedHeight(40)
+            label.setFixedHeight(30)
             return label  # Added return statement
 
         def createLabelField():
             label = QLabel()
             label.setStyleSheet(f'background-color: white; padding: 5px; border: 1px solid black; color:black')
             label.setAlignment(Qt.AlignTop)
-            label.setFixedHeight(40)
+            label.setFixedHeight(30)
             return label  # Added return statement
 
         def FaceRecInfo():
@@ -421,6 +423,8 @@ class MainWindow(QMainWindow):
             def dateTimeWidget():
                 dateTimeW = QWidget()
                 dateTimeL = QVBoxLayout(dateTimeW)
+                dateTimeW.setFixedWidth(leftWidgetWidth)
+
 
                 self.date_label = QLabel(self)
                 self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
@@ -575,6 +579,8 @@ class MainWindow(QMainWindow):
 
         self.webcam_handler.setUser.connect(self.setUser)
         self.webcam_handler.user_updated.connect(self.updateUser)
+        self.webcam_handler.webcam_label.setFixedSize(640, 480)
+
         rightLayout.addWidget(self.webcam_handler, alignment=Qt.AlignLeft | Qt.AlignTop)
 
         self.csv_viewer = CSVViewer("../Database/Logs/log.csv", enable_search=True)

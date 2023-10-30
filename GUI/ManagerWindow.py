@@ -89,57 +89,63 @@ class FadingLine(QFrame):
             }
             """
         )
+
+
 class HeaderWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
 
     def initUI(self):
-        self.setStyleSheet("background-color: white")
+        self.setStyleSheet("""
+            QWidget { background-color: white; } 
+            QLabel { font-size: 72pt; font-family: Copperplate; color: black; }
+        """)
 
-        # Main layout
         mainLayout = QVBoxLayout(self)
-        headerLayout = QHBoxLayout()
-        mainLayout.addLayout(headerLayout)
 
-
+        # Calculate window dimensions
         screen_geometry = QApplication.desktop().screenGeometry()
         window_width = screen_geometry.width()
+        middle_window = window_width / 2
 
+        def locustContainer():
+            layout = QHBoxLayout()
 
-        middleWindow = window_width / 2
+            layout.setContentsMargins(0, 0, 0, 0)
 
-        # Create a container for the labels
-        labels_container = QWidget()
-        labels_layout = QHBoxLayout(labels_container)
-        labels_layout.setContentsMargins(0, 0, 0, 0)
+            # Set up labels
+            label = QLabel("L", self)
+            image_label = QLabel(self)
+            pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+            image_label.setPixmap(pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            image_label.setFixedSize(60, 60)
+            label2 = QLabel("cUST", self)
 
-        label = QLabel("L")
-        label.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color:black;')
+            labels_size = (label.sizeHint().width() + image_label.sizeHint().width() + label2.sizeHint().width()) / 2
+            layout.addSpacing(int(middle_window) - int(labels_size))
+            layout.addWidget(label)
+            layout.addWidget(image_label)
+            layout.addWidget(label2)
+            layout.addStretch()
+            return layout
 
-        image_label = QLabel(self)
-        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")  # Replace with your image path
-        image_label.setPixmap(pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        image_label.setFixedSize(60, 60)
+        mainLayout.addSpacing(10)
+        mainLayout.addLayout(locustContainer())
 
-        label2 = QLabel("cUST")
-        label2.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color: black;')
-
-
-        # Add the labels to the container layout
-        labelsSize = (label.sizeHint().width() + image_label.sizeHint().width() + label2.sizeHint().width()) / 2
-        # Set to middle of the window
-        labels_layout.addSpacing(int(middleWindow) - int(labelsSize))
-        labels_layout.addWidget(label)
-        labels_layout.addWidget(image_label)
-        labels_layout.addWidget(label2)
-        labels_layout.addStretch()
-        # Add the labels container to the header layout
-        headerLayout.addWidget(labels_container)
-
+        # Add other widgets to the main layout
         fadingLine = FadingLine()
         mainLayout.addWidget(fadingLine)
         mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
+        mainLayout.addSpacing(20)
+
+
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setBrush(Qt.white)
+        painter.drawRect(self.rect())
+
 class ManagerWindow(QMainWindow):
     def __init__(self, employee=None):
         super().__init__()
@@ -156,9 +162,11 @@ class ManagerWindow(QMainWindow):
         central_widget.setLayout(central_layout)
         self.setCentralWidget(central_widget)
 
+
+
         mainLayout = QHBoxLayout()
         central_layout.addLayout(mainLayout)
-        blackLine = BlackLine()
+
 
         #SIZE#
         screen_geometry = QApplication.desktop().screenGeometry()
@@ -180,11 +188,14 @@ class ManagerWindow(QMainWindow):
         leftWidget.setMaximumWidth(int(leftWidgetWidth))
 
         leftLayout = QVBoxLayout(leftWidget)
+
         leftLayout.setAlignment(Qt.AlignLeft)
+
 
         def dateTimeWidget():
             dateTimeW = QWidget()
             dateTimeL = QVBoxLayout(dateTimeW)
+            dateTimeL.setContentsMargins(0,0,0,0)
 
             self.date_label = QLabel(self)
             self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
@@ -198,7 +209,11 @@ class ManagerWindow(QMainWindow):
             dateTimeL.addWidget(self.time_label)
             return dateTimeW
 
+
+
         leftLayout.addWidget(dateTimeWidget())
+        fadingLine = FadingLine()
+        leftLayout.addWidget(fadingLine)
 
         def logs():
             logsWidget = QWidget()
@@ -213,7 +228,8 @@ class ManagerWindow(QMainWindow):
             logLabel.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
             logsLayout.addWidget(logLabel)
 
-            logsLayout.addWidget(blackLine)
+
+            #logsLayout.addWidget(fadingLine)
 
             userButton = CustomButton("Indirect Users")
             userButton.clicked.connect(self.on_user_button_clicked)
@@ -336,8 +352,9 @@ class ManagerWindow(QMainWindow):
 
             def mousePressEvent(self, event):
                 self.clearLayout()
+                fileContentDisplay = QTextEdit()
+                fileContentDisplay.setStyleSheet("color:black;")
                 if event.button() == Qt.LeftButton:
-                    fileContentDisplay = QTextEdit()
                     with open(self.filepath, 'r') as file:
                         contents = file.read()
                         fileContentDisplay.setText(contents)

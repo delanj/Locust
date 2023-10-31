@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLay
     QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame
 from PyQt5.QtGui import QPixmap, QImage, QColor, QFont, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from playsound import playsound
+
 import Entities.IndirectUser.User
 import LoginWindow
 
@@ -64,6 +66,10 @@ class WebcamHandler(QWidget):
     def init_webcam(self):
         self.cap = cv2.VideoCapture(0)
 
+        #Trying to configure the logitech webcam.
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
         if not self.cap.isOpened():
             print("Error: Unable to access the webcam.")
             return
@@ -97,7 +103,7 @@ class WebcamHandler(QWidget):
             for name, known_descriptors in self.known_face_descriptors.items():
                 for known_descriptor in known_descriptors:
                     distance = np.linalg.norm(np.array(known_descriptor) - np.array(face_descriptor))
-                    if distance < 0.6:  # Adjust the threshold as needed
+                    if distance < 0.1:  # Adjust the threshold as needed
                         face_names.append(name)
                         match_found = True
                         break
@@ -118,11 +124,17 @@ class WebcamHandler(QWidget):
 
             # Draw rectangles and labels on the frame
             left, top, right, bottom = face_location.left(), face_location.top(), face_location.right(), face_location.bottom()
+            #Flag for sound
+
+
             #cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
             if match_found:
+                #Drawing the frame in green for a match found
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 128, 0), 2)
                 cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 0), 2)
+
             else:
+                # Drawing the frame in red if the person is not in the database
                 cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
                 cv2.putText(frame, "Unknown", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 

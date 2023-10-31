@@ -99,7 +99,7 @@ class HeaderWidget(QWidget):
     def initUI(self):
         # Load the font and add to font database
         font_db = QFontDatabase()
-        font_id = font_db.addApplicationFont("/Users/nick/Desktop/Locust/GUI/fonts/RosmatikaRegular-BWA45.ttf")
+        font_id = font_db.addApplicationFont("fonts/AquireBold-8Ma60.otf")
 
         print(font_db.families())
 

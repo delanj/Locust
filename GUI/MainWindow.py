@@ -11,7 +11,8 @@ import numpy as np
 
 from IPython.external.qt_for_kernel import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, \
-    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget, QLineEdit, QTextEdit
+    QTableWidgetItem, QTableWidget, QDesktopWidget, QFrame, QTabWidget, QLineEdit, QTextEdit, QSizePolicy, QGridLayout, \
+    QSpacerItem, QStackedWidget, QTabBar
 from PyQt5.QtGui import QPixmap, QImage, QColor, QFont, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QDate, QTime
 import Entities.IndirectUser.User
@@ -136,8 +137,10 @@ class WebcamHandler(QWidget):
             left, top, right, bottom = face_location.left(), face_location.top(), face_location.right(), face_location.bottom()
             cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
             if match_found:
-                cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 128, 0), 2)
+                cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 0), 2)
             else:
+                cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
                 cv2.putText(frame, "Unknown", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
         return frame, face_names
@@ -260,81 +263,77 @@ class HeaderWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setStyleSheet("background-color: white")
+        self.setStyleSheet("""
+            QWidget { background-color: white; } 
+            QLabel { font-size: 72pt; font-family: Copperplate; color: black; }
+        """)
 
-        # Main layout
         mainLayout = QVBoxLayout(self)
-        headerLayout = QHBoxLayout()
-        mainLayout.addLayout(headerLayout)
 
-
+        # Calculate window dimensions
         screen_geometry = QApplication.desktop().screenGeometry()
         window_width = screen_geometry.width()
+        middle_window = window_width / 2
 
+        def locustContainer():
+            layout = QHBoxLayout()
 
-        middleWindow = window_width / 2
+            layout.setContentsMargins(0, 0, 0, 0)
 
-        # Create a container for the labels
-        labels_container = QWidget()
-        labels_layout = QHBoxLayout(labels_container)
-        labels_layout.setContentsMargins(0, 0, 0, 0)
+            # Set up labels
+            label = QLabel("L", self)
+            image_label = QLabel(self)
+            pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+            image_label.setPixmap(pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            image_label.setFixedSize(60, 60)
+            label2 = QLabel("cUST", self)
 
-        label = QLabel("L")
-        label.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color:black;')
+            labels_size = (label.sizeHint().width() + image_label.sizeHint().width() + label2.sizeHint().width()) / 2
+            layout.addSpacing(int(middle_window) - int(labels_size))
+            layout.addWidget(label)
+            layout.addWidget(image_label)
+            layout.addWidget(label2)
+            layout.addStretch()
+            return layout
 
-        image_label = QLabel(self)
-        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")  # Replace with your image path
-        image_label.setPixmap(pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        image_label.setFixedSize(60, 60)
+        mainLayout.addSpacing(10)
+        mainLayout.addLayout(locustContainer())
 
-        label2 = QLabel("cUST")
-        label2.setStyleSheet(f'font-size: 72pt; font-family: Copperplate; color: black;')
-
-
-        # Add the labels to the container layout
-        labelsSize = (label.sizeHint().width() + image_label.sizeHint().width() + label2.sizeHint().width()) / 2
-        # Set to middle of the window
-        labels_layout.addSpacing(int(middleWindow) - int(labelsSize))
-        labels_layout.addWidget(label)
-        labels_layout.addWidget(image_label)
-        labels_layout.addWidget(label2)
-        labels_layout.addStretch()
-        # Add the labels container to the header layout
-        headerLayout.addWidget(labels_container)
-
+        # Add other widgets to the main layout
         fadingLine = FadingLine()
         mainLayout.addWidget(fadingLine)
         mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
+        mainLayout.addSpacing(20)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setBrush(Qt.white)
+        painter.drawRect(self.rect())
 
 class MainWindow(QMainWindow):
     def __init__(self, employee=None):
         super().__init__()
         self.employee = employee
-        screen_geometry = QApplication.desktop().screenGeometry()
-        self.window_width = int(screen_geometry.width() - 40)
         self.headerWidget = HeaderWidget()
         self.setupUI()
 
     def setupUI(self):
-        self.showMaximized()
         self.showFullScreen()
-
         central_widget = CustomWidgetGradient()
-
         central_layout = QVBoxLayout()
         central_layout.setContentsMargins(0, 0, 0, 0)
         central_layout.addWidget(self.headerWidget)
         central_layout.setAlignment(Qt.AlignTop)
-        central_widget.setLayout(central_layout)
-        self.setCentralWidget(central_widget)
-
 
         main_layout = QHBoxLayout()
         central_layout.addLayout(main_layout)
 
         self.webcam_handler = WebcamHandler()
-        main_layout.addWidget(self.leftWidgetContainer())
-        main_layout.addWidget(self.rightWidgetContainer())
+        main_layout.addWidget(self.leftWidgetContainer(), stretch=1)
+        main_layout.addWidget(self.rightWidgetContainer(), stretch=4)
+
+        central_widget.setLayout(central_layout)
+        self.setCentralWidget(central_widget)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_date_label)
@@ -342,53 +341,14 @@ class MainWindow(QMainWindow):
         self.timer.start(60000)  # Update every 60000 milliseconds (1 minute)
 
     def leftWidgetContainer(self):
-        leftWidget = QWidget()
-        leftLayout = QVBoxLayout()
-        leftWidget.setLayout(leftLayout)
-        leftLayout.setAlignment(Qt.AlignLeft)
-        leftLayout.setContentsMargins(0, 0, 0, 0)
-
-        leftWidget.setStyleSheet("background:white;")
-
-        leftWidgetWidth = int(self.window_width / 5)
-
-        leftWidget.setFixedWidth(leftWidgetWidth)
-
-        self.leftTabs = QTabWidget()
-
-        self.leftTabs.setStyleSheet("""
-
-            QTabWidget{
-            background:white;
-            }
-            QTabWidget::pane {
-                border-top: 0px solid #C2C7CB;
-                background: white; /* Background for the tab content */
-            }
-            QTabBar::tab {
-                background: #E1E1E1; /* Inactive tab color */
-                border: 1px solid #C4C4C3;
-                border-bottom: none;
-                border-top-left-radius: 10px;
-                border-top-right-radius: 10px;
-                min-width: 50px;
-                padding: 5px;
-                margin: 2px;
-                background-color:black;
-                color:white;
-            }
-            QTabBar::tab:selected, QTabBar::tab:hover {
-                background: #F9F9F9; /* Active tab or hover color */
-                color:black;
-
-            }
-            QTabBar::tab:selected {
-                font: bold; /* Font of the active tab */
-            }
-            QTabBar::tab:only-one {
-                margin: 0;
-            }
-        """)
+        def evenTabContainer(widget):
+            container = QWidget()
+            layout = QGridLayout()
+            container.setLayout(layout)
+            layout.addWidget(widget, 1, 1)
+            layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Fixed), 1, 0)
+            layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Fixed), 1, 2)
+            return container
 
         def createButton(text, connect):
             button = QPushButton(text)
@@ -414,8 +374,6 @@ class MainWindow(QMainWindow):
 
         def FaceRecInfo():
             faceRecInfoWidget = QWidget()
-            faceRecInfoWidget.setFixedWidth(leftWidgetWidth)
-
 
             infoBox = QVBoxLayout()
             faceRecInfoWidget.setLayout(infoBox)
@@ -423,7 +381,6 @@ class MainWindow(QMainWindow):
             def dateTimeWidget():
                 dateTimeW = QWidget()
                 dateTimeL = QVBoxLayout(dateTimeW)
-                dateTimeW.setFixedWidth(leftWidgetWidth)
 
 
                 self.date_label = QLabel(self)
@@ -563,10 +520,53 @@ class MainWindow(QMainWindow):
 
             return ticketWidget
 
-        self.leftTabs.addTab(FaceRecInfo(), "Face Rec")
-        self.leftTabs.addTab(Nav(), "Nav")
-        self.leftTabs.addTab(Tickets(), "Tickets")
-        leftLayout.addWidget(self.leftTabs)
+        leftWidget = QWidget()
+        leftLayout = QVBoxLayout(leftWidget)
+        leftLayout.setContentsMargins(0, 0, 0, 0)
+        leftWidget.setStyleSheet("background:white;")
+
+        tabBar = QTabBar()
+        tabBar.setStyleSheet("""
+                QTabBar::tab {
+                    background: #E1E1E1;
+                    border: 1px solid #C4C4C3;
+                    border-bottom: none;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px;
+                    padding: 5px;
+                    margin: 2px;
+                    background-color:black;
+                    color:white;
+                }
+                QTabBar::tab:selected, QTabBar::tab:hover {
+                    background: #F9F9F9;
+                    color:black;
+                }
+                QTabBar::tab:selected {
+                    font: bold;
+                }
+                QTabBar::tab:only-one {
+                    margin: 0;
+                }
+            """)
+        stackedWidget = QStackedWidget()
+
+        # Connect tabBar's currentChanged signal to change stackedWidget's page
+        tabBar.currentChanged.connect(stackedWidget.setCurrentIndex)
+
+        # Add tabBar and stackedWidget to the main layout
+        leftLayout.addWidget(tabBar)
+        leftLayout.addWidget(stackedWidget)
+
+        # Add tabs to tabBar and corresponding widgets to stackedWidget
+        tabBar.addTab("Face Rec")
+        stackedWidget.addWidget(evenTabContainer(FaceRecInfo()))
+
+        tabBar.addTab("Nav")
+        stackedWidget.addWidget(evenTabContainer(Nav()))
+
+        tabBar.addTab("Tickets")
+        stackedWidget.addWidget(evenTabContainer(Tickets()))
 
         return leftWidget
 
@@ -574,18 +574,31 @@ class MainWindow(QMainWindow):
         rightWidget = QWidget()
         rightLayout = QVBoxLayout()
         rightWidget.setLayout(rightLayout)
-        rightLayout.setAlignment(Qt.AlignLeft)
+
+        # Ensuring the alignment is default, to allow for full-width expansion.
         rightLayout.setContentsMargins(0, 0, 0, 0)
 
+        # Connecting the signals and slots
         self.webcam_handler.setUser.connect(self.setUser)
         self.webcam_handler.user_updated.connect(self.updateUser)
-        self.webcam_handler.webcam_label.setFixedSize(640, 480)
 
-        rightLayout.addWidget(self.webcam_handler, alignment=Qt.AlignLeft | Qt.AlignTop)
+        # Adjusting the size policy of the webcam_label
+        self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
+        # Ensuring minimum width for webcam_label (optional but recommended)
+        self.webcam_handler.webcam_label.setMinimumWidth(640)
+
+        # Adding the webcam_handler widget with a stretch factor
+        rightLayout.addWidget(self.webcam_handler, stretch=2)  # 2/3 of the height
+
+        # Initialize the CSVViewer
         self.csv_viewer = CSVViewer("../Database/Logs/log.csv", enable_search=True)
 
-        rightLayout.addWidget(self.csv_viewer)
+        # Adding the CSVViewer widget with a stretch factor
+        rightLayout.addWidget(self.csv_viewer, stretch=1)  # 1/3 of the height
+
+        rightLayout.addSpacing(30)
+
         return rightWidget
 
     def updateUser(self, user):

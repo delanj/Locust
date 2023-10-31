@@ -20,7 +20,7 @@ import Entities.Employee.Employee
 import shutil
 import LoginWindow
 import MainWindow
-
+from Database.firebaseDatabase import database
 
 """
 xLarge_font_size = '75px'
@@ -419,7 +419,7 @@ class ManagerWindow(QMainWindow):
         createTicketButton.setFixedHeight(40)
         createTicketButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
 
-        rightLayout.addWidget(createTicketButton)
+        #rightLayout.addWidget(createTicketButton)
         rightLayout.addStretch()
 
         # Calendar
@@ -1165,7 +1165,25 @@ class addUser(QWidget):
                       f"../Database/IndirectUsers/photos/{self.photo.text()}")
         self.moveFile(f"../Database/AddLocal/{self.faceEncoding.text()}",
                       f"../Database/IndirectUsers/face_encodings/{self.faceEncoding.text()}")
+
+        db_conn = database.db
+        coll_ref = db_conn.collection("indirectUser")
+        coll_ref.add({
+            "id": self.idLineEdit.text(),
+            "firstName": self.firstNameLineEdit.text(),
+            "lastName": self.lastNameLineEdit.text(),
+            "gender": self.genderLineEdit.text(),
+            "company": self.companyLineEdit.text(),
+            "title": self.titleLineEdit.text()
+        })
+
+        print("data added successfully")
+
+
         self.emitRemoveRequest()
+
+
+
     def savePKL(self):
         file_path = f"../Database/AddLocal/{self.id.text()}_0.jpg"
         # Save plk

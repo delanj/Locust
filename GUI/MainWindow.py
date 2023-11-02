@@ -111,7 +111,7 @@ class WebcamHandler(QWidget):
             for name, known_descriptors in self.known_face_descriptors.items():
                 for known_descriptor in known_descriptors:
                     distance = np.linalg.norm(np.array(known_descriptor) - np.array(face_descriptor))
-                    if distance < 0.6:  # Adjust the threshold as needed
+                    if distance < 0.5:  # Adjust the threshold as needed
                         face_names.append(name)
                         match_found = True
                         break
@@ -124,7 +124,6 @@ class WebcamHandler(QWidget):
                             user = i
                             self.user_updated.emit(user)
                             self.setUser.emit(user)
-
 
                     break
 

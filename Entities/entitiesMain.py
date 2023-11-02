@@ -1,21 +1,28 @@
-from Entities.IndirectUser import User
+from Entities.IndirectUser import User, Schedule
 from Entities.Employee import Employee
 
-dbu = User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
-user = User.User
 
-dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
-employee = Employee.Employee
+# Instantiate the schedule database and the user database
+schedule_database = Schedule.ScheduleDatabase('../Database/IndirectUsers/jsonFile/schedule.json')
+user_database = User.UserDatabase('../Database/IndirectUsers/jsonFile/users.json')
 
-# #Example Display Users
-# for i in db.load_users():
-#     u = user.getUser(i)
-#     print(u.displayUser())
+# Load schedules and users
+schedules = schedule_database.load_schedules()
+users = user_database.load_users()
 
 
-# for i in dbu.load_users():
-#     print(i.id)
-#
-# for i in dbe.load_employees():
-#     print(i.title)
+def getSchedule(workDay):
+    s = []
+    schedules_sorted = sorted(schedules, key=lambda x: x.user_id)
+    users_sorted = sorted(users, key=lambda x: x.id)
+
+    # Iterate over both lists in parallel
+    for schedule, user in zip(schedules_sorted, users_sorted):
+        #print(f"{user.firstName} {schedule.workdays}")
+        if workDay in schedule.workdays:
+            day = f"{user.firstName}: {schedule.workdays[workDay]}"
+            s.append(day)
+    return s
+
+
 

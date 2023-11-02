@@ -4,23 +4,24 @@ import json
 import os
 import sys
 import cv2
-from PyQt5.QtCore import QTimer, Qt, QDateTime, QDate, QTime, pyqtSignal
-from PyQt5.QtGui import QImage, QPixmap, QPainter, QLinearGradient, QColor, QPen, QFont
+from PyQt5.QtCore import QTimer, Qt, QDateTime, QDate, QTime, pyqtSignal, QRectF, pyqtProperty, QPropertyAnimation
+from PyQt5.QtGui import QImage, QPixmap, QPainter, QLinearGradient, QColor, QPen, QFont, QBrush, QTransform
 from PyQt5.QtMultimedia import QCamera, QCameraImageCapture
 from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, \
     QPushButton, QSpacerItem, QSizePolicy, QFrame, QDesktopWidget, QDateTimeEdit, QCalendarWidget, QTableView, \
     QToolButton, QTableWidget, QTableWidgetItem, QGroupBox, QSpinBox, QComboBox, QDialogButtonBox, QFormLayout, QLayout, \
-    QMessageBox, QFileDialog, QTextEdit
+    QMessageBox, QFileDialog, QTextEdit, QTabBar, QStackedWidget, QGridLayout, QTabWidget
 import dlib
 import pickle
-from PyQt5.uic.properties import QtWidgets
+from PyQt5.uic.properties import QtWidgets, QtGui
 import Entities.IndirectUser.User
 import Entities.Employee.Employee
 import shutil
 import LoginWindow
 import MainWindow
 from Database.firebaseDatabase import database
+import Entities.entitiesMain
 
 """
 xLarge_font_size = '75px'
@@ -31,14 +32,13 @@ xSmall_font_size = '20px'
 
 """
 
-
 # Link to data base
 dbu = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
 # Users
 User = Entities.IndirectUser.User.User
 # Link to data base
 dbe = Entities.Employee.Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
-#Employees
+# Employees
 Employee = Entities.Employee.Employee.Employee
 
 userColumnLength = len(dbu.users)
@@ -47,7 +47,6 @@ userRowLength = inspect.getsource(User.__init__).count("self.")
 employeeColumnLength = len(dbe.employees)
 employeeRowLength = inspect.getsource(Employee.__init__).count("self.")
 
-
 xLarge_font_size = '75px'
 large_font_size = '60px'
 medium_font_size = '30px'
@@ -55,22 +54,10 @@ small_font_size = '25px'
 xSmall_font_size = '20px'
 tiny_font_size = "18px"
 
-class CustomWidgetGradient(QWidget):
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor(250, 250, 250))
-        gradient.setColorAt(1, QColor(230, 230, 230))
-        painter.setBrush(gradient)
-        painter.drawRect(self.rect())
-class BlackLine(QFrame):
-    def __init__(self):
-        super().__init__()
-        self.setFrameShape(QFrame.HLine)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setFixedHeight(3)
-        self.setStyleSheet("color: black; background-color:black;")
-        self.setContentsMargins(0,0,0,0)
+
+
+
+
 class FadingLine(QFrame):
     def __init__(self):
         super().__init__()
@@ -139,12 +126,11 @@ class HeaderWidget(QWidget):
         mainLayout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
         mainLayout.addSpacing(20)
 
-
-
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setBrush(Qt.white)
         painter.drawRect(self.rect())
+
 
 class ManagerWindow(QMainWindow):
     def __init__(self, employee=None):
@@ -153,171 +139,265 @@ class ManagerWindow(QMainWindow):
         self.showMaximized()
         self.showFullScreen()
 
-        central_widget = CustomWidgetGradient()
+        central_widget = QWidget()
+        central_widget.setStyleSheet("background-color: rgb(230, 230, 230);")
+
         headerWidget = HeaderWidget()
         central_layout = QVBoxLayout()
         central_layout.setContentsMargins(0, 0, 0, 0)
+
         central_layout.addWidget(headerWidget)
         central_layout.setAlignment(Qt.AlignTop)
         central_widget.setLayout(central_layout)
         self.setCentralWidget(central_widget)
 
+        # Define displayLayout here
+        self.displayWidget = QWidget()
+        self.displayWidget.setStyleSheet("background-color: white;"
+                                         "border-radius: 10px;")
+        self.displayWidget.setContentsMargins(0, 0, 0, 0)
+        self.displayLayout = QVBoxLayout(self.displayWidget)
 
 
         mainLayout = QHBoxLayout()
+
         central_layout.addLayout(mainLayout)
 
-
-        #SIZE#
-        screen_geometry = QApplication.desktop().screenGeometry()
-        window_width = int(screen_geometry.width()-40)
-        window_height = int(screen_geometry.height())
-        headerSize = headerWidget.sizeHint().height()
-
-
-
-
-        #Left container------------------------------------------------------------------------------------------------
-        #--------------------------------------------------------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------
-        # Size for left widget
-        leftWidgetWidth = window_width / 5 # Width
-
-        leftWidget = QWidget()
-        leftWidget.setStyleSheet("background-color:white;")
-        leftWidget.setMaximumWidth(int(leftWidgetWidth))
-
-        leftLayout = QVBoxLayout(leftWidget)
-
-        leftLayout.setAlignment(Qt.AlignLeft)
-
-
-        dt = DateTime()
-
-
-
-
-        leftLayout.addWidget(dt)
-        fadingLine = FadingLine()
-        leftLayout.addWidget(fadingLine)
-
-        def logs():
-            logsWidget = QWidget()
-            logsWidget.setStyleSheet("background-color: transparent")
-            logsWidget.setContentsMargins(0, 0, 10, 0)
-            logsWidget.setFixedWidth(int(leftWidgetWidth))
-
-            logsLayout = QVBoxLayout(logsWidget)
-            logsLayout.setAlignment(Qt.AlignTop)
-
-            logLabel = QLabel("Logs")
-            logLabel.setStyleSheet(f'font-size: {medium_font_size}; font-family: Copperplate; color: black;')
-            logsLayout.addWidget(logLabel)
-
-
-            #logsLayout.addWidget(fadingLine)
-
-            userButton = CustomButton("Indirect Users")
-            userButton.clicked.connect(self.on_user_button_clicked)
-
-            employeeButton = CustomButton("Employee")
-            employeeButton.clicked.connect(self.on_employee_button_clicked)
-
-            logsButton = CustomButton("Logs")
-            logsButton.clicked.connect(self.on_logs_button_clicked)
-
-            logsLayout.addWidget(userButton)
-            logsLayout.addWidget(employeeButton)
-            logsLayout.addWidget(logsButton)
-            return logsWidget
-
-
-
-        leftLayout.addWidget(logs())
-        leftLayout.addStretch()
-
-        faceRecButton = CustomButton("Facial Recognition")
-        faceRecButton.clicked.connect(self.faceRec)
-        leftLayout.addWidget(faceRecButton)
-
-        addUserButton = CustomButton("Add User")
-        addUserButton.clicked.connect(self.add_user)
-        leftLayout.addWidget(addUserButton)
-
-        logoutButton = CustomButton("Logout")
-        logoutButton.clicked.connect(self.logout)
-        leftLayout.addWidget(logoutButton)
-
-
-
-        # Middle container---------------------------------------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------
-
-        #Middle widget
-        middleWidget = QWidget()
-        middleWidget.setStyleSheet("background-color:transparent;")
-        middleWidgetWidth = window_width - (leftWidgetWidth * 2)
-
-        #Middle layout
-        middleLayout = QVBoxLayout(middleWidget)
-        middleLayout.setAlignment(Qt.AlignTop)
-
-        # Middle content
-        self.displayWidget = QWidget()
-        self.displayWidget.setStyleSheet("background-color: white")
-        self.displayWidget.setFixedWidth(int(middleWidgetWidth))
-
-        self.middleWindowWidthSize = int(self.displayWidget.size().width())
-        self.middleWindowHeightSize =  int(self.displayWidget.size().height())
-
-        self.displayLayout = QVBoxLayout(self.displayWidget)
-        middleLayout.addWidget(self.displayWidget)
+        mainLayout.addWidget(self.leftWidgetContainer(), stretch=5)
+        mainLayout.addWidget(self.rightWidgetContainer(), stretch=16)
 
 
 
 
 
-        middleLayout.setStretchFactor(self.displayWidget, 1)
 
 
-        # Right container----------------------------------------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------
-        #rightWidgetWidth = window_width / 5
-        rightWidget = QWidget()
-        rightWidget.setStyleSheet("background-color:White;")
-        rightLayout = QVBoxLayout(rightWidget)
-        rightLayout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        rightWidget.setFixedWidth(leftWidget.size().width())
+    def leftWidgetContainer(self):
+        widget = QWidget()
+        widget.setStyleSheet("border-radius: 10px;"
+                             "background: transparent;")
 
-        # Tickets
-        # --------------------------------------------------------------------------------------------------------------
-        ticketWidget = Tickets(self.displayLayout)
+        layout = QVBoxLayout(widget)
+        layout.setSpacing(5)
+
+        def header():
+            headerWidget = QWidget()
+            headerLayout = QVBoxLayout(headerWidget)
+            width = headerWidget.sizeHint().width()
+
+            headerWidget.setObjectName("headerWidget")  # Add an object name for specificity
+            headerWidget.setStyleSheet("""
+                QWidget{background-color:white;
+                }
+                QWidget#headerWidget {  
+                    border: 0px solid black;
+                    border-radius: 10px;
+                }
+            """)
+            dt = DateTime()
+            line = FadingLine()
+            headerLayout.addWidget(dt)
+            headerLayout.addWidget(line)
+            return headerWidget
+
+        def tab():
+            def main():
+                widget = QWidget()
+                layout = QVBoxLayout(widget)
+
+                faceRecButton = CustomButton("Facial Recognition")
+                faceRecButton.clicked.connect(self.faceRec)
+                layout.addWidget(faceRecButton)
+
+                addUserButton = CustomButton("Add User")
+                addUserButton.clicked.connect(self.add_user)
+                layout.addWidget(addUserButton)
+
+                layout.addStretch()
+                logoutButton = CustomButton("Logout")
+                logoutButton.clicked.connect(self.logout)
+                layout.addWidget(logoutButton)
+
+                return widget
+
+            def logs():
+                logsWidget = QWidget()
+                logsWidget.setStyleSheet("background-color: white")
+                logsWidget.setContentsMargins(0, 0, 10, 0)
+
+                logsLayout = QVBoxLayout(logsWidget)
+                logsLayout.setAlignment(Qt.AlignTop)
+
+                userButton = CustomButton("Indirect Users")
+                userButton.clicked.connect(self.on_user_button_clicked)
+
+                employeeButton = CustomButton("Employee")
+                employeeButton.clicked.connect(self.on_employee_button_clicked)
+
+                logsButton = CustomButton("Logs")
+                logsButton.clicked.connect(self.on_logs_button_clicked)
+
+                logsLayout.addWidget(userButton)
+                logsLayout.addWidget(employeeButton)
+                logsLayout.addWidget(logsButton)
+
+                logsLayout.addStretch()
+                logoutButton = CustomButton("Logout")
+                logoutButton.clicked.connect(self.logout)
+                logsLayout.addWidget(logoutButton)
+                return logsWidget
+
+            def tickets():
+                widget = QWidget()
+                layout = QVBoxLayout(widget)
+
+                ticketWidget = Tickets(self.displayLayout)
+                layout.addWidget(ticketWidget)
+                self.num_tickets = ticketWidget.numOfTickets()
+
+                layout.addStretch()
+                logoutButton = CustomButton("Logout")
+                logoutButton.clicked.connect(self.logout)
+                layout.addWidget(logoutButton)
+                return widget
+
+            def calender():
+                widget = QWidget()
+                self.calLayout = QVBoxLayout(widget)
+                calender_ = CustomCalendar()
+                self.calLayout.addWidget(calender_)
+                self.calLayout.addStretch()
+
+                calender_.clicked[QDate].connect(self.on_day_clicked)
+
+                current_date = QDate.currentDate()
+
+                getSchedules = Entities.entitiesMain.getSchedule(current_date.toString("dddd"))
+                print(getSchedules)
+
+                self.labels = []
+                for schedule in getSchedules:
+                    self.label = QLabel(schedule)
+                    self.label.setStyleSheet("color:black;")
+
+                    self.labels.append(self.label)
+                    self.calLayout.addWidget(self.label)
+
+                self.calLayout.addStretch()
+
+                return widget
+
+            tabWidget = QTabWidget()
+            customTabBar = CustomTabBar()
+            tabWidget.setTabBar(customTabBar)
+
+            tabWidget.setStyleSheet("""
+                            QTabWidget::tab-bar {
+                                alignment: left;
+                                background-color: black;
+                            }
+
+                            QTabWidget::pane {
+                                border-top-left-radius: 10px;
+                                border-top-right-radius: 10px;
+                                border-bottom-left-radius: 10px;
+                                border-bottom-right-radius: 10px;
+                                background: white;
+                            }
+
+                            QTabBar::tab {
+                                background: white;
+                                color: black;
+                                border: 0px;
+                                margin-top: 5px;
+                                margin-bottom: 5px;
+                                height: 100px;
+                                width: 25px;
+                                border-top-right-radius: 10px; 
+                                border-bottom-right-radius: 10px;
+                            }
 
 
-        rightLayout.addWidget(ticketWidget)
 
-        createTicketButton = QPushButton("Create Ticket")
-        createTicketButton.setFixedWidth(150)
-        createTicketButton.setFixedHeight(40)
-        createTicketButton.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
-        rightLayout.addStretch()
+                            QTabBar::tab:selected {
+                                background: black;
+                                color: white;
+                            }
 
-        # Calendar
-        # --------------------------------------------------------------------------------------------------------------
-        schedule = Schedule()
-        rightLayout.addWidget(schedule)
-        # --------------------------------------------------------------------------------------------------------------
+                            QTabBar::tab:hover {
+                                background: lightgray;
+                            }
+                        """)
 
+            tabWidget.setTabPosition(QTabWidget.East)
 
-        mainLayout.addWidget(leftWidget)
-        mainLayout.addWidget(middleWidget)
-
-        mainLayout.addWidget(rightWidget)
-        #mainLayout.setStretchFactor(rightWidget, 1)
+            # Setup your tabs here
+            main_tab = main()
+            logs_tab = logs()
+            tickets_tab = tickets()
+            calender_tab = calender()
 
 
+            # Add tabs to your tab widget
+            main_index = tabWidget.addTab(main_tab, 'Main')
+            logs_index = tabWidget.addTab(logs_tab, 'Logs')
+            tickets_index = tabWidget.addTab(tickets_tab, 'Ticket')
+            calender_index = tabWidget.addTab(calender_tab, "Calender")
+
+            customTabBar.setNotification(tickets_index, self.num_tickets)
+
+
+
+            return tabWidget
+
+        layout.addWidget(header(), stretch=2)
+        layout.addWidget(tab(), stretch=10)
+
+        return widget
+
+    def rightWidgetContainer(self):
+        widget = QWidget()
+        widget.setStyleSheet("background-color:transparent;"
+                             "border-radius: 10px;")
+
+        layout = QVBoxLayout(widget)
+        layout.setSpacing(5)
+
+        def header():
+            headerWidget = QWidget()
+
+            headerLayout = QVBoxLayout(headerWidget)
+            width = headerWidget.sizeHint().width()
+
+            headerWidget.setObjectName("headerWidget")  # Add an object name for specificity
+            headerWidget.setStyleSheet("""
+                QWidget{background-color:transparent;
+                }
+                QWidget#headerWidget {  
+                    border: 0px solid black;
+                    border-radius: 10px;
+                }
+            """)
+            dt = DateTime()
+            line = FadingLine()
+            # headerLayout.addWidget(dt)
+            # headerLayout.addWidget(line)
+            return headerWidget
+
+        def display():
+            displayWidget = QWidget()
+            displayWidget.setContentsMargins(0, 0, 0, 0)
+            displayLayout = QVBoxLayout(displayWidget)
+            displayLayout.addWidget(self.displayWidget)
+            return displayWidget
+
+        layout.addWidget(header(), stretch=1)
+
+        layout.addWidget(display(), stretch=10)
+        layout.addWidget(header(), stretch=1)
+        layout.addStretch()
+
+        return widget
 
     def clearLayout(self):
         self.current_displayed_type = None
@@ -328,19 +408,18 @@ class ManagerWindow(QMainWindow):
 
     def on_user_button_clicked(self):
         self.clearLayout()
-        print("user")
         self.tableWidget = TableWidget(context="Indirect User Button", parent=self)
         self.displayLayout.addWidget(self.tableWidget)
         self.tableWidget.removeRequested.connect(self.removeUserWidget)
+
     def on_employee_button_clicked(self):
         self.clearLayout()
-        print("employee")
         self.tableWidget = TableWidget(context="Employee Button", parent=self)
         self.displayLayout.addWidget(self.tableWidget)
         self.tableWidget.removeRequested.connect(self.removeUserWidget)
+
     def on_logs_button_clicked(self):
         self.clearLayout()
-        print("logs")
         self.tableWidget = TableWidget(context="Logs", parent=self)
         self.displayLayout.addWidget(self.tableWidget)
         self.tableWidget.removeRequested.connect(self.removeUserWidget)
@@ -357,67 +436,166 @@ class ManagerWindow(QMainWindow):
         self.userWidget.removeRequested.connect(self.removeUserWidget)
 
     def removeUserWidget(self):
-            self.userWidget.setParent(None)  # Detach the widget from the main window
-            self.userWidget.deleteLater()
+        self.userWidget.setParent(None)  # Detach the widget from the main window
+        self.userWidget.deleteLater()
 
     def logout(self):
         self.loginWindow = LoginWindow.LoginWindow()
         self.loginWindow.showFullScreen()
         self.close()
 
+    def on_day_clicked(self, date):
+
+        day_of_the_week = date.toString('dddd')
+        getSchedules = Entities.entitiesMain.getSchedule(day_of_the_week)
+
+
+        for label in self.labels:
+            self.calLayout.removeWidget(label)
+            label.deleteLater()
+        self.labels.clear()
+
+        for schedule in getSchedules:
+            self.label = QLabel(schedule)
+            self.label.setStyleSheet("color:black;")
+            self.labels.append(self.label)
+            self.calLayout.addWidget(self.label)
+
+
+
+
 class CustomButton(QPushButton):
     def __init__(self, text):
         super().__init__(text)
         self.initUI()
-        #self.setFixedWidth(int(leftWidgetWidth))
+        # self.setFixedWidth(int(leftWidgetWidth))
+
     def initUI(self):
         self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
                            "background-color: #F5F5F5; border-radius: 5px; color: black;")
+
     def enterEvent(self, event):
         # When the mouse hovers over the label, change its color to indicate that it's clickable
         self.setStyleSheet("border: 1px solid #AAAAAA; padding: 10px; "
                            "background-color: #E0E0E0; border-radius: 5px; color: black;")
+
     def leaveEvent(self, event):
         # When the mouse leaves the label, revert its color
         self.setStyleSheet("border: 1px solid #CCCCCC; padding: 10px; "
                            "background-color: #F5F5F5; border-radius: 5px; color: black;")
+
+
+class CustomCalendar(QCalendarWidget):
+    def __init__(self, parent=None):
+        super(CustomCalendar, self).__init__(parent)
+
+        # Set fixed height and margins
+        self.setFixedHeight(200)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setGridVisible(True)
+
+        format = self.weekdayTextFormat(Qt.Saturday)
+        format.setForeground(QBrush(QColor("#d9a741"), Qt.SolidPattern))
+        self.setWeekdayTextFormat(Qt.Saturday, format)
+        self.setWeekdayTextFormat(Qt.Sunday, format)
+
+        # Set header format
+        self.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
+
+        # Hide navigation buttons
+        self.findChild(QToolButton, "qt_calendar_prevmonth").hide()
+        self.findChild(QToolButton, "qt_calendar_nextmonth").hide()
+
+        # Apply custom stylesheet
+        calendar_stylesheet = """
+                                QCalendarWidget {
+                        background-color: #f9f9f9;  /* Background color of the entire calendar */
+                        border: 3px solid #d9a741;  /* Border color of the entire calendar */
+                        border-radius: 4px;         /* Rounded corners for the calendar */
+                    }
+                    
+                    QCalendarWidget QWidget { 
+                        color: black;             /* change day numbers */
+                    }
+                    
+                    QCalendarWidget QTableView { 
+                        border: 2px solid #d9a741;  /* Border around the table view (contains the days) */
+                        gridline-color: #d0d0d0;   /* Color of the grid separating the days */
+                        background-color: white; /* Background color of the entire table view */
+                    }
+                    
+                    QCalendarWidget QTableView QHeaderView::section { 
+                        background-color: #e9cf8d;  /* Background color of the headers (Mon, Tue, ...) */
+                        padding: 6px;               /* Padding for the headers */
+                        border: 1px solid #d9a741;  /* Border color for the headers */
+                        font-size: 12pt;            /* Font size of the headers */
+                        font-weight: bold;          /* Font weight of the headers */
+                        color: #000;                /* Text color of the headers */
+                    }
+                    
+                    QCalendarWidget QToolButton { 
+                        icon-size: 24px;            /* Size of the navigation icons (previous and next month) */
+                        border: none;               /* Remove the border from tool buttons */
+                        background-color: transparent;  /* Make tool buttons' background transparent */
+                        color: black;             /* Color of the navigation icons */
+                    }
+                    
+                    QCalendarWidget QToolButton:hover { 
+                        background-color: #f5e7bc;  /* Background color when hovering over navigation buttons */
+                    }
+                    
+                    QCalendarWidget QMenu { 
+                        border: 1px solid #d9a741;  /* Border around the drop-down menu (from the small arrow button) */
+                    }
+                    
+                    QCalendarWidget QMenu::item { 
+                        padding: 4px 24px 4px 24px; /* Padding around the items inside the drop-down menu */
+                        background-color: #f9f9f9; /* Background color of the menu items */
+                        color: black;            /* Text color of the menu items */
+                    }
+                    
+                    QCalendarWidget QMenu::item:selected { 
+                        background-color: #d9a741;  /* Background color when an item inside the menu is selected */
+                        color: #000;                /* Text color of the selected item inside the menu */
+                    }
+                    
+                    QCalendarWidget QAbstractItemView {
+                        selection-background-color: #f5e7bc; /* Background color of the selected date */
+                        selection-color: #000;              /* Text color of the selected date */
+                    }
+                    
+                    QCalendarWidget QLabel { 
+                        font-size: 28pt;            /* Font size of the large month and year label */
+                        color: black;             /* Color of the large month and year label */
+                        font-weight: bold;          /* Font weight of the large month and year label */
+                    }
+                    
+                    QCalendarWidget #qt_calendar_navigationbar { 
+                        background-color: #f9f9f9;  /* Background color of the navigation bar (contains the month, year, and navigation buttons) */
+                        border: 2px solid #d9a741;  /* Border at the bottom of the navigation bar */
+                        font-size: 18pt;            /* Font size of the navigation bar */
+                    }
+        """
+
+        self.setStyleSheet(calendar_stylesheet)
+
 
 class Schedule(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.initUI()
+
     def initUI(self):
         self.mainLayout = QVBoxLayout(self)
         self.setLayout(self.mainLayout)
-
-        calendar = QCalendarWidget(self)
-        calendar.setFixedHeight(200)
-        calendar.setContentsMargins(0, 0, 0, 0)
-        calendar.setVerticalHeaderFormat(False)
-        calendar.findChild(QToolButton, "qt_calendar_prevmonth").hide()
-        calendar.findChild(QToolButton, "qt_calendar_nextmonth").hide()
-        calendar_stylesheet = """
-                QCalendarWidget {border: none;}
-                QCalendarWidget QWidget {background-color: white; color: black;}
-                QCalendarWidget QTableView {border: none; gridline-color: #c0c0c0;}
-                QCalendarWidget QTableView QHeaderView::section {background-color: #e0e0e0; padding: 4px;
-                    border: 1px solid #c0c0c0; font-size: 10pt; font-weight: bold;}
-                QCalendarWidget QToolButton {icon-size: 20px; border: none; background-color: #e0e0e0;}
-                QCalendarWidget QMenu { border: none;}
-                QCalendarWidget QMenu::item {padding: 4px 20px 4px 20px;}
-                QCalendarWidget QMenu::item:selected {background-color: #c0c0c0;}
-                QCalendarWidget QAbstractItemView {border: none;}
-                QCalendarWidget QLabel {font-size: 24pt; /* Adjust the font size as needed */}
-                """
-        calendar.setStyleSheet(calendar_stylesheet)
-        self.mainLayout.addWidget(calendar)
 
 class Tickets(QWidget):
     def __init__(self, displayWidget, parent=None):
         super().__init__(parent)
         self.displayWidget = displayWidget
         self.initUI()
+
     def initUI(self):
         self.mainLayout = QVBoxLayout(self)
         self.setLayout(self.mainLayout)
@@ -428,9 +606,9 @@ class Tickets(QWidget):
                 self.filepath = filepath
                 self.displayLayout = displayLayout
                 self.ticketLayout = ticketLayout
-                #self.setFixedWidth(int(rightWidget.size().width() / 1.3))
-                #buttonH = int((rightWidget.size().width() / 1.3) / 4)
-                #self.setFixedHeight(buttonH)
+
+                buttonH = int(50)
+                self.setFixedHeight(buttonH)
                 self.setStyleSheet(
                     "border: 1px solid #CCCCCC; padding: 0px; background-color: #F5F5F5; border-radius: 5px; color:black;"
                 )
@@ -509,6 +687,7 @@ class Tickets(QWidget):
                         filepath = os.path.join(directory, file)  # Full path to the file
                         label = ClickableLabel(label_text, filepath, displayLayout, layout)
                         layout.addWidget(label)
+                layout.addStretch()
 
             except Exception as e:
                 print(f"Error while adding tickets to layout: {e}")
@@ -517,11 +696,18 @@ class Tickets(QWidget):
         directory = "../Database/Tickets"
         add_tickets_to_layout(directory, self.mainLayout, self.displayWidget)
 
+    def numOfTickets(self):
+        directory = "../Database/Tickets"
+        num_files = sum([len(files) for r, d, files in os.walk(directory)])
+        return num_files
+
+
 class DateTime(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.initUI()
+
     def initUI(self):
         self.mainLayout = QVBoxLayout(self)
         self.setLayout(self.mainLayout)
@@ -529,7 +715,7 @@ class DateTime(QWidget):
         def dateTimeWidget():
             dateTimeW = QWidget()
             dateTimeL = QVBoxLayout(dateTimeW)
-            dateTimeL.setContentsMargins(0,0,0,0)
+            dateTimeL.setContentsMargins(0, 0, 0, 0)
 
             self.date_label = QLabel(self)
             self.date_label.setStyleSheet(f'font-size:{tiny_font_size}; font-family: Copperplate; color: black;')
@@ -549,14 +735,17 @@ class DateTime(QWidget):
         self.timer.timeout.connect(self.update_date_label)
         self.timer.timeout.connect(self.update_time_label)
         self.timer.start(60000)  # Update every 60000 milliseconds (1 minute)
+
     def update_date_label(self):
         # Update the QLabel with the current date
         current_date = QDate.currentDate().toString("dddd, MMMM dd, yyyy")
         self.date_label.setText(current_date)
+
     def update_time_label(self):
         # Update the QLabel with the current time
         current_time = QTime.currentTime().toString("hh:mm AP")
         self.time_label.setText(current_time)
+
 
 class TableWidget(QWidget):
     removeRequested = pyqtSignal()
@@ -838,12 +1027,14 @@ class TableWidget(QWidget):
         # For example, if you just want to close the widget:
         self.close()
 
+
 class addUser(QWidget):
     removeRequested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
+
     def initUI(self):
         """Initializes the UI components."""
         self.mainLayout = QVBoxLayout(self)
@@ -856,6 +1047,7 @@ class addUser(QWidget):
         self._style_widgets()
         self._create_form()
         self.mainLayout.addWidget(self.groupBox)
+
     def _initialize_widgets(self):
         """Initializes the widgets used in the 'Add User' group box."""
         # Group box
@@ -1011,7 +1203,8 @@ class addUser(QWidget):
     def _create_button_layout(self):
         """Creates and returns the button layout."""
         self.openCameraButton = self._create_button("Open Cam", self.openCamera, size=(175, 40))
-        self.saveProfileButton = self._create_button("Save Profile", self.saveNewUser, size=(175, 40), hide_initially=True)
+        self.saveProfileButton = self._create_button("Save Profile", self.saveNewUser, size=(175, 40),
+                                                     hide_initially=True)
         cancelButton = self._create_button("Cancel", self.emitRemoveRequest, size=(175, 40))
 
         buttonLayout = QHBoxLayout()
@@ -1206,7 +1399,6 @@ class addUser(QWidget):
 
         print("data added successfully")
 
-
         self.emitRemoveRequest()
 
     def savePKL(self):
@@ -1250,6 +1442,57 @@ class addUser(QWidget):
     def emitRemoveRequest(self):
         self.removeFiles()
         self.removeRequested.emit()
+
+class CustomTabBar(QTabBar):
+    def __init__(self, *args, **kwargs):
+        super(CustomTabBar, self).__init__(*args, **kwargs)
+        self._notifications = {}  # Initialize an empty dictionary to hold notification data
+
+    def setNotification(self, index, value):
+        # Update the notification count for a given tab index
+        self._notifications[index] = value
+        self.update()  # Trigger a repaint so the notification will be shown
+
+    def paintEvent(self, event):
+        super(CustomTabBar, self).paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Loop over each tab and draw the notification circle if needed
+        for index, value in self._notifications.items():
+            if value > 0:  # Only draw the notification if value is greater than 0
+                rect = self.tabRect(index)
+                circle_x = rect.right() - 20
+                circle_y = rect.top() + 80
+                circle_radius = 8  # The radius for the notification circle
+
+                # Save the current painter state
+                painter.save()
+
+                # Translate painter's origin to the center of the circle for rotation
+                painter.translate(circle_x + circle_radius, circle_y + circle_radius)
+
+                # Rotate the painter by 90 degrees
+                painter.rotate(90)
+
+                # Set the painter color and brush for the notification circle
+                painter.setBrush(Qt.red)
+                painter.setPen(Qt.NoPen)
+
+                # Draw the circle (adjust coordinates since we've translated the painter's origin)
+                painter.drawEllipse(-circle_radius, -circle_radius, circle_radius * 2, circle_radius * 2)
+
+                # Draw the text number of notifications on the circle
+                font = painter.font()
+                font.setBold(True)
+                painter.setFont(font)
+                painter.setPen(Qt.white)
+                painter.drawText(QRectF(-circle_radius, -circle_radius, circle_radius * 2, circle_radius * 2),
+                                 Qt.AlignCenter, str(value))
+
+                # Restore the painter's state
+                painter.restore()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

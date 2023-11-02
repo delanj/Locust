@@ -20,5 +20,16 @@
         "phoneNumber": "123-243-5233",
         "email": "email@gmail.com",
         "hireDate": "10/10/23"
+    },
+    {
+        "employeeID": "0003",
+        "firstName": "Jessica",
+        "lastName": "Hartely",
+        "gender": "Female",
+        "title": "Desk Technician",
+        "passcode": "0003",
+        "phoneNumber": "123-243-5233",
+        "email": "email@gmail.com",
+        "hireDate": "11/01/23"
     }
 ]

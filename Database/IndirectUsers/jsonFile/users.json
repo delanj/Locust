@@ -68,5 +68,25 @@
         "title": "CEO",
         "photos": "0010_0.jpg",
         "faceEncodings": "0010_0.pkl"
+    },
+    {
+        "id": "0003",
+        "firstName": "Trinity",
+        "lastName": "D",
+        "gender": "Female",
+        "company": "LocUST",
+        "title": "Developer",
+        "photos": "0003_0.jpg",
+        "faceEncodings": "0003_0.pkl"
+    },
+    {
+        "id": "0004",
+        "firstName": "Erick",
+        "lastName": "C",
+        "gender": "Male",
+        "company": "Locust",
+        "title": "Dev",
+        "photos": "0004_0.jpg",
+        "faceEncodings": "0004_0.pkl"
     }
 ]

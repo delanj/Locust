@@ -1,0 +1,82 @@
+[
+    {
+        "user_id": "0001",
+        "schedule": {
+            "Monday": "9:00 AM-5:00 PM",
+            "Tuesday": "10:00 AM-6:00 PM",
+            "Wednesday": "9:00 AM-5:00 PM",
+            "Thursday": "10:00 AM-6:00 PM",
+            "Friday": "9:00 AM-3:00 PM"
+        }
+    },
+    {
+        "user_id": "0005",
+        "schedule": {
+            "Monday": "8:00 AM-4:00 PM",
+            "Wednesday": "8:00 AM-4:00 PM",
+            "Friday": "8:00 AM-4:00 PM"
+        }
+    },
+    {
+        "user_id": "0006",
+        "schedule": {
+            "Monday": "9:00 AM-5:00 PM",
+            "Tuesday": "11:00 AM-7:00 PM",
+            "Thursday": "9:00 AM-5:00 PM",
+            "Friday": "9:00 AM-5:00 PM"
+        }
+    },
+    {
+        "user_id": "0007",
+        "schedule": {
+            "Tuesday": "10:00 AM-6:00 PM",
+            "Wednesday": "9:00 AM-5:00 PM",
+            "Thursday": "10:00 AM-6:00 PM",
+            "Friday": "9:00 AM-3:00 PM"
+        }
+    },
+    {
+        "user_id": "0008",
+        "schedule": {
+            "Monday": "9:00 AM-5:00 PM",
+            "Tuesday": "9:00 AM-5:00 PM",
+            "Thursday": "9:00 AM-5:00 PM",
+            "Friday": "9:00 AM-5:00 PM"
+        }
+    },
+    {
+        "user_id": "0009",
+        "schedule": {
+            "Monday": "8:00 AM-4:00 PM",
+            "Wednesday": "8:00 AM-4:00 PM",
+            "Friday": "8:00 AM-4:00 PM"
+        }
+    },
+    {
+        "user_id": "0010",
+        "schedule": {
+            "Monday": "10:00 AM-6:00 PM",
+            "Tuesday": "9:00 AM-5:00 PM",
+            "Thursday": "10:00 AM-6:00 PM",
+            "Friday": "9:00 AM-3:00 PM"
+        }
+    },
+    {
+        "user_id": "0003",
+        "schedule": {
+            "Monday": "9:00 AM-5:00 PM",
+            "Tuesday": "9:00 AM-5:00 PM",
+            "Wednesday": "9:00 AM-5:00 PM",
+            "Thursday": "9:00 AM-5:00 PM",
+            "Friday": "9:00 AM-5:00 PM"
+        }
+    },
+    {
+        "user_id": "0004",
+        "schedule": {
+            "Monday": "10:00 AM-6:00 PM",
+            "Wednesday": "10:00 AM-6:00 PM",
+            "Friday": "10:00 AM-6:00 PM"
+        }
+    }
+]

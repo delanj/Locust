@@ -131,3 +131,5 @@ class EmployeeDatabase:
         with open(self.json_file_path, "w") as json_file:
             json.dump(employees_data, json_file, indent=4)
 
+    def get_all_employees(self):
+        return self.employees

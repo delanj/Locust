@@ -1252,7 +1252,6 @@ class addUser(QWidget):
         self.cap = cv2.VideoCapture(0)
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateFrame)
-
         self.setupCameraUI()
 
     def setupCameraUI(self):

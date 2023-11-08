@@ -1,6 +1,0 @@
-Timestamp: 2023-10-27_22-11-26
-Employee Name: John Doe
-Employee ID: 0002
-Subject: Remove a user
-Description: A user needs to be removed
-----------------------------------------

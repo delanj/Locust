@@ -46,21 +46,40 @@ employeeColumnLength = len(dbe.employees)
 employeeRowLength = inspect.getsource(Employee.__init__).count("self.")
 
 font = "Copperplate"
-headerFontSize = "42pt"
-menuItemFontSize = "22pt"
-menuItemFontSizeSecondary = "14pt"
+tittleFontSize = "36px"
+subheaderFontSize = "24px"
+bodyFontSize = "18px"
+bodySecondaryFontSize = "16px"
+buttonFontSize = "16px"
+buttonLabelSize = "14px"
+captionsFontSize = "12px"
+dataTablesFontSize = "14px"
+toolTipsFontSize = "16px"
 
 
-"""Smallest Text — 12px
-Detail Text — 14px
-Body Text — 16/18px
-Subtitle — 18px
-Title Text — 24/28px
-Main Text — 32/38/42px
-Display Text — 60/72/80px"""
 
-textColor = "black"
+primaryColor = "rgb(129, 117, 102)"
+secondaryColor = "rgb(255, 255, 255)"
+backgroundColor = "rgb(250, 245, 232)"
+backgroundColorTransparent = "background-color: transparent;"
+textColor = "rgb(0, 0, 0)"
+textColorSecondary = "rgb(100, 100, 100)"
+accentColor1 = ""
+accentColor2 = ""
+interactiveElements1 = "rgb(220, 220, 220)"
+interactiveElements2 = "rgb(190, 190, 190)"
 
+dataVisualizations = ""
+bordersLines = "rgb(0, 0, 0)"
+shadowsHighlights = "rgba(0, 0, 0, 0.5)"
+fieldBackgroundColor = "rgb(255, 255, 255)"
+placeholderColor = "rgb(200, 200, 200)"
+
+buttonBackgroundColor = "rgb(255, 255, 255)"
+
+graph_background_color = (250, 245, 232)
+graph_font_color = (0, 0, 0)
+graph_bar_color = (255, 255, 255)
 
 
 class Ui_centralWindow(object):
@@ -81,7 +100,7 @@ class Ui_centralWindow(object):
         self.sideBar = QFrame(self.centralwidget)
         self.sideBar.setObjectName("sideBar")
         self.sideBar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.sideBar.setStyleSheet("background-color: rgb(129, 117, 102);")
+        self.sideBar.setStyleSheet(f"background-color: {primaryColor};")
         self.sideBar.setFrameShape(QFrame.StyledPanel)
         self.sideBar.setFrameShadow(QFrame.Raised)
 
@@ -115,7 +134,7 @@ class Ui_centralWindow(object):
         self.mainWindow = QFrame(self.centralwidget)
         self.mainWindow.setObjectName("mainWindow")
         self.mainWindow.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.mainWindow.setStyleSheet("background-color: rgb(250, 245, 232);")
+        self.mainWindow.setStyleSheet(f"background-color: {backgroundColor};")
         self.mainWindow.setFrameShape(QFrame.StyledPanel)
         self.mainWindow.setFrameShadow(QFrame.Raised)
 
@@ -129,7 +148,7 @@ class Ui_centralWindow(object):
 
         self.displayContainer = QWidget(self.mainWindow)
         self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet("background-color: transparent;")
+        self.displayContainer.setStyleSheet(backgroundColorTransparent)
         self.displayLayout = QVBoxLayout(self.displayContainer)
 
 
@@ -156,11 +175,6 @@ class Ui_centralWindow(object):
         self.centralLayout.addWidget(self.mainWindow, stretch=10)
         centralWindow.setCentralWidget(self.centralwidget)
 
-
-
-
-
-
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
         for i in reversed(range(self.displayLayout.count())):
@@ -168,7 +182,6 @@ class Ui_centralWindow(object):
             if widget is not None:
                 self.displayLayout.removeWidget(widget)
                 widget.deleteLater()
-
 
     def showDashBoardWidget(self):
         try:
@@ -199,6 +212,7 @@ class Ui_centralWindow(object):
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
+
     def showScheduleWidget(self):
         try:
             # Clear any widgets that might be in the displayContainer
@@ -249,7 +263,7 @@ class Ui_logoWidget(object):
         if not logoWidget.objectName():
             logoWidget.setObjectName("logoWidget")
 
-        logoWidget.setStyleSheet("background-color: transparent;")
+        logoWidget.setStyleSheet(backgroundColorTransparent)
 
         self.logoLayout = QHBoxLayout(logoWidget)
         self.logoLayout.setSpacing(0)
@@ -267,31 +281,22 @@ class Ui_logoWidget(object):
 
         self.logoLayout.addWidget(self.logoImg)
 
-        self.logoLabel = QLabel(logoWidget)
+        self.logoLabel = QLabel("LocUST")
         self.logoLabel.setObjectName("logoLabel")
-        self.logoLabel.setStyleSheet(f"font: 75 {headerFontSize} '{font}';")
+        self.logoLabel.setStyleSheet(f"font: 75 {tittleFontSize} '{font}'; color:{textColor};" )
 
         self.logoLayout.addWidget(self.logoLabel)
 
-        self.retranslateUi(logoWidget)
-        QMetaObject.connectSlotsByName(logoWidget)
-
-    def retranslateUi(self, logoWidget):
-        logoWidget.setWindowTitle(QCoreApplication.translate("logoWidget", "Form", None))
-        self.logoLabel.setText(QCoreApplication.translate("logoWidget", "LocUST", None))
-
 class Ui_navigationWidget(object):
-    logsButtonClicked = pyqtSignal()
+
     def setupUi(self, navigationWidget):
         if not navigationWidget.objectName():
             navigationWidget.setObjectName("navigationWidget")
-        navigationWidget.setStyleSheet("background-color: transparent;")
+        navigationWidget.setStyleSheet(backgroundColorTransparent)
 
         self.navigationLayout = QVBoxLayout(navigationWidget)
         self.navigationLayout.setSpacing(0)
-        self.navigationLayout.setContentsMargins(5, 5, 5, 5)
-
-
+        self.navigationLayout.setContentsMargins(0, 5, 0, 5)
 
         self.mainMenuLabel = self.create_label("Main Menu", "mainMenuLabel")
         self.dashboardButton = self.create_button("Dashboard", "dashboardButton", "home.png")
@@ -303,11 +308,9 @@ class Ui_navigationWidget(object):
         self.logsButton = self.create_button("Logs", "logsButton", "document.png")
         self.addUserButton = self.create_button("Add User", "addUserButton", "user-add.png")
 
-
         self.generalLabel = self.create_label("General", "generalLabel")
         self.faceRecButton = self.create_button("Facial Recognition", "faceRecButton", "face-viewfinder.png")
         self.logoutButton = self.create_button("Logout", "logoutButton", "sign-out-alt.png")
-
 
         self.navigationLayout.addWidget(self.mainMenuLabel)
         self.navigationLayout.addWidget(self.dashboardButton)
@@ -326,25 +329,25 @@ class Ui_navigationWidget(object):
     def create_button(self, text, objectName, iconPath):
         button = QPushButton()
         button.setObjectName(objectName)
-        button.setText("  " + text)  # Adding spaces for padding before the text
+        button.setText("  " + text)
         button.setIcon(QIcon(f"buttonIcons/{iconPath}"))
-        button.setIconSize(QSize(20, 20))  # Set your desired icon size
+        button.setIconSize(QSize(20, 20))
 
         # Stylesheet with hover and pressed states
         button.setStyleSheet(f"""
                     QPushButton {{
                         color: {textColor}; 
-                        font: 75 {menuItemFontSize}pt '{font}';
+                        font: 75 {buttonFontSize} '{font}';
                         padding-left: 30px; /* Size of the icon plus desired spacing */
                         text-align: left;
                         border: none; /* Remove border */
                         background-color: transparent;
                     }}
                     QPushButton:hover {{
-                        background-color: rgb(220, 220, 220); /* Lighter shade for hover */
+                        background-color: {interactiveElements1}; /* Lighter shade for hover */
                     }}
                     QPushButton:pressed {{
-                        background-color: rgb(190, 190, 190); /* Even lighter for pressed */
+                        background-color: {interactiveElements2}; /* Even lighter for pressed */
                     }}
                     QPushButton::icon {{
                         margin-left: -25px; /* Negative margin to align the icon with the button edge */
@@ -360,42 +363,40 @@ class Ui_navigationWidget(object):
         label = QLabel()
         label.setObjectName(objectName)
         label.setText(text)
-        label.setStyleSheet(f"color: {textColor}; font: 75 {menuItemFontSizeSecondary} '{font}'; padding-left: 10px;")
+        label.setStyleSheet(f"color: {textColor}; font: 75 {buttonLabelSize} '{font}'; padding-left: 10px;")
         label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return label
-
-
 
 class Ui_userHeaderWidget(object):
     def setupUi(self, userHeaderWidget):
         if not userHeaderWidget.objectName():
             userHeaderWidget.setObjectName(u"userHeaderWidget")
 
-        userHeaderWidget.setStyleSheet(u"background-color: transparent; color:black;")
+        userHeaderWidget.setStyleSheet(backgroundColorTransparent)
         self.userHeaderLayout = QHBoxLayout(userHeaderWidget)
-        self.userHeaderLayout.setSpacing(10)
+        self.userHeaderLayout.setSpacing(20)
         self.userHeaderLayout.setObjectName(u"userHeaderLayout")
         self.userHeaderLayout.setContentsMargins(10, 10, 10, 10)
 
-        font = "font: 75 16pt 'Copperplate';"
-        buttonStyleSheet = """
-            QPushButton {
+
+        buttonStyleSheet = f"""
+            QPushButton {{
                 border: none;
                 border-radius: 20px;  /* Half of width and height to make it circular */
-                background-color: rgb(129, 117, 102);  /* Your desired background color for the normal state */
-            }
-            QPushButton:hover {
-                background-color: lightgrey;  /* Your desired background color when hovered */
-            }
-            QPushButton:pressed {
-                background-color: grey;  /* Your desired background color when pressed */
-            }
+                background-color: {secondaryColor};  /* Your desired background color for the normal state */
+            }}
+            QPushButton:hover {{
+                background-color: {interactiveElements1};  /* Your desired background color when hovered */
+            }}
+            QPushButton:pressed {{
+                background-color: {interactiveElements2};  /* Your desired background color when pressed */
+            }}
         """
 
         self.searchIcon = QPushButton(userHeaderWidget)
         self.searchIcon.setObjectName(u"searchIcon")
         self.searchIcon.setIcon(QIcon("buttonIcons/search.png"))
-        self.searchIcon.setIconSize(QSize(24, 24))
+        self.searchIcon.setIconSize(QSize(18, 18))
         self.searchIcon.setStyleSheet(buttonStyleSheet)
         self.searchIcon.setFixedSize(40, 40)
         self.userHeaderLayout.addWidget(self.searchIcon)
@@ -404,13 +405,37 @@ class Ui_userHeaderWidget(object):
         self.searchBar = QLineEdit(userHeaderWidget)
         self.searchBar.setObjectName(u"searchBar")
         self.searchBar.setFixedHeight(24)
+        search_bar_style = f"""
+            QLineEdit {{
+                border: 1px solid {bordersLines}; /* Light grey border */
+                border-radius: 12px; /* Rounded corners */
+                padding: 0 8px; /* Text padding */
+                background: {fieldBackgroundColor}; /* White background */
+                selection-background-color: {interactiveElements1}; /* Color when text is selected */
+                font-size: {bodySecondaryFontSize}; /* Adjust the font size as needed */
+                
+            }}
+            QLineEdit::placeholder {{
+                color: {placeholderColor}; /* Replace with your placeholder text color */
+                font-style: italic;
+                opacity: 0.5;
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {bordersLines}; /* Highlighted border color when focused */
+                
+            }}
+        """
+
+        self.searchBar.setStyleSheet(search_bar_style)
+        self.searchBar.setFocusPolicy(Qt.NoFocus)
+        self.searchBar.setPlaceholderText("Search...")
         self.userHeaderLayout.addWidget(self.searchBar)
 
 
         self.settingsButton = QPushButton(userHeaderWidget)
         self.settingsButton.setObjectName("settingsButton")
         self.settingsButton.setIcon(QIcon("buttonIcons/settings.png"))
-        self.settingsButton.setIconSize(QSize(24, 24))
+        self.settingsButton.setIconSize(QSize(18, 18))
         self.settingsButton.setStyleSheet(buttonStyleSheet)
         self.settingsButton.setFixedSize(40, 40)
         self.userHeaderLayout.addWidget(self.settingsButton)
@@ -418,7 +443,7 @@ class Ui_userHeaderWidget(object):
         self.notificationButton = QPushButton(userHeaderWidget)
         self.notificationButton.setObjectName("notificationButton")
         self.notificationButton.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
-        self.notificationButton.setIconSize(QSize(24, 24))  # Icon size
+        self.notificationButton.setIconSize(QSize(18, 18))  # Icon size
         self.notificationButton.setStyleSheet(buttonStyleSheet)
         self.notificationButton.setFixedSize(40, 40)  # Adjust size as needed
         self.userHeaderLayout.addWidget(self.notificationButton)
@@ -426,7 +451,7 @@ class Ui_userHeaderWidget(object):
         self.employeeProfile = QPushButton(userHeaderWidget)
         self.employeeProfile.setObjectName("employeeProfile")
         self.employeeProfile.setIcon(QIcon("buttonIcons/user.png"))  # Replace with your icon's path
-        self.employeeProfile.setIconSize(QSize(24, 24))  # Icon size, adjust as needed
+        self.employeeProfile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
         self.employeeProfile.setStyleSheet(buttonStyleSheet)
         self.employeeProfile.setFixedSize(40, 40)
         self.userHeaderLayout.addWidget(self.employeeProfile)
@@ -434,30 +459,43 @@ class Ui_userHeaderWidget(object):
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
         self.employeeName.setText("Nickholas Delavallierre")
-        self.employeeName.setStyleSheet(font)
+        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{textColor};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
         opacity_effect = QGraphicsOpacityEffect()
         opacity_effect.setOpacity(0.5)
         self.employeeName.setGraphicsEffect(opacity_effect)
 
-
-        self.retranslateUi(userHeaderWidget)
-
-        QMetaObject.connectSlotsByName(userHeaderWidget)
-    # setupUi
-
-    def retranslateUi(self, userHeaderWidget):
-        userHeaderWidget.setWindowTitle(QCoreApplication.translate("userHeaderWidget", u"Form", None))
-        self.searchIcon.setText("")
-        self.notificationButton.setText("")
-        self.employeeProfile.setText("")
-
 class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):
+        self.containerStylesheet = f"""
+            QFrame {{
+                background-color: {backgroundColor};
+                border: 2px solid {bordersLines};
+                border-radius: 20px;
+            }}
+        """
+        self.font1 = f"""
+            QLabel {{
+            font: 75 {subheaderFontSize} "{font}";
+            color: {textColor};
+            background-color: transparent;
+            border: none;
+            border-radius: 20px;
+        }}"""
+
+        self.font2 = f"""
+            QLabel {{
+            color: {textColor};
+            font: 75 {bodyFontSize} "{font}";
+            background-color: transparent;
+            border: none;
+            border-radius: 20px;
+        }}"""
+
         if not dashboardWidget.objectName():
             dashboardWidget.setObjectName(u"dashboardWidget")
-        dashboardWidget.setStyleSheet(u"background-color: transparent; color:black;")
+        dashboardWidget.setStyleSheet(backgroundColorTransparent)
         self.dashboardLayout = QHBoxLayout(dashboardWidget)
         self.dashboardLayout.setSpacing(10)
         self.dashboardLayout.setObjectName(u"dashboardLayout")
@@ -488,9 +526,8 @@ class Ui_dashboardWidget(object):
         self.entLayout.setObjectName(u"entLayout")
         self.iunContainer = QFrame(self.entWidget)
         self.iunContainer.setObjectName(u"iunContainer")
-        self.iunContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+
+        self.iunContainer.setStyleSheet(self.containerStylesheet)
         self.iunContainer.setFrameShape(QFrame.StyledPanel)
         self.iunContainer.setFrameShadow(QFrame.Raised)
         self.iunLayout = QVBoxLayout(self.iunContainer)
@@ -500,20 +537,14 @@ class Ui_dashboardWidget(object):
 
         self.iULabel = QLabel("Users")
         self.iULabel.setObjectName(u"iULabel")
-        self.iULabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.iULabel.setStyleSheet(self.font1)
         self.iULabel.setTextFormat(Qt.PlainText)
         self.iunLayout.addWidget(self.iULabel, 0, Qt.AlignHCenter)
 
 
         self.iUNumber = QLabel("0")
         self.iUNumber.setObjectName(u"iUNumber")
-        self.iUNumber.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.iUNumber.setStyleSheet(self.font2)
         self.iUNumber.setTextFormat(Qt.PlainText)
         self.iunLayout.addWidget(self.iUNumber, 0, Qt.AlignHCenter)
         self.entLayout.addWidget(self.iunContainer)
@@ -521,9 +552,7 @@ class Ui_dashboardWidget(object):
 
         self.techNumberContainer = QFrame(self.entWidget)
         self.techNumberContainer.setObjectName(u"techNumberContainer")
-        self.techNumberContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+        self.techNumberContainer.setStyleSheet(self.containerStylesheet)
         self.techNumberContainer.setFrameShape(QFrame.StyledPanel)
         self.techNumberContainer.setFrameShadow(QFrame.Raised)
         self.techNumberLayout = QVBoxLayout(self.techNumberContainer)
@@ -533,20 +562,14 @@ class Ui_dashboardWidget(object):
 
         self.techLabel = QLabel("Desk Technicians")
         self.techLabel.setObjectName(u"techLabel")
-        self.techLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.techLabel.setStyleSheet(self.font1)
         self.techLabel.setTextFormat(Qt.PlainText)
 
         self.techNumberLayout.addWidget(self.techLabel, 0, Qt.AlignHCenter)
 
         self.techNumber = QLabel("0")
         self.techNumber.setObjectName(u"techNumber")
-        self.techNumber.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.techNumber.setStyleSheet(self.font2)
         self.techNumber.setTextFormat(Qt.PlainText)
 
         self.techNumberLayout.addWidget(self.techNumber, 0, Qt.AlignHCenter)
@@ -556,9 +579,7 @@ class Ui_dashboardWidget(object):
 
         self.empNumberContainer = QFrame(self.entWidget)
         self.empNumberContainer.setObjectName(u"empNumberContainer")
-        self.empNumberContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+        self.empNumberContainer.setStyleSheet(self.containerStylesheet)
         self.empNumberContainer.setFrameShape(QFrame.StyledPanel)
         self.empNumberContainer.setFrameShadow(QFrame.Raised)
         self.empNumberLayout = QVBoxLayout(self.empNumberContainer)
@@ -567,20 +588,14 @@ class Ui_dashboardWidget(object):
         self.empNumberLayout.setContentsMargins(10, 10, 10, 10)
         self.mangerLabel = QLabel("Security Managers")
         self.mangerLabel.setObjectName(u"mangerLabel")
-        self.mangerLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.mangerLabel.setStyleSheet(self.font1)
         self.mangerLabel.setTextFormat(Qt.PlainText)
 
         self.empNumberLayout.addWidget(self.mangerLabel, 0, Qt.AlignHCenter)
 
         self.managerNum = QLabel("0")
         self.managerNum.setObjectName(u"managerNum")
-        self.managerNum.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.managerNum.setStyleSheet(self.font2)
         self.managerNum.setTextFormat(Qt.PlainText)
 
         self.empNumberLayout.addWidget(self.managerNum, 0, Qt.AlignHCenter)
@@ -601,9 +616,7 @@ class Ui_dashboardWidget(object):
         self.scanInfoLayout.setObjectName(u"scanInfoLayout")
         self.canScanTodayContainer = QFrame(self.scanInfoWidget)
         self.canScanTodayContainer.setObjectName(u"canScanTodayContainer")
-        self.canScanTodayContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+        self.canScanTodayContainer.setStyleSheet(self.containerStylesheet)
         self.canScanTodayContainer.setFrameShape(QFrame.StyledPanel)
         self.canScanTodayContainer.setFrameShadow(QFrame.Raised)
         self.canScanTodayLayout = QVBoxLayout(self.canScanTodayContainer)
@@ -612,20 +625,14 @@ class Ui_dashboardWidget(object):
         self.canScanTodayLayout.setContentsMargins(10, 10, 10, 10)
         self.userScheduleTodayLabel = QLabel("Scheduled For Today")
         self.userScheduleTodayLabel.setObjectName(u"userScheduleTodayLabel")
-        self.userScheduleTodayLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.userScheduleTodayLabel.setStyleSheet(self.font1)
         self.userScheduleTodayLabel.setTextFormat(Qt.PlainText)
 
         self.canScanTodayLayout.addWidget(self.userScheduleTodayLabel, 0, Qt.AlignHCenter)
 
         self.userScheduleTodayNumber = QLabel("0")
         self.userScheduleTodayNumber.setObjectName(u"userScheduleTodayNumber")
-        self.userScheduleTodayNumber.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.userScheduleTodayNumber.setStyleSheet(self.font2)
         self.userScheduleTodayNumber.setTextFormat(Qt.PlainText)
 
         self.canScanTodayLayout.addWidget(self.userScheduleTodayNumber, 0, Qt.AlignHCenter)
@@ -635,9 +642,7 @@ class Ui_dashboardWidget(object):
 
         self.scansTodayWidget = QFrame(self.scanInfoWidget)
         self.scansTodayWidget.setObjectName(u"scansTodayWidget")
-        self.scansTodayWidget.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+        self.scansTodayWidget.setStyleSheet(self.containerStylesheet)
         self.scansTodayWidget.setFrameShape(QFrame.StyledPanel)
         self.scansTodayWidget.setFrameShadow(QFrame.Raised)
         self.scansTodayLayout = QVBoxLayout(self.scansTodayWidget)
@@ -646,20 +651,14 @@ class Ui_dashboardWidget(object):
         self.scansTodayLayout.setContentsMargins(10, 10, 10, 10)
         self.scansTodayLabel = QLabel("Scans Today")
         self.scansTodayLabel.setObjectName(u"scansTodayLabel")
-        self.scansTodayLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.scansTodayLabel.setStyleSheet(self.font1)
         self.scansTodayLabel.setTextFormat(Qt.PlainText)
 
         self.scansTodayLayout.addWidget(self.scansTodayLabel, 0, Qt.AlignHCenter)
 
         self.scansTodayNumber = QLabel("0")
         self.scansTodayNumber.setObjectName(u"scansTodayNumber")
-        self.scansTodayNumber.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.scansTodayNumber.setStyleSheet(self.font2)
 
         self.scansTodayLayout.addWidget(self.scansTodayNumber, 0, Qt.AlignHCenter)
 
@@ -668,9 +667,7 @@ class Ui_dashboardWidget(object):
 
         self.scansThisWeekContainer = QFrame(self.scanInfoWidget)
         self.scansThisWeekContainer.setObjectName(u"scansThisWeekContainer")
-        self.scansThisWeekContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-"border: 2px solid rgb(129, 117, 102);\n"
-"border-radius: 20px;")
+        self.scansThisWeekContainer.setStyleSheet(self.containerStylesheet)
         self.scansThisWeekContainer.setFrameShape(QFrame.StyledPanel)
         self.scansThisWeekContainer.setFrameShadow(QFrame.Raised)
         self.scansThisWeekLayout = QVBoxLayout(self.scansThisWeekContainer)
@@ -679,20 +676,14 @@ class Ui_dashboardWidget(object):
         self.scansThisWeekLayout.setContentsMargins(10, 10, 10, 10)
         self.scansThisWeekLabel = QLabel("Scans This Week")
         self.scansThisWeekLabel.setObjectName(u"scansThisWeekLabel")
-        self.scansThisWeekLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.scansThisWeekLabel.setStyleSheet(self.font1)
         self.scansThisWeekLabel.setTextFormat(Qt.PlainText)
 
         self.scansThisWeekLayout.addWidget(self.scansThisWeekLabel, 0, Qt.AlignHCenter)
 
         self.scansThisWeekNumber = QLabel("0")
         self.scansThisWeekNumber.setObjectName(u"scansThisWeekNumber")
-        self.scansThisWeekNumber.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-"background-color: transparent;\n"
-"border: none;\n"
-"border-radius: 20px;")
+        self.scansThisWeekNumber.setStyleSheet(self.font2)
         self.scansThisWeekNumber.setTextFormat(Qt.PlainText)
 
         self.scansThisWeekLayout.addWidget(self.scansThisWeekNumber, 0, Qt.AlignHCenter)
@@ -745,9 +736,7 @@ class Ui_dashboardWidget(object):
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.dateTimeWidget.sizePolicy().hasHeightForWidth())
         self.dateTimeWidget.setSizePolicy(sizePolicy4)
-        self.dateTimeWidget.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-                                          "border: 2px solid rgb(129, 117, 102);\n"
-                                          "border-radius: 20px;")
+        self.dateTimeWidget.setStyleSheet(self.containerStylesheet)
         self.dateTimeWidget.setFrameShape(QFrame.StyledPanel)
         self.dateTimeWidget.setFrameShadow(QFrame.Raised)
         self.dateTimeLayout = QVBoxLayout(self.dateTimeWidget)
@@ -757,10 +746,7 @@ class Ui_dashboardWidget(object):
 
         self.dateLabel = QLabel(self.dateTimeWidget)
         self.dateLabel.setObjectName(u"dateLabel")
-        self.dateLabel.setStyleSheet(u"font: 75 18pt \"Garamond\";\n"
-                                     "background-color: transparent;\n"
-                                     "border: none;\n"
-                                     "border-radius: 20px;")
+        self.dateLabel.setStyleSheet(self.font2)
         self.dateLabel.setTextFormat(Qt.PlainText)
         self.update_date_label()
         self.dateTimeLayout.addWidget(self.dateLabel)
@@ -768,10 +754,7 @@ class Ui_dashboardWidget(object):
 
         self.timeLabel = QLabel(self.dateTimeWidget)
         self.timeLabel.setObjectName(u"timeLabel")
-        self.timeLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-                                     "background-color: transparent;\n"
-                                     "border: none;\n"
-                                     "border-radius: 20px;")
+        self.timeLabel.setStyleSheet(self.font1)
         self.timeLabel.setTextFormat(Qt.PlainText)
         self.update_time_label()
         self.dateTimeLayout.addWidget(self.timeLabel)
@@ -787,9 +770,7 @@ class Ui_dashboardWidget(object):
         self.ticketsNumContainer.setObjectName(u"ticketsNumContainer")
         sizePolicy4.setHeightForWidth(self.ticketsNumContainer.sizePolicy().hasHeightForWidth())
         self.ticketsNumContainer.setSizePolicy(sizePolicy4)
-        self.ticketsNumContainer.setStyleSheet(u"background-color: rgb(250, 245, 232);\n"
-                                               "border: 2px solid rgb(129, 117, 102);\n"
-                                               "border-radius: 20px;")
+        self.ticketsNumContainer.setStyleSheet(self.containerStylesheet)
         self.ticketsNumContainer.setFrameShape(QFrame.StyledPanel)
         self.ticketsNumContainer.setFrameShadow(QFrame.Raised)
         self.ticketNumberLayout = QVBoxLayout(self.ticketsNumContainer)
@@ -798,20 +779,14 @@ class Ui_dashboardWidget(object):
         self.ticketNumberLayout.setContentsMargins(10, 10, 10, 10)
         self.currentTicketLabel = QLabel(self.ticketsNumContainer)
         self.currentTicketLabel.setObjectName(u"currentTicketLabel")
-        self.currentTicketLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";\n"
-                                              "background-color: transparent;\n"
-                                              "border: none;\n"
-                                              "border-radius: 20px;")
+        self.currentTicketLabel.setStyleSheet(self.font1)
         self.currentTicketLabel.setTextFormat(Qt.PlainText)
         self.currentTicketLabel.setText("Current Tickets")
         self.ticketNumberLayout.addWidget(self.currentTicketLabel, 0, Qt.AlignHCenter)
 
         self.currentNumOfTickets = QLabel(self.ticketsNumContainer)
         self.currentNumOfTickets.setObjectName(u"currentNumOfTickets")
-        self.currentNumOfTickets.setStyleSheet(u"font: 75 36pt \"Garamond\";\n"
-                                               "background-color: transparent;\n"
-                                               "border: none;\n"
-                                               "border-radius: 20px;")
+        self.currentNumOfTickets.setStyleSheet(self.font2)
         self.currentNumOfTickets.setFrameShadow(QFrame.Raised)
         self.currentNumOfTickets.setTextFormat(Qt.PlainText)
         self.currentNumOfTickets.setText("0")
@@ -857,7 +832,7 @@ class Ui_dashboardWidget(object):
         sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy4.setHeightForWidth(self.recentscansLabel.sizePolicy().hasHeightForWidth())
         self.recentscansLabel.setSizePolicy(sizePolicy4)
-        self.recentscansLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";")
+        self.recentscansLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font}; color:{textColor}")
         recentScansHeaderLayout.addWidget(self.recentscansLabel)
 
         self.rightLayout.addWidget(self.recentScansHeader)
@@ -876,27 +851,16 @@ class Ui_dashboardWidget(object):
             self.rightLayout.addWidget(recentScan)
 
 
-        # x1 = self.create_recent_scan_widget("buttonIcons/user.png", "Nicholas Delavalliere", "0001", "11/5/23 10:11pm")
-        # x2 = self.create_recent_scan_widget("buttonIcons/user.png", "Nicholas Delavalliere", "0001", "11/5/23 10:11pm")
-        # x3= self.create_recent_scan_widget("buttonIcons/user.png", "Nicholas Delavalliere", "0001", "11/5/23 10:11pm")
-        # x4= self.create_recent_scan_widget("buttonIcons/user.png", "Nicholas Delavalliere", "0001", "11/5/23 10:11pm")
-        # x5 = self.create_recent_scan_widget("buttonIcons/user.png", "Nicholas Delavalliere", "0001", "11/5/23 10:11pm")
-        # self.rightLayout.addWidget(x1)
-        # self.rightLayout.addWidget(x2)
-        # self.rightLayout.addWidget(x3)
-        # self.rightLayout.addWidget(x4)
-        # self.rightLayout.addWidget(x5)
-
         self.rightFrame.update()
 
 
         self.dashboardLayout.addWidget(self.rightFrame)
 
 
-        self.retranslateUi(dashboardWidget)
+
 
         self.getData()
-    # setupUi
+
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_date_label)
@@ -913,9 +877,6 @@ class Ui_dashboardWidget(object):
         current_time = QTime.currentTime().toString("hh:mm AP")
         self.timeLabel.setText(current_time)
 
-    def retranslateUi(self, dashboardWidget):
-        dashboardWidget.setWindowTitle(QCoreApplication.translate("dashboardWidget", u"Form", None))
-
     def create_recent_scan_widget(self, user_image_path, user_name_text, user_id_text, scan_date_time_text):
         recentScansWidget = QFrame()
         recentScansWidget.setObjectName("recentScansWidget")
@@ -929,9 +890,7 @@ class Ui_dashboardWidget(object):
         # Container for Recent Scan Information
         recentScans = QFrame()
         recentScans.setObjectName("recentScans")
-        recentScans.setStyleSheet("background-color: rgb(250, 245, 232);"
-                                  "border: 2px solid rgb(129, 117, 102);"
-                                  "border-radius: 20px;")
+        recentScans.setStyleSheet(self.containerStylesheet)
         recentScans.setFrameShape(QFrame.StyledPanel)
         recentScans.setFrameShadow(QFrame.Raised)
         recentScansLayout = QHBoxLayout(recentScans)
@@ -972,21 +931,21 @@ class Ui_dashboardWidget(object):
         # User ID Label
         userID = QLabel(userInfo)
         userID.setObjectName("userID")
-        userID.setStyleSheet("font: 75 18pt 'Garamond';")
+        userID.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{textColor};")
         userID.setText(user_id_text)
         userInfoLayout.addWidget(userID)
 
         # User Name Label
         userName = QLabel(userInfo)
         userName.setObjectName("userName")
-        userName.setStyleSheet("font: 75 18pt 'Garamond';")
+        userName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{textColor};")
         userName.setText(user_name_text)
         userInfoLayout.addWidget(userName)
 
         # Scan Date Time Label
         scanDateTime = QLabel(userInfo)
         scanDateTime.setObjectName("scanDateTime")
-        scanDateTime.setStyleSheet("font: 75 18pt 'Garamond';")
+        scanDateTime.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{textColorSecondary};")
         scanDateTime.setText(scan_date_time_text)
         userInfoLayout.addWidget(scanDateTime)
 
@@ -1001,11 +960,9 @@ class Ui_dashboardWidget(object):
         self.graphWidget = QFrame(self.leftFrame)
         self.graphWidget.setObjectName("graphWidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setVerticalStretch(10)
+        sizePolicy.setVerticalStretch(12)
         self.graphWidget.setSizePolicy(sizePolicy)
-        self.graphWidget.setStyleSheet("background-color: rgb(250, 245, 232);"
-                                       "border: 2px solid rgb(129, 117, 102);"
-                                       "border-radius: 20px;")
+        self.graphWidget.setStyleSheet(self.containerStylesheet)
         self.graphWidget.setFrameShape(QFrame.StyledPanel)
         self.graphWidget.setFrameShadow(QFrame.Raised)
 
@@ -1018,12 +975,12 @@ class Ui_dashboardWidget(object):
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
         # Call the method to plot the graph
-        self.plotLineGraph()
+        self.plotBarGraph()
 
 
     def plotBarGraph(self):
         # Simulated data for user scans
-        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        days_of_week = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun']
         users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
 
         # Convert RGB to Matplotlib color format
@@ -1031,9 +988,11 @@ class Ui_dashboardWidget(object):
             return tuple(c / 255 for c in color)
 
         # Define your colors
-        bg_color = convert_rgb_to_mpl((250, 245, 232))
-        font_color = convert_rgb_to_mpl((129, 117, 102))
-        bar_color = convert_rgb_to_mpl((129, 117, 102))
+
+
+        bg_color = convert_rgb_to_mpl(graph_background_color)
+        font_color = convert_rgb_to_mpl(graph_font_color)
+        bar_color = convert_rgb_to_mpl(graph_bar_color)
 
         ax = self.figure.add_subplot(111)
 
@@ -1041,17 +1000,17 @@ class Ui_dashboardWidget(object):
         ax.set_facecolor(bg_color)
 
         # Set the graph title, labels, and font properties
-        ax.set_title('Users Scanned per Day', fontsize=18, fontname='Garamond', color=font_color)
-        ax.set_xlabel('Days of the Week', fontsize=18, fontname='Garamond', color=font_color)
-        ax.set_ylabel('Number of Users Scanned', fontsize=18, fontname='Garamond', color=font_color)
+        ax.set_title('Scans per Day', fontsize=14, fontname=f'{font}', color=font_color)
+        ax.set_xlabel('Days of the Week', fontsize=14, fontname=f'{font}', color=font_color)
+        ax.set_ylabel('Users Scanned', fontsize=14, fontname=f'{font}', color=font_color)
 
         # Plot the bar chart with the specified bar color
         bars = ax.bar(days_of_week, users_scanned, color=[bar_color] * len(days_of_week))
 
         # Change the font of the ticks on x and y axis
         for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-            label.set_fontname('Garamond')
-            label.set_fontsize(18)  # Adjust the size as needed
+            label.set_fontname(f'{font}')
+            label.set_fontsize(14)  # Adjust the size as needed
 
         ax.patch.set_visible(False)
 
@@ -1616,11 +1575,186 @@ class Ui_ticketsWidget(object):
 class Ui_addUserWidget(object):
 
     def setupUi(self, addUserWidget):
-        addUserWidget.setStyleSheet(u"background-color: transparent; color:black;")
+        #self.fieldLabelStyle = f"font: 75 {bodyFontSize} {font}; color:{textColor};"
+        #self.subHeaderLabelStyle = f"font: 75 {subheaderFontSize} {font}; color:{textColor};"
+
+        self.containerStylesheet = f"""
+                    QFrame {{
+                        background-color: {backgroundColor};
+                        border: 2px solid {bordersLines};
+                        border-radius: 20px;
+                    }}
+                """
+        self.noneStyle = f"""
+                    QFrame {{
+                        background-color: transparent;
+                        border: none;
+                        border-radius: 0px;
+                    }}
+                """
+        self.subHeaderLabelStyle = f"""
+                    QLabel {{
+                    font: 75 {subheaderFontSize} "{font}";
+                    color: {textColor};
+                    background-color: transparent;
+                    border: none;
+                    border-radius: 20px;
+                }}"""
+
+        self.fieldLabelStyle = f"""
+                    QLabel {{
+                    color: {textColor};
+                    font: 75 {bodyFontSize} "{font}";
+                    background-color: transparent;
+                    border: none;
+                    border-radius: 20px;
+                }}"""
+
+        self.textFieldStyle = f"""
+            QLineEdit {{
+                border: 1px solid {bordersLines}; /* Replace with your border color */
+                border-radius: 4px;
+                padding: 5px;
+                background-color: {fieldBackgroundColor}; /* Replace with your background color */
+                color: {textColor}; /* Replace with your text color */
+                font-size: {bodySecondaryFontSize}px; /* Replace with the size of your font */
+                font-family: {font}; /* Replace with your font family */
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {interactiveElements1}; /* Replace with your focus border color */
+                background-color: {interactiveElements2}; /* Replace with your focus background color */
+            }}
+            QLineEdit::placeholder {{
+                color: {placeholderColor}; /* Replace with your placeholder text color */
+                font-style: italic;
+            }}
+        """
+
+        self.comboBoxStyle = f"""QComboBox {{
+        border: 1px solid {bordersLines};
+        border-radius: 4px;
+        padding: 5px;
+        background-color: {fieldBackgroundColor};
+        color: {textColor};
+        font-size: {bodySecondaryFontSize}px;
+        font-family: {font};
+    }}
+    QComboBox::drop-down {{
+        subcontrol-origin: padding;
+        subcontrol-position: top right;
+        width: 15px;
+        border-left-width: 1px;
+        border-left-color: {bordersLines};
+        border-left-style: solid; /* just a single line for the drop-down arrow */
+        border-top-right-radius: 3px; /* same radius as the QComboBox */
+        border-bottom-right-radius: 3px;
+    }}"""
+
+        self.time_edit_style = f"""
+            QTimeEdit {{
+                background-color: {backgroundColor}; /* Replace with your desired background color */
+                color: {textColor}; /* Replace with your desired text color */
+                border: 1px solid {bordersLines}; /* Replace with your desired border color */
+                border-radius: 5px;
+                padding: 5px;
+                margin: 2px;
+                font-size: {bodySecondaryFontSize}px; /* Replace with your desired font size */
+                font-family: {font}; /* Replace with your desired font family */
+            }}
+            QTimeEdit::up-button {{
+                subcontrol-origin: border;
+                subcontrol-position: top right; /* Position can be changed if needed */
+                border-left-width: 1px;
+                border-left-color: {bordersLines}; /* Replace with your desired border color */
+                border-left-style: solid; /* Can be changed if needed */
+                width: {bodyFontSize}px; /* Replace with your desired button width */
+            }}
+            QTimeEdit::down-button {{
+                subcontrol-origin: border;
+                subcontrol-position: bottom right; /* Position can be changed if needed */
+                border-left-width: 1px;
+                border-left-color: {bordersLines}; /* Replace with your desired border color */
+                border-left-style: solid; /* Can be changed if needed */
+                width: {bodyFontSize}px; /* Replace with your desired button width */
+            }}
+            QTimeEdit::up-arrow {{
+                image: url(:/icons/up-arrow.png); /* Replace with your desired icon */
+                width: {bodyFontSize}px; /* Replace with your desired width */
+                height: {bodyFontSize}px; /* Replace with your desired height */
+            }}
+            QTimeEdit::down-arrow {{
+                image: url(:/icons/down-arrow.png); /* Replace with your desired icon */
+                width: {bodyFontSize}px; /* Replace with your desired width */
+                height: {bodyFontSize}px; /* Replace with your desired height */
+            }}
+            QTimeEdit::up-arrow:hover, QTimeEdit::down-arrow:hover {{
+                image: url(:/icons/hover-arrow.png); /* Replace with an icon for hover state */
+            }}
+            QTimeEdit:focus {{
+                border: 2px solid {interactiveElements1}; /* Replace with your desired focus border color */
+            }}
+        """
+        self.checkbox_style = f"""
+            QCheckBox {{
+                font-family: {font};  /* Change to your preferred font family */
+                font-size: {bodyFontSize};       /* Change to the desired font size */
+                color: {textColor};    /* Set your preferred text color, replace {textColor} with a color variable or value */
+            }}
+            QCheckBox::indicator {{
+                width: 20px;
+                height: 20px;
+                border: 1px solid {bordersLines};  /* Replace {bordersLines} with your color variable */
+                background-color: {backgroundColor}; /* Replace {backgroundColor} with your color variable */
+            }}
+            QCheckBox::indicator:unchecked:hover {{
+                border-color: #a0a0a0;
+            }}
+            QCheckBox::indicator:checked {{
+                background-color: #5ca941;
+                border: 1px solid #5ca941;
+            }}
+            QCheckBox::indicator:checked:hover {{
+                background-color: {interactiveElements1}; /* Replace {interactiveElements1} with your color variable */
+            }}
+            /* Disabled states */
+            QCheckBox::indicator:disabled {{
+                background-color: #e6e6e6;
+                border-color: #aaaaaa;
+            }}
+            /* Font styles for when the checkbox is disabled */
+            QCheckBox:disabled {{
+                color: #aaaaaa; /* Color for the text when the checkbox is disabled */
+            }}
+        """
+
+        self.button_stylesheet = f"""
+    QPushButton {{
+        background-color: {buttonBackgroundColor};
+        color: {textColor};
+        border-style: outset;
+        border-width: 2px;
+        border-radius: 10px;
+        border-color: {bordersLines};
+        font: bold 14px;
+        padding: 5px;
+    }}
+    QPushButton:pressed {{
+        background-color: {interactiveElements1};
+        border-style: inset;
+    }}
+    QPushButton:hover:!pressed {{
+        background-color: {interactiveElements2};
+    }}
+    
+"""
+
+
+        addUserWidget.setStyleSheet(backgroundColorTransparent)
         self.addUserLayout = QVBoxLayout(addUserWidget)
         self.addUserLayout.setSpacing(10)
         self.addUserLayout.setContentsMargins(10, 10, 10, 10)
         self.accountOrganizationFrame = QFrame(addUserWidget)
+        self.accountOrganizationFrame.setStyleSheet(self.containerStylesheet)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(2)
@@ -1629,7 +1763,10 @@ class Ui_addUserWidget(object):
         self.accountOrganizationLayout = QHBoxLayout(self.accountOrganizationFrame)
         self.accountOrganizationLayout.setSpacing(10)
         self.accountOrganizationLayout.setContentsMargins(0, 0, 0, 0)
+
+
         self.accountFrame = QFrame(self.accountOrganizationFrame)
+        self.accountFrame.setStyleSheet(self.noneStyle)
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
@@ -1639,15 +1776,18 @@ class Ui_addUserWidget(object):
         self.accountLayout.setSpacing(0)
         self.accountLayout.setContentsMargins(0, 0, 0, 0)
         self.accountLabel = QLabel("Account")
-        self.accountLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";")
+        self.accountLabel.setStyleSheet(self.subHeaderLabelStyle)
         self.accountLayout.addWidget(self.accountLabel)
+
+
         self.accountForm = QFrame(self.accountFrame)
-        self.accountForm.setStyleSheet(u"font: 75 16pt \"Garamond\";")
+        self.accountForm.setStyleSheet(self.fieldLabelStyle + self.textFieldStyle + self.comboBoxStyle)
         self.accountFormLayout = QFormLayout(self.accountForm)
         self.accountFormLayout.setHorizontalSpacing(10)
         self.accountFormLayout.setVerticalSpacing(10)
         self.accountFormLayout.setContentsMargins(10, 10, 10, 10)
         self.userIDLabel = QLabel("User ID: ")
+
         self.accountFormLayout.setWidget(0, QFormLayout.LabelRole, self.userIDLabel)
         self.userIDLineEdit = QLineEdit(self.accountForm)
         self.accountFormLayout.setWidget(0, QFormLayout.FieldRole, self.userIDLineEdit)
@@ -1669,26 +1809,33 @@ class Ui_addUserWidget(object):
         self.accountFormLayout.setItem(4, QFormLayout.LabelRole, self.accountVerticalSpacer)
         self.accountLayout.addWidget(self.accountForm)
         self.accountOrganizationLayout.addWidget(self.accountFrame)
+
+
         self.organizationFrame = QFrame(self.accountOrganizationFrame)
+        self.organizationFrame.setStyleSheet(self.noneStyle)
         sizePolicy1.setHeightForWidth(self.organizationFrame.sizePolicy().hasHeightForWidth())
         self.organizationFrame.setSizePolicy(sizePolicy1)
         self.organizationLayout = QVBoxLayout(self.organizationFrame)
         self.organizationLayout.setSpacing(0)
         self.organizationLayout.setContentsMargins(0, 0, 0, 0)
+
+
         self.organizationLabel = QLabel("Organization")
-        self.organizationLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";")
+        self.organizationLabel.setStyleSheet(self.subHeaderLabelStyle)
         self.organizationLayout.addWidget(self.organizationLabel)
         self.organizationForm = QFrame(self.organizationFrame)
-        self.organizationForm.setStyleSheet(u"font: 75 16pt \"Garamond\";")
+        self.organizationForm.setStyleSheet(self.textFieldStyle + self.fieldLabelStyle)
         self.organizationFormLayout = QFormLayout(self.organizationForm)
         self.organizationFormLayout.setHorizontalSpacing(10)
         self.organizationFormLayout.setVerticalSpacing(10)
         self.organizationFormLayout.setContentsMargins(10, 10, 10, 10)
         self.companyNameLabel = QLabel("Company: ")
+
         self.organizationFormLayout.setWidget(0, QFormLayout.LabelRole, self.companyNameLabel)
         self.companyNameLineEdit = QLineEdit(self.organizationForm)
         self.organizationFormLayout.setWidget(0, QFormLayout.FieldRole, self.companyNameLineEdit)
         self.titleLabel = QLabel("Title: ")
+
         self.organizationFormLayout.setWidget(1, QFormLayout.LabelRole, self.titleLabel)
         self.titleLineEdit = QLineEdit(self.organizationForm)
         self.organizationFormLayout.setWidget(1, QFormLayout.FieldRole, self.titleLineEdit)
@@ -1698,21 +1845,30 @@ class Ui_addUserWidget(object):
         self.accountOrganizationLayout.addWidget(self.organizationFrame)
         self.addUserLayout.addWidget(self.accountOrganizationFrame)
 
+
+
+
         self.scheduleFrame = QFrame(addUserWidget)
+        self.scheduleFrame.setStyleSheet(self.containerStylesheet)
         sizePolicy.setHeightForWidth(self.scheduleFrame.sizePolicy().hasHeightForWidth())
         self.scheduleFrame.setSizePolicy(sizePolicy)
         self.scheduleLayout = QVBoxLayout(self.scheduleFrame)
         self.scheduleLayout.setSpacing(0)
         self.scheduleLayout.setContentsMargins(0, 0, 0, 0)
         self.scheduleLabel = QLabel("Schedule")
-        self.scheduleLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";")
+        self.scheduleLabel.setStyleSheet(self.subHeaderLabelStyle + self.noneStyle)
         self.scheduleLayout.addWidget(self.scheduleLabel)
+
+
         self.scheduleForm = QFrame(self.scheduleFrame)
-        self.scheduleForm.setStyleSheet(u"font: 75 16pt \"Garamond\";")
+
+        self.scheduleForm.setStyleSheet(self.noneStyle + self.fieldLabelStyle + self.time_edit_style + self.checkbox_style )
         self.scheduleFormLayout = QGridLayout(self.scheduleForm)
         self.scheduleFormLayout.setSpacing(10)
         self.scheduleFormLayout.setContentsMargins(10, 10, 10, 10)
         self.timeEditStartMonday = QTimeEdit(self.scheduleForm)
+
+
         sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(4)
         sizePolicy2.setVerticalStretch(0)
@@ -1722,27 +1878,36 @@ class Ui_addUserWidget(object):
         self.timeEditStartMonday.setCalendarPopup(False)
         self.timeEditStartMonday.setTime(QTime(8, 0, 0))
         self.scheduleFormLayout.addWidget(self.timeEditStartMonday, 2, 1, 1, 1)
+
         self.timeEditStartThursday = QTimeEdit(self.scheduleForm)
+
         sizePolicy2.setHeightForWidth(self.timeEditStartThursday.sizePolicy().hasHeightForWidth())
         self.timeEditStartThursday.setSizePolicy(sizePolicy2)
         self.timeEditStartThursday.setTime(QTime(8, 0, 0))
         self.scheduleFormLayout.addWidget(self.timeEditStartThursday, 5, 1, 1, 1)
+
         self.timeEditEndThursday = QTimeEdit(self.scheduleForm)
+
         sizePolicy2.setHeightForWidth(self.timeEditEndThursday.sizePolicy().hasHeightForWidth())
         self.timeEditEndThursday.setSizePolicy(sizePolicy2)
         self.timeEditEndThursday.setTime(QTime(17, 0, 0))
         self.scheduleFormLayout.addWidget(self.timeEditEndThursday, 5, 3, 1, 1)
+
         self.timeEditStartWednesday = QTimeEdit(self.scheduleForm)
+
         sizePolicy2.setHeightForWidth(self.timeEditStartWednesday.sizePolicy().hasHeightForWidth())
         self.timeEditStartWednesday.setSizePolicy(sizePolicy2)
         self.timeEditStartWednesday.setTime(QTime(8, 0, 0))
         self.scheduleFormLayout.addWidget(self.timeEditStartWednesday, 4, 1, 1, 1)
+
         self.timeEditEndSaturday = QTimeEdit(self.scheduleForm)
+
         sizePolicy2.setHeightForWidth(self.timeEditEndSaturday.sizePolicy().hasHeightForWidth())
         self.timeEditEndSaturday.setSizePolicy(sizePolicy2)
         self.timeEditEndSaturday.setTime(QTime(17, 0, 0))
         self.scheduleFormLayout.addWidget(self.timeEditEndSaturday, 7, 3, 1, 1)
         self.dayLabel = QLabel("Day")
+        self.dayLabel.setStyleSheet(self.fieldLabelStyle)
         sizePolicy1.setHeightForWidth(self.dayLabel.sizePolicy().hasHeightForWidth())
         self.dayLabel.setSizePolicy(sizePolicy1)
         self.scheduleFormLayout.addWidget(self.dayLabel, 0, 0, 1, 1)
@@ -1839,6 +2004,7 @@ class Ui_addUserWidget(object):
 
 
         self.faceEncFrame = QFrame(addUserWidget)
+        self.faceEncFrame.setStyleSheet(self.containerStylesheet)
         sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(1)
@@ -1848,6 +2014,7 @@ class Ui_addUserWidget(object):
         self.faceEncLayout.setSpacing(0)
         self.faceEncLayout.setContentsMargins(0, 0, 0, 0)
         self.pictureframe = QFrame(self.faceEncFrame)
+        self.pictureframe.setStyleSheet(self.noneStyle)
         sizePolicy1.setHeightForWidth(self.pictureframe.sizePolicy().hasHeightForWidth())
         self.pictureframe.setSizePolicy(sizePolicy1)
         self.pictureLayout = QHBoxLayout(self.pictureframe)
@@ -1859,16 +2026,23 @@ class Ui_addUserWidget(object):
         self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
         self.faceEncLayout.addWidget(self.pictureframe, 0, Qt.AlignVCenter)
         self.photoFaceEncFrame = QFrame(self.faceEncFrame)
+        self.photoFaceEncFrame.setStyleSheet(self.noneStyle)
         sizePolicy4.setHeightForWidth(self.photoFaceEncFrame.sizePolicy().hasHeightForWidth())
         self.photoFaceEncFrame.setSizePolicy(sizePolicy4)
         self.photoFaceEncLayout = QVBoxLayout(self.photoFaceEncFrame)
+
+
         self.photoFaceEncLayout.setContentsMargins(0, 0, 0, 0)
         self.faceEncFrameLabel = QLabel("Face Encoding: ")
-        self.faceEncFrameLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";")
+        self.faceEncFrameLabel.setStyleSheet(self.noneStyle + self.subHeaderLabelStyle)
         self.photoFaceEncLayout.addWidget(self.faceEncFrameLabel)
+
+
         self.photoFaceEncForm = QFrame(self.photoFaceEncFrame)
-        self.photoFaceEncForm.setStyleSheet(u"font: 75 16pt \"Garamond\";")
+        self.photoFaceEncForm.setStyleSheet(self.noneStyle + self.fieldLabelStyle + self.textFieldStyle)
+
         self.photoFaceEncFormLayout = QFormLayout(self.photoFaceEncForm)
+        self.photoFaceEncFormLayout.setAlignment(Qt.AlignLeft)
         self.photoFaceEncFormLayout.setHorizontalSpacing(10)
         self.photoFaceEncFormLayout.setVerticalSpacing(10)
         self.photoFaceEncFormLayout.setContentsMargins(10, 10, 10, 10)
@@ -1881,7 +2055,10 @@ class Ui_addUserWidget(object):
         self.faceEncLineEdit = QLineEdit(self.photoFaceEncForm)
         self.photoFaceEncFormLayout.setWidget(1, QFormLayout.FieldRole, self.faceEncLineEdit)
         self.photoFaceEncLayout.addWidget(self.photoFaceEncForm)
+
+
         self.buttonFrame = QFrame(self.photoFaceEncFrame)
+        self.buttonFrame.setStyleSheet(self.noneStyle + self.button_stylesheet)
         self.buttonLayout = QHBoxLayout(self.buttonFrame)
 
         self.openCameraButton = self.createButton("Open Camera", self.openCameraButtonHandle)

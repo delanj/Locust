@@ -22,7 +22,7 @@ from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
 from matplotlib_inline.backend_inline import FigureCanvas
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from pyqt5_plugins.examplebutton import QtWidgets
+
 
 from Database.firebaseDatabase import database
 import Entities.entitiesMain
@@ -44,6 +44,24 @@ userRowLength = inspect.getsource(User.__init__).count("self.")
 
 employeeColumnLength = len(dbe.employees)
 employeeRowLength = inspect.getsource(Employee.__init__).count("self.")
+
+font = "Copperplate"
+headerFontSize = "42pt"
+menuItemFontSize = "22pt"
+menuItemFontSizeSecondary = "14pt"
+
+
+"""Smallest Text — 12px
+Detail Text — 14px
+Body Text — 16/18px
+Subtitle — 18px
+Title Text — 24/28px
+Main Text — 32/38/42px
+Display Text — 60/72/80px"""
+
+textColor = "black"
+
+
 
 class Ui_centralWindow(object):
     def setupUi(self, centralWindow):
@@ -251,7 +269,7 @@ class Ui_logoWidget(object):
 
         self.logoLabel = QLabel(logoWidget)
         self.logoLabel.setObjectName("logoLabel")
-        self.logoLabel.setStyleSheet("font: 75 36pt 'Garamond';")
+        self.logoLabel.setStyleSheet(f"font: 75 {headerFontSize} '{font}';")
 
         self.logoLayout.addWidget(self.logoLabel)
 
@@ -271,7 +289,7 @@ class Ui_navigationWidget(object):
 
         self.navigationLayout = QVBoxLayout(navigationWidget)
         self.navigationLayout.setSpacing(0)
-        self.navigationLayout.setContentsMargins(0, 0, 0, 0)
+        self.navigationLayout.setContentsMargins(5, 5, 5, 5)
 
 
 
@@ -305,9 +323,6 @@ class Ui_navigationWidget(object):
         self.navigationLayout.addWidget(self.faceRecButton)
         self.navigationLayout.addWidget(self.logoutButton)
 
-
-
-
     def create_button(self, text, objectName, iconPath):
         button = QPushButton()
         button.setObjectName(objectName)
@@ -316,26 +331,26 @@ class Ui_navigationWidget(object):
         button.setIconSize(QSize(20, 20))  # Set your desired icon size
 
         # Stylesheet with hover and pressed states
-        button.setStyleSheet("""
-            QPushButton {
-                color: black; 
-                font: 75 18pt 'Garamond';
-                padding-left: 30px; /* Size of the icon plus desired spacing */
-                text-align: left;
-                border: none; /* Remove border */
-                background-color: transparent;
-            }
-            QPushButton:hover {
-                background-color: rgb(220, 220, 220); /* Lighter shade for hover */
-            }
-            QPushButton:pressed {
-                background-color: rgb(190, 190, 190); /* Even lighter for pressed */
-            }
-            QPushButton::icon {
-                margin-left: -25px; /* Negative margin to align the icon with the button edge */
-                padding-left: 10px;
-            }
-        """)
+        button.setStyleSheet(f"""
+                    QPushButton {{
+                        color: {textColor}; 
+                        font: 75 {menuItemFontSize}pt '{font}';
+                        padding-left: 30px; /* Size of the icon plus desired spacing */
+                        text-align: left;
+                        border: none; /* Remove border */
+                        background-color: transparent;
+                    }}
+                    QPushButton:hover {{
+                        background-color: rgb(220, 220, 220); /* Lighter shade for hover */
+                    }}
+                    QPushButton:pressed {{
+                        background-color: rgb(190, 190, 190); /* Even lighter for pressed */
+                    }}
+                    QPushButton::icon {{
+                        margin-left: -25px; /* Negative margin to align the icon with the button edge */
+                        padding-left: 10px;
+                    }}
+                """)
 
         button.setMinimumHeight(40)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -345,27 +360,24 @@ class Ui_navigationWidget(object):
         label = QLabel()
         label.setObjectName(objectName)
         label.setText(text)
-        label.setStyleSheet("color: black; font: 75 16pt 'Garamond'; padding-left: 10px;")
+        label.setStyleSheet(f"color: {textColor}; font: 75 {menuItemFontSizeSecondary} '{font}'; padding-left: 10px;")
         label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return label
 
-    def retranslateUi(self, navigationWidget):
-        navigationWidget.setWindowTitle(QCoreApplication.translate("navigationWidget", "Navigation", None))
-        self.mainMenuLabel.setText(QCoreApplication.translate("mainMenuLabel", "Main Menu", None))
 
 
 class Ui_userHeaderWidget(object):
     def setupUi(self, userHeaderWidget):
         if not userHeaderWidget.objectName():
             userHeaderWidget.setObjectName(u"userHeaderWidget")
-        userHeaderWidget.resize(901, 196)
-        userHeaderWidget.setStyleSheet(u"background-color: transparent;")
+
+        userHeaderWidget.setStyleSheet(u"background-color: transparent; color:black;")
         self.userHeaderLayout = QHBoxLayout(userHeaderWidget)
         self.userHeaderLayout.setSpacing(10)
         self.userHeaderLayout.setObjectName(u"userHeaderLayout")
         self.userHeaderLayout.setContentsMargins(10, 10, 10, 10)
 
-        font = "font: 75 16pt 'Garamond';"
+        font = "font: 75 16pt 'Copperplate';"
         buttonStyleSheet = """
             QPushButton {
                 border: none;
@@ -441,12 +453,11 @@ class Ui_userHeaderWidget(object):
         self.notificationButton.setText("")
         self.employeeProfile.setText("")
 
-
 class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):
         if not dashboardWidget.objectName():
             dashboardWidget.setObjectName(u"dashboardWidget")
-        dashboardWidget.setStyleSheet(u"background-color: transparent;")
+        dashboardWidget.setStyleSheet(u"background-color: transparent; color:black;")
         self.dashboardLayout = QHBoxLayout(dashboardWidget)
         self.dashboardLayout.setSpacing(10)
         self.dashboardLayout.setObjectName(u"dashboardLayout")
@@ -1144,7 +1155,7 @@ class Ui_dashboardWidget(object):
             logs = list(reader)
 
             # get last 5 users scanned
-            last_5_users_scanned = logs[-5:] if len(logs) >= 5 else logs
+            last_5_users_scanned = logs[-3:] if len(logs) >= 3 else logs
 
             # Extract user IDs and timestamps from the last 5 scanned entries
             user_ids_and_times = [(log['UserID'], log['Timestamp']) for log in last_5_users_scanned]
@@ -1605,7 +1616,7 @@ class Ui_ticketsWidget(object):
 class Ui_addUserWidget(object):
 
     def setupUi(self, addUserWidget):
-        #addUserWidget.setStyleSheet(u"background-color: transparent;")
+        addUserWidget.setStyleSheet(u"background-color: transparent; color:black;")
         self.addUserLayout = QVBoxLayout(addUserWidget)
         self.addUserLayout.setSpacing(10)
         self.addUserLayout.setContentsMargins(10, 10, 10, 10)
@@ -1874,6 +1885,7 @@ class Ui_addUserWidget(object):
         self.buttonLayout = QHBoxLayout(self.buttonFrame)
 
         self.openCameraButton = self.createButton("Open Camera", self.openCameraButtonHandle)
+        #self.openCameraButton.hide()
         self.takePhotoButton = self.createButton("Take Photo", self.takePhotoButtonHandle)
         self.takePhotoButton.hide()
         self.acceptButton = self.createButton("Accept", self.buttonAcceptHandle)
@@ -1889,7 +1901,61 @@ class Ui_addUserWidget(object):
         self.addUserLayout.addWidget(self.faceEncFrame)
 
 
+    def clear(self):
+        if hasattr(self, 'image_label'):
+            self.image_label.hide()
+        if hasattr(self, 'capture') and self.capture.isOpened():
+            self.capture.release()
 
+        self.accountFrame.show()
+        self.organizationFrame.show()
+        self.scheduleFrame.show()
+
+        self.takePhotoButton.hide()
+        self.acceptButton.hide()
+        self.openCameraButton.show()
+
+        self.userIDLineEdit.clear()
+        self.firstNameLineEdit.clear()
+        self.lastNameLineEdit.clear()
+        # self.genderComboBox.clear()
+        self.companyNameLineEdit.clear()
+        self.titleLineEdit.clear()
+        self.photoLineEdit.clear()
+        self.faceEncLineEdit.clear()
+
+        defaultStartTime = QTime(8, 0)
+        defaultEndTime = QTime(17, 0)
+        for timeEdit in [self.timeEditStartMonday, self.timeEditEndMonday,
+                         self.timeEditStartTuesday, self.timeEditEndTuesday,
+                         self.timeEditStartWednesday, self.timeEditEndWednesday,
+                         self.timeEditStartThursday, self.timeEditEndThursday,
+                         self.timeEditStartFriday, self.timeEditEndFriday,
+                         self.timeEditStartSaturday, self.timeEditEndSaturday,
+                         self.timeEditStartSunday, self.timeEditEndSunday,
+                         ]:
+            if 'Start' in timeEdit.objectName():
+                timeEdit.setTime(defaultStartTime)
+            else:
+                timeEdit.setTime(defaultEndTime)
+
+        # Uncheck all CheckBoxes
+        for checkBox in [self.checkBoxSunday, self.checkBoxMonday,
+                         self.checkBoxTuesday, self.checkBoxWednesday,
+                        self.checkBoxThursday, self.checkBoxFriday,
+                        self.checkBoxSaturday
+                         ]:
+            checkBox.setChecked(False)
+
+
+        def removeFiles():
+            folder_path = '../Database/AddLocal'
+            if os.path.exists(folder_path):
+                for file in os.listdir(folder_path):
+                    file_path = os.path.join(folder_path, file)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+        removeFiles()
 
     def createButton(self, name, connect):
         button = QPushButton(name)
@@ -1899,20 +1965,14 @@ class Ui_addUserWidget(object):
         return button
 
     def buttonAcceptHandle(self):
-        pass
+        self.saveNewUser()
+        self.update_schedule_json()
+        self.clear()
 
-    def hideFrames(self):
+    def openCameraButtonHandle(self):
         self.accountFrame.hide()
         self.organizationFrame.hide()
         self.scheduleFrame.hide()
-    def showFrames(self):
-        self.image_label.hide()
-        self.accountFrame.show()
-        self.organizationFrame.show()
-        self.scheduleFrame.show()
-
-    def openCameraButtonHandle(self):
-        self.hideFrames()
         if not hasattr(self, 'capture'):  # Check if the camera has been initialized already
             self.init_Cam()
 
@@ -1922,8 +1982,13 @@ class Ui_addUserWidget(object):
     def takePhotoButtonHandle(self):
         try:
             self.capturePhoto()
-            self.close_camera()
-            self.showFrames()
+            self.capture.release()
+
+            self.image_label.hide()
+            self.accountFrame.show()
+            self.organizationFrame.show()
+            self.scheduleFrame.show()
+
             self.takePhotoButton.hide()
             self.acceptButton.show()
             self.savePKL()
@@ -1937,7 +2002,7 @@ class Ui_addUserWidget(object):
         self.capture = cv2.VideoCapture(0)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30)
+        self.timer.start(100)
 
     def update_frame(self):
         ret, frame = self.capture.read()
@@ -1950,20 +2015,13 @@ class Ui_addUserWidget(object):
             self.image_label.setPixmap(pix)
 
     def capturePhoto(self):
-        # Capture a frame from the camera
         ret, frame = self.capture.read()
         if ret:
-            # Specify the directory where you want to save the image
             save_directory = "../Database/AddLocal"
-
             os.makedirs(save_directory, exist_ok=True)
-
             photoDir = f"{self.userIDLineEdit.text()}_0.jpg"
-
             file_path = os.path.join(save_directory, photoDir)
-
             cv2.imwrite(file_path, frame)
-
             self.photoLineEdit.setText(photoDir)
 
     def savePKL(self):
@@ -1993,24 +2051,88 @@ class Ui_addUserWidget(object):
             pickle.dump(known_face_data, f)
         self.faceEncLineEdit.setText(f"{self.userIDLineEdit.text()}_0.pkl")
 
-    def close_camera(self):
-        # Release the camera when the "Close Camera" button is clicked
-        self.capture.release()
-
     def cancelButtonHandle(self):
+        self.clear()
 
-        self.userIDLineEdit.clear()
-        self.firstNameLineEdit.clear()
-        self.lastNameLineEdit.clear()
-        #self.genderComboBox.clear()
-        self.companyNameLineEdit.clear()
-        self.titleLineEdit.clear()
-        self.photoLineEdit.clear()
-        self.faceEncLineEdit.clear()
+    def saveNewUser(self):
+        newUser = User(
+            id=self.userIDLineEdit.text(),
+            firstName=self.firstNameLineEdit.text(),
+            lastName=self.lastNameLineEdit.text(),
+            gender=self.genderComboBox.currentText(),
+            company=self.companyNameLineEdit.text(),
+            title=self.titleLineEdit.text(),
+            photos=self.photoLineEdit.text(),
+            faceEncoding=self.faceEncLineEdit.text()
+        )
 
+        dbu.add_user(newUser)
 
+        shutil.move(f"../Database/AddLocal/{self.photoLineEdit.text()}",
+                    f"../Database/IndirectUsers/photos/{self.photoLineEdit.text()}")
 
+        shutil.move(f"../Database/AddLocal/{self.faceEncLineEdit.text()}",
+                    f"../Database/IndirectUsers/face_encodings/{self.faceEncLineEdit.text()}")
 
+        # db_conn = database.db
+        # coll_ref = db_conn.collection("indirectUser")
+        # coll_ref.add({
+        #     "id": self.userIDLineEdit.text(),
+        #     "firstName": self.firstNameLineEdit.text(),
+        #     "lastName": self.lastNameLineEdit.text(),
+        #     "gender": self.genderComboBox.currentText(),
+        #     "company": self.companyNameLineEdit.text(),
+        #     "title": self.titleLineEdit.text()
+        # })
+        # print("data added successfully")
+
+    def get_schedule_info(self):
+        user_id = self.userIDLineEdit.text()
+        schedule_info = {
+            "user_id": user_id,
+            "schedule": {}
+        }
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        for day in days:
+            checkbox = getattr(self, f"checkBox{day}", None)
+            if checkbox and checkbox.isChecked():
+                start_time_edit = getattr(self, f"timeEditStart{day}")
+                end_time_edit = getattr(self, f"timeEditEnd{day}")
+                start_time = start_time_edit.time().toString('hh:mm a')  # Using 12-hour format with AM/PM
+                end_time = end_time_edit.time().toString('hh:mm a')  # Using 12-hour format with AM/PM
+                schedule_info["schedule"][day] = f"{start_time} - {end_time}"
+        return schedule_info
+
+    def update_schedule_json(self):
+        # Get the current schedule information
+        new_schedule = self.get_schedule_info()
+
+        # Define the path to the JSON file
+        json_path = '../Database/IndirectUsers/jsonFile/schedule.json'
+
+        # Read the existing data
+        try:
+            with open(json_path, 'r') as file:
+                schedule_data = json.load(file)
+                # Ensure that we have a list of dicts
+                if not isinstance(schedule_data, list):
+                    raise ValueError("JSON file must contain a list of dictionaries.")
+        except (FileNotFoundError, ValueError) as e:
+            print(f"Error reading schedule file: {e}")
+            schedule_data = []
+
+        # Check if the user_id already exists
+        existing_user = next((item for item in schedule_data if item.get("user_id") == new_schedule["user_id"]), None)
+        if existing_user:
+            # Update existing user's schedule
+            existing_user["schedule"] = new_schedule["schedule"]
+        else:
+            # Append the new schedule information
+            schedule_data.append(new_schedule)
+
+        # Write the updated data back to the file
+        with open(json_path, 'w') as file:
+            json.dump(schedule_data, file, indent=4)
 
 class MainWindow(QMainWindow, Ui_centralWindow):
     def __init__(self, parent=None):

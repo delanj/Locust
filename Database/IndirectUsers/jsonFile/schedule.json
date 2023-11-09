@@ -2,11 +2,11 @@
     {
         "user_id": "0001",
         "schedule": {
-            "Monday": "9:00 AM-5:00 PM",
-            "Tuesday": "10:00 AM-6:00 PM",
-            "Wednesday": "9:00 AM-5:00 PM",
-            "Thursday": "10:00 AM-6:00 PM",
-            "Friday": "9:00 AM-3:00 PM"
+            "Monday": "9:00 AM - 5:00 PM",
+            "Tuesday": "10:00 AM - 6:00 PM",
+            "Wednesday": "9:00 AM - 5:00 PM",
+            "Thursday": "10:00 AM - 6:00 PM",
+            "Friday": "9:00 AM - 3:00 PM"
         }
     },
     {

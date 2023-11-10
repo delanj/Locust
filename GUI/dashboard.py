@@ -65,9 +65,11 @@ sideBarTextColor = "#E0E0E0"
 mainBackgroundColor = "#FAFAFA"
 contentCardBackgroundColor = "#FEFEFE"
 
+secondaryFontColor = "#4A4A4A"
+opacity_effect = QGraphicsOpacityEffect()
+opacity_effect.setOpacity(0.5)
 
-employeeNameFontColor = "#4A4A4A"
-headerButtonColor = "#B0BEC5"
+buttonColor = "#B0BEC5"
 
 textColor = "#4A4A4A"
 
@@ -103,8 +105,8 @@ buttonBackgroundColor = "rgb(255, 255, 255)"
 
 
 graph_background_color = (250, 245, 232)
-graph_font_color = (0, 0, 0)
-graph_bar_color = (255, 255, 255)
+graph_font_color = (74, 74, 74)
+graph_bar_color = (176, 190, 197)
 
 search_bar_style = f"""
             QLineEdit {{
@@ -440,7 +442,7 @@ class Ui_userHeaderWidget(object):
             QPushButton {{
                 border: none;
                 border-radius: 20px;  /* Half of width and height to make it circular */
-                background-color: {headerButtonColor};  /* Your desired background color for the normal state */
+                background-color: {buttonColor};  /* Your desired background color for the normal state */
             }}
             QPushButton:hover {{
                 background-color: {interactiveElements1};  /* Your desired background color when hovered */
@@ -520,7 +522,7 @@ class Ui_userHeaderWidget(object):
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
         self.employeeName.setText("Nickholas Delavallierre")
-        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{employeeNameFontColor};")
+        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{secondaryFontColor};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
         opacity_effect = QGraphicsOpacityEffect()
@@ -552,14 +554,16 @@ class Ui_dashboardWidget(object):
             border: none;
             border-radius: 20px;
         }}"""
+        self.noneStyle = "background-color: transparent; border: none; border-radius: 20px;"
 
-        if not dashboardWidget.objectName():
-            dashboardWidget.setObjectName(u"dashboardWidget")
+        # Dashboard widget
+        dashboardWidget.setObjectName(u"dashboardWidget")
         dashboardWidget.setStyleSheet(backgroundColorTransparent)
         self.dashboardLayout = QHBoxLayout(dashboardWidget)
         self.dashboardLayout.setSpacing(10)
-        self.dashboardLayout.setObjectName(u"dashboardLayout")
         self.dashboardLayout.setContentsMargins(10, 10, 10, 10)
+
+        # Left Frame
         self.leftFrame = QFrame(dashboardWidget)
         self.leftFrame.setObjectName(u"leftFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -567,229 +571,16 @@ class Ui_dashboardWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.leftFrame.sizePolicy().hasHeightForWidth())
         self.leftFrame.setSizePolicy(sizePolicy)
-        self.leftFrame.setFrameShape(QFrame.StyledPanel)
-        self.leftFrame.setFrameShadow(QFrame.Raised)
         self.leftLayout = QVBoxLayout(self.leftFrame)
         self.leftLayout.setSpacing(10)
-        self.leftLayout.setObjectName(u"leftLayout")
         self.leftLayout.setContentsMargins(0, 0, 0, 0)
-        self.entWidget = QFrame(self.leftFrame)
-        self.entWidget.setObjectName(u"entWidget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(5)
-        sizePolicy1.setHeightForWidth(self.entWidget.sizePolicy().hasHeightForWidth())
-        self.entWidget.setSizePolicy(sizePolicy1)
-        self.entWidget.setFrameShape(QFrame.StyledPanel)
-        self.entWidget.setFrameShadow(QFrame.Raised)
-        self.entLayout = QHBoxLayout(self.entWidget)
-        self.entLayout.setObjectName(u"entLayout")
-        self.iunContainer = QFrame(self.entWidget)
-        self.iunContainer.setObjectName(u"iunContainer")
 
-        self.iunContainer.setStyleSheet(self.containerStylesheet)
-        self.iunContainer.setFrameShape(QFrame.StyledPanel)
-        self.iunContainer.setFrameShadow(QFrame.Raised)
-        self.iunLayout = QVBoxLayout(self.iunContainer)
-        self.iunLayout.setSpacing(10)
-        self.iunLayout.setObjectName(u"iunLayout")
-        self.iunLayout.setContentsMargins(10, 10, 10, 10)
+        # Row 1 Container
+        self.row1Container = QFrame(self.leftFrame)
+        self.row1Layout = QHBoxLayout(self.row1Container)
 
-        self.iULabel = QLabel("Users")
-        self.iULabel.setObjectName(u"iULabel")
-        self.iULabel.setStyleSheet(self.font1)
-        self.iULabel.setTextFormat(Qt.PlainText)
-        self.iunLayout.addWidget(self.iULabel, 0, Qt.AlignHCenter)
-
-
-        self.iUNumber = QLabel("0")
-        self.iUNumber.setObjectName(u"iUNumber")
-        self.iUNumber.setStyleSheet(self.font2)
-        self.iUNumber.setTextFormat(Qt.PlainText)
-        self.iunLayout.addWidget(self.iUNumber, 0, Qt.AlignHCenter)
-        self.entLayout.addWidget(self.iunContainer)
-
-
-        self.techNumberContainer = QFrame(self.entWidget)
-        self.techNumberContainer.setObjectName(u"techNumberContainer")
-        self.techNumberContainer.setStyleSheet(self.containerStylesheet)
-        self.techNumberContainer.setFrameShape(QFrame.StyledPanel)
-        self.techNumberContainer.setFrameShadow(QFrame.Raised)
-        self.techNumberLayout = QVBoxLayout(self.techNumberContainer)
-        self.techNumberLayout.setSpacing(10)
-        self.techNumberLayout.setObjectName(u"techNumberLayout")
-        self.techNumberLayout.setContentsMargins(10, 10, 10, 10)
-
-        self.techLabel = QLabel("Desk Technicians")
-        self.techLabel.setObjectName(u"techLabel")
-        self.techLabel.setStyleSheet(self.font1)
-        self.techLabel.setTextFormat(Qt.PlainText)
-
-        self.techNumberLayout.addWidget(self.techLabel, 0, Qt.AlignHCenter)
-
-        self.techNumber = QLabel("0")
-        self.techNumber.setObjectName(u"techNumber")
-        self.techNumber.setStyleSheet(self.font2)
-        self.techNumber.setTextFormat(Qt.PlainText)
-
-        self.techNumberLayout.addWidget(self.techNumber, 0, Qt.AlignHCenter)
-
-
-        self.entLayout.addWidget(self.techNumberContainer)
-
-        self.empNumberContainer = QFrame(self.entWidget)
-        self.empNumberContainer.setObjectName(u"empNumberContainer")
-        self.empNumberContainer.setStyleSheet(self.containerStylesheet)
-        self.empNumberContainer.setFrameShape(QFrame.StyledPanel)
-        self.empNumberContainer.setFrameShadow(QFrame.Raised)
-        self.empNumberLayout = QVBoxLayout(self.empNumberContainer)
-        self.empNumberLayout.setSpacing(10)
-        self.empNumberLayout.setObjectName(u"empNumberLayout")
-        self.empNumberLayout.setContentsMargins(10, 10, 10, 10)
-        self.mangerLabel = QLabel("Security Managers")
-        self.mangerLabel.setObjectName(u"mangerLabel")
-        self.mangerLabel.setStyleSheet(self.font1)
-        self.mangerLabel.setTextFormat(Qt.PlainText)
-
-        self.empNumberLayout.addWidget(self.mangerLabel, 0, Qt.AlignHCenter)
-
-        self.managerNum = QLabel("0")
-        self.managerNum.setObjectName(u"managerNum")
-        self.managerNum.setStyleSheet(self.font2)
-        self.managerNum.setTextFormat(Qt.PlainText)
-
-        self.empNumberLayout.addWidget(self.managerNum, 0, Qt.AlignHCenter)
-
-
-        self.entLayout.addWidget(self.empNumberContainer)
-
-
-        self.leftLayout.addWidget(self.entWidget)
-
-        self.scanInfoWidget = QFrame(self.leftFrame)
-        self.scanInfoWidget.setObjectName(u"scanInfoWidget")
-        sizePolicy1.setHeightForWidth(self.scanInfoWidget.sizePolicy().hasHeightForWidth())
-        self.scanInfoWidget.setSizePolicy(sizePolicy1)
-        self.scanInfoWidget.setFrameShape(QFrame.StyledPanel)
-        self.scanInfoWidget.setFrameShadow(QFrame.Raised)
-        self.scanInfoLayout = QHBoxLayout(self.scanInfoWidget)
-        self.scanInfoLayout.setObjectName(u"scanInfoLayout")
-        self.canScanTodayContainer = QFrame(self.scanInfoWidget)
-        self.canScanTodayContainer.setObjectName(u"canScanTodayContainer")
-        self.canScanTodayContainer.setStyleSheet(self.containerStylesheet)
-        self.canScanTodayContainer.setFrameShape(QFrame.StyledPanel)
-        self.canScanTodayContainer.setFrameShadow(QFrame.Raised)
-        self.canScanTodayLayout = QVBoxLayout(self.canScanTodayContainer)
-        self.canScanTodayLayout.setSpacing(10)
-        self.canScanTodayLayout.setObjectName(u"canScanTodayLayout")
-        self.canScanTodayLayout.setContentsMargins(10, 10, 10, 10)
-        self.userScheduleTodayLabel = QLabel("Scheduled For Today")
-        self.userScheduleTodayLabel.setObjectName(u"userScheduleTodayLabel")
-        self.userScheduleTodayLabel.setStyleSheet(self.font1)
-        self.userScheduleTodayLabel.setTextFormat(Qt.PlainText)
-
-        self.canScanTodayLayout.addWidget(self.userScheduleTodayLabel, 0, Qt.AlignHCenter)
-
-        self.userScheduleTodayNumber = QLabel("0")
-        self.userScheduleTodayNumber.setObjectName(u"userScheduleTodayNumber")
-        self.userScheduleTodayNumber.setStyleSheet(self.font2)
-        self.userScheduleTodayNumber.setTextFormat(Qt.PlainText)
-
-        self.canScanTodayLayout.addWidget(self.userScheduleTodayNumber, 0, Qt.AlignHCenter)
-
-
-        self.scanInfoLayout.addWidget(self.canScanTodayContainer)
-
-        self.scansTodayWidget = QFrame(self.scanInfoWidget)
-        self.scansTodayWidget.setObjectName(u"scansTodayWidget")
-        self.scansTodayWidget.setStyleSheet(self.containerStylesheet)
-        self.scansTodayWidget.setFrameShape(QFrame.StyledPanel)
-        self.scansTodayWidget.setFrameShadow(QFrame.Raised)
-        self.scansTodayLayout = QVBoxLayout(self.scansTodayWidget)
-        self.scansTodayLayout.setSpacing(10)
-        self.scansTodayLayout.setObjectName(u"scansTodayLayout")
-        self.scansTodayLayout.setContentsMargins(10, 10, 10, 10)
-        self.scansTodayLabel = QLabel("Scans Today")
-        self.scansTodayLabel.setObjectName(u"scansTodayLabel")
-        self.scansTodayLabel.setStyleSheet(self.font1)
-        self.scansTodayLabel.setTextFormat(Qt.PlainText)
-
-        self.scansTodayLayout.addWidget(self.scansTodayLabel, 0, Qt.AlignHCenter)
-
-        self.scansTodayNumber = QLabel("0")
-        self.scansTodayNumber.setObjectName(u"scansTodayNumber")
-        self.scansTodayNumber.setStyleSheet(self.font2)
-
-        self.scansTodayLayout.addWidget(self.scansTodayNumber, 0, Qt.AlignHCenter)
-
-
-        self.scanInfoLayout.addWidget(self.scansTodayWidget)
-
-        self.scansThisWeekContainer = QFrame(self.scanInfoWidget)
-        self.scansThisWeekContainer.setObjectName(u"scansThisWeekContainer")
-        self.scansThisWeekContainer.setStyleSheet(self.containerStylesheet)
-        self.scansThisWeekContainer.setFrameShape(QFrame.StyledPanel)
-        self.scansThisWeekContainer.setFrameShadow(QFrame.Raised)
-        self.scansThisWeekLayout = QVBoxLayout(self.scansThisWeekContainer)
-        self.scansThisWeekLayout.setSpacing(10)
-        self.scansThisWeekLayout.setObjectName(u"scansThisWeekLayout")
-        self.scansThisWeekLayout.setContentsMargins(10, 10, 10, 10)
-        self.scansThisWeekLabel = QLabel("Scans This Week")
-        self.scansThisWeekLabel.setObjectName(u"scansThisWeekLabel")
-        self.scansThisWeekLabel.setStyleSheet(self.font1)
-        self.scansThisWeekLabel.setTextFormat(Qt.PlainText)
-
-        self.scansThisWeekLayout.addWidget(self.scansThisWeekLabel, 0, Qt.AlignHCenter)
-
-        self.scansThisWeekNumber = QLabel("0")
-        self.scansThisWeekNumber.setObjectName(u"scansThisWeekNumber")
-        self.scansThisWeekNumber.setStyleSheet(self.font2)
-        self.scansThisWeekNumber.setTextFormat(Qt.PlainText)
-
-        self.scansThisWeekLayout.addWidget(self.scansThisWeekNumber, 0, Qt.AlignHCenter)
-
-
-        self.scanInfoLayout.addWidget(self.scansThisWeekContainer)
-
-
-        self.leftLayout.addWidget(self.scanInfoWidget)
-
-
-
-        #Graph
-        #--------------------------------------------------------------------------------------------------------------
-
-        self.setupGraphWidget()
-
-
-
-
-
-
-
-
-        self.leftLayout.addWidget(self.graphWidget)
-        self.dashboardLayout.addWidget(self.leftFrame)
-        self.rightFrame = QFrame(dashboardWidget)
-        self.rightFrame.setObjectName(u"rightFrame")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy3.setHorizontalStretch(3)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.rightFrame.sizePolicy().hasHeightForWidth())
-        self.rightFrame.setSizePolicy(sizePolicy3)
-        self.rightFrame.setFrameShape(QFrame.StyledPanel)
-        self.rightFrame.setFrameShadow(QFrame.Raised)
-        self.rightLayout = QVBoxLayout(self.rightFrame)
-        self.rightLayout.setSpacing(10)
-        self.rightLayout.setObjectName(u"rightLayout")
-        self.rightLayout.setContentsMargins(0, 0, 0, 0)
-
-
-
-        #DateTime
-        #------------------------------------------------------------------------------------------------
-
-        self.dateTimeWidget = QFrame(self.rightFrame)
+        # Date Time widget
+        self.dateTimeWidget = QFrame()
         self.dateTimeWidget.setObjectName(u"dateTimeWidget")
         sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy4.setHorizontalStretch(0)
@@ -801,9 +592,9 @@ class Ui_dashboardWidget(object):
         self.dateTimeWidget.setFrameShadow(QFrame.Raised)
         self.dateTimeLayout = QVBoxLayout(self.dateTimeWidget)
         self.dateTimeLayout.setSpacing(0)
-        self.dateTimeLayout.setObjectName(u"dateTimeLayout")
         self.dateTimeLayout.setContentsMargins(10, 10, 10, 10)
 
+        # Date Label
         self.dateLabel = QLabel(self.dateTimeWidget)
         self.dateLabel.setObjectName(u"dateLabel")
         self.dateLabel.setStyleSheet(self.font2)
@@ -811,7 +602,7 @@ class Ui_dashboardWidget(object):
         self.update_date_label()
         self.dateTimeLayout.addWidget(self.dateLabel)
 
-
+        # Time Label
         self.timeLabel = QLabel(self.dateTimeWidget)
         self.timeLabel.setObjectName(u"timeLabel")
         self.timeLabel.setStyleSheet(self.font1)
@@ -819,73 +610,152 @@ class Ui_dashboardWidget(object):
         self.update_time_label()
         self.dateTimeLayout.addWidget(self.timeLabel)
 
-        self.rightLayout.addWidget(self.dateTimeWidget)
+        # Ticket Container
+        self.ticketContainer = QFrame()
+        self.ticketContainer.setObjectName(u"ticketsNumContainer")
+        sizePolicy4.setHeightForWidth(self.ticketContainer.sizePolicy().hasHeightForWidth())
+        self.ticketContainer.setSizePolicy(sizePolicy4)
+        self.ticketContainer.setStyleSheet(self.containerStylesheet)
+        self.ticketContainer.setFrameShape(QFrame.StyledPanel)
+        self.ticketContainer.setFrameShadow(QFrame.Raised)
+        self.ticketLayout = QVBoxLayout(self.ticketContainer)
+        self.ticketLayout.setSpacing(10)
+        self.ticketLayout.setContentsMargins(10, 10, 10, 10)
 
-
-
-        #Current Tickets
-        #---------------------------------------------------------------------------------------
-
-        self.ticketsNumContainer = QFrame(self.rightFrame)
-        self.ticketsNumContainer.setObjectName(u"ticketsNumContainer")
-        sizePolicy4.setHeightForWidth(self.ticketsNumContainer.sizePolicy().hasHeightForWidth())
-        self.ticketsNumContainer.setSizePolicy(sizePolicy4)
-        self.ticketsNumContainer.setStyleSheet(self.containerStylesheet)
-        self.ticketsNumContainer.setFrameShape(QFrame.StyledPanel)
-        self.ticketsNumContainer.setFrameShadow(QFrame.Raised)
-        self.ticketNumberLayout = QVBoxLayout(self.ticketsNumContainer)
-        self.ticketNumberLayout.setSpacing(10)
-        self.ticketNumberLayout.setObjectName(u"ticketNumberLayout")
-        self.ticketNumberLayout.setContentsMargins(10, 10, 10, 10)
-        self.currentTicketLabel = QLabel(self.ticketsNumContainer)
+        # Ticket Label
+        self.currentTicketLabel = QLabel(self.ticketContainer)
         self.currentTicketLabel.setObjectName(u"currentTicketLabel")
         self.currentTicketLabel.setStyleSheet(self.font1)
         self.currentTicketLabel.setTextFormat(Qt.PlainText)
         self.currentTicketLabel.setText("Current Tickets")
-        self.ticketNumberLayout.addWidget(self.currentTicketLabel, 0, Qt.AlignHCenter)
+        self.ticketLayout.addWidget(self.currentTicketLabel, 0, Qt.AlignHCenter)
 
-        self.currentNumOfTickets = QLabel(self.ticketsNumContainer)
+        # Number of Tickets Label
+        self.currentNumOfTickets = QLabel(self.ticketContainer)
         self.currentNumOfTickets.setObjectName(u"currentNumOfTickets")
         self.currentNumOfTickets.setStyleSheet(self.font2)
         self.currentNumOfTickets.setFrameShadow(QFrame.Raised)
         self.currentNumOfTickets.setTextFormat(Qt.PlainText)
         self.currentNumOfTickets.setText("0")
+        self.ticketLayout.addWidget(self.currentNumOfTickets, 0, Qt.AlignHCenter)
 
-        self.ticketNumberLayout.addWidget(self.currentNumOfTickets, 0, Qt.AlignHCenter)
+        # Row 1 Add Widgets
+        self.row1Layout.addWidget(self.dateTimeWidget)
+        self.row1Layout.addWidget(self.ticketContainer)
 
-        self.rightLayout.addWidget(self.ticketsNumContainer)
-
-
-
-
-
+        self.leftLayout.addWidget(self.row1Container)
 
 
-        #Spacer
-        #-------------------------------------------------------------------------------
-        self.verticalSpacer = QSpacerItem(20, 100, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.rightLayout.addItem(self.verticalSpacer)
+        # Scan Info Widget
+        self.scanInfoWidget = QFrame(self.leftFrame)
+        self.scanInfoWidget.setObjectName(u"scanInfoWidget")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setHeightForWidth(self.scanInfoWidget.sizePolicy().hasHeightForWidth())
+        self.scanInfoWidget.setSizePolicy(sizePolicy1)
+        self.scanInfoWidget.setFrameShape(QFrame.StyledPanel)
+        self.scanInfoWidget.setFrameShadow(QFrame.Raised)
+        self.scanInfoLayout = QHBoxLayout(self.scanInfoWidget)
 
+        # User Widget
+        self.userContainer = QFrame()
+        self.userContainer.setObjectName(u"iunContainer")
+        self.userContainer.setStyleSheet(self.containerStylesheet)
+        self.userContainer.setFrameShape(QFrame.StyledPanel)
+        self.userContainer.setFrameShadow(QFrame.Raised)
+        self.userLayout = QVBoxLayout(self.userContainer)
+        self.userLayout.setSpacing(10)
+        self.userLayout.setContentsMargins(10, 10, 10, 10)
+        # User Label
+        self.userLabel = QLabel("Users")
+        self.userLabel.setObjectName(u"iULabel")
+        self.userLabel.setStyleSheet(self.font1)
+        self.userLabel.setTextFormat(Qt.PlainText)
+        self.userLayout.addWidget(self.userLabel, 0, Qt.AlignHCenter)
+        # User Number Label
+        self.userNumberLabel = QLabel("0")
+        self.userNumberLabel.setObjectName(u"iUNumber")
+        self.userNumberLabel.setStyleSheet(self.font2)
+        self.userNumberLabel.setTextFormat(Qt.PlainText)
+        self.userLayout.addWidget(self.userNumberLabel, 0, Qt.AlignHCenter)
+        self.scanInfoLayout.addWidget(self.userContainer)
 
+        # User Scheduled For Today Container
+        self.usersScheduledTodayContainer = QFrame(self.scanInfoWidget)
+        self.usersScheduledTodayContainer.setObjectName(u"canScanTodayContainer")
+        self.usersScheduledTodayContainer.setStyleSheet(self.containerStylesheet)
+        self.usersScheduledTodayContainer.setFrameShape(QFrame.StyledPanel)
+        self.usersScheduledTodayContainer.setFrameShadow(QFrame.Raised)
+        self.usersScheduledTodayLayout = QVBoxLayout(self.usersScheduledTodayContainer)
+        self.usersScheduledTodayLayout.setSpacing(10)
+        self.usersScheduledTodayLayout.setObjectName(u"canScanTodayLayout")
+        self.usersScheduledTodayLayout.setContentsMargins(10, 10, 10, 10)
+        # User Scheduled Today Label
+        self.usersScheduledTodayLabel = QLabel("Scheduled For Today")
+        self.usersScheduledTodayLabel.setObjectName(u"userScheduleTodayLabel")
+        self.usersScheduledTodayLabel.setStyleSheet(self.font1)
+        self.usersScheduledTodayLabel.setTextFormat(Qt.PlainText)
+        self.usersScheduledTodayLayout.addWidget(self.usersScheduledTodayLabel, 0, Qt.AlignHCenter)
+        # User Scheduled Today Number Label
+        self.usersScheduledTodayNumberLabel = QLabel("0")
+        self.usersScheduledTodayNumberLabel.setObjectName(u"userScheduleTodayNumber")
+        self.usersScheduledTodayNumberLabel.setStyleSheet(self.font2)
+        self.usersScheduledTodayNumberLabel.setTextFormat(Qt.PlainText)
+        self.usersScheduledTodayLayout.addWidget(self.usersScheduledTodayNumberLabel, 0, Qt.AlignHCenter)
 
+        self.scanInfoLayout.addWidget(self.usersScheduledTodayContainer)
 
+        # Scanned Today Container
+        self.scannedTodayContainer = QFrame(self.scanInfoWidget)
+        self.scannedTodayContainer.setObjectName(u"scansTodayWidget")
+        self.scannedTodayContainer.setStyleSheet(self.containerStylesheet)
+        self.scannedTodayContainer.setFrameShape(QFrame.StyledPanel)
+        self.scannedTodayContainer.setFrameShadow(QFrame.Raised)
+        self.scannedTodayLayout = QVBoxLayout(self.scannedTodayContainer)
+        self.scannedTodayLayout.setSpacing(10)
+        self.scannedTodayLayout.setContentsMargins(10, 10, 10, 10)
+        # Scanned Today Label
+        self.scannedTodayLabel = QLabel("Scans Today")
+        self.scannedTodayLabel.setObjectName(u"scansTodayLabel")
+        self.scannedTodayLabel.setStyleSheet(self.font1)
+        self.scannedTodayLabel.setTextFormat(Qt.PlainText)
+        self.scannedTodayLayout.addWidget(self.scannedTodayLabel, 0, Qt.AlignHCenter)
+        # Scanned Today Number Label
+        self.scannedTodayNumberLabel = QLabel("0")
+        self.scannedTodayNumberLabel.setObjectName(u"scansTodayNumber")
+        self.scannedTodayNumberLabel.setStyleSheet(self.font2)
+        self.scannedTodayLayout.addWidget(self.scannedTodayNumberLabel, 0, Qt.AlignHCenter)
 
+        self.scanInfoLayout.addWidget(self.scannedTodayContainer)
+        self.leftLayout.addWidget(self.scanInfoWidget)
 
+        # Set up Graph Widget
+        self.setupGraphWidget()
+        self.leftLayout.addWidget(self.graphWidget)
+        self.dashboardLayout.addWidget(self.leftFrame)
 
-        # Recent Scans
-        #-----------------------------------------
+        # Right Frame
+        self.rightFrame = QFrame(dashboardWidget)
+        self.rightFrame.setObjectName(u"rightFrame")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(3)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.rightFrame.sizePolicy().hasHeightForWidth())
+        self.rightFrame.setSizePolicy(sizePolicy3)
+        self.rightFrame.setFrameShape(QFrame.StyledPanel)
+        self.rightFrame.setFrameShadow(QFrame.Raised)
+        self.rightLayout = QVBoxLayout(self.rightFrame)
+        self.rightLayout.setSpacing(10)
+        self.rightLayout.setContentsMargins(0, 0, 0, 0)
 
+        # Recent Scanned Frame
         self.recentScansframe = QFrame(self.rightFrame)
         self.recentScansframe.setStyleSheet(self.containerStylesheet)
         self.recentScansframeLayout = QVBoxLayout(self.recentScansframe)
         self.rightLayout.addWidget(self.recentScansframe)
 
-
-
         self.recentScansHeader = QFrame(self.rightFrame)
-        self.recentScansHeader.setStyleSheet("background-color: transparent;"
-                                   "border: none;"
-                                   "border-radius: 20px;")
+        self.recentScansHeader.setStyleSheet(self.noneStyle)
         self.recentScansHeader.setObjectName(u"recentScansHeader")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy2.setHeightForWidth(self.recentScansHeader.sizePolicy().hasHeightForWidth())
@@ -905,11 +775,7 @@ class Ui_dashboardWidget(object):
         self.recentscansLabel.setSizePolicy(sizePolicy4)
         self.recentscansLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font}; color:{textColor}")
         recentScansHeaderLayout.addWidget(self.recentscansLabel)
-
         self.recentScansframeLayout.addWidget(self.recentScansHeader)
-
-
-
 
         for i in self.last5Scanned():
             user = dbu.get_user_by_id(i[0])
@@ -918,20 +784,12 @@ class Ui_dashboardWidget(object):
             id = user.id
             date_time = i[1]
             recentScan = self.create_recent_scan_widget(photo_path, name, id, date_time)
-
             self.recentScansframeLayout.addWidget(recentScan)
 
 
-        self.rightFrame.update()
-
-
+        self.rightLayout.addStretch()
         self.dashboardLayout.addWidget(self.rightFrame)
-
-
-
-
         self.getData()
-
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_date_label)
@@ -964,9 +822,7 @@ class Ui_dashboardWidget(object):
         # Container for Recent Scan Information
         recentScans = QFrame()
         recentScans.setObjectName("recentScans")
-        recentScans.setStyleSheet("background-color: transparent;"
-                                   "border: none;"
-                                   "border-radius: 20px;")
+        recentScans.setStyleSheet(self.noneStyle)
         recentScans.setFrameShape(QFrame.StyledPanel)
         recentScans.setFrameShadow(QFrame.Raised)
         recentScansLayout = QHBoxLayout(recentScans)
@@ -977,9 +833,7 @@ class Ui_dashboardWidget(object):
         imgContainer = QFrame(recentScans)
         imgContainer.setObjectName("imgContainer")
         imgContainer.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        imgContainer.setStyleSheet("background-color: transparent;"
-                                   "border: none;"
-                                   "border-radius: 20px;")
+        imgContainer.setStyleSheet(self.noneStyle)
         imgLayout = QVBoxLayout(imgContainer)
         imgLayout.setSpacing(0)
         imgLayout.setContentsMargins(0, 0, 0, 0)
@@ -997,9 +851,7 @@ class Ui_dashboardWidget(object):
         userInfo = QFrame(recentScans)
         userInfo.setObjectName("userInfo")
         userInfo.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        userInfo.setStyleSheet("background-color: transparent;"
-                               "border: none;"
-                               "border-radius: 20px;")
+        userInfo.setStyleSheet(self.noneStyle)
         userInfoLayout = QVBoxLayout(userInfo)
         userInfoLayout.setSpacing(5)
         userInfoLayout.setContentsMargins(0, 0, 0, 0)
@@ -1018,10 +870,13 @@ class Ui_dashboardWidget(object):
         userName.setText(user_name_text)
         userInfoLayout.addWidget(userName)
 
+        opacity_effect = QGraphicsOpacityEffect()
+        opacity_effect.setOpacity(0.5)
         # Scan Date Time Label
         scanDateTime = QLabel(userInfo)
         scanDateTime.setObjectName("scanDateTime")
-        scanDateTime.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{textColorSecondary};")
+        scanDateTime.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{secondaryFontColor};")
+        scanDateTime.setGraphicsEffect(opacity_effect)
         scanDateTime.setText(scan_date_time_text)
         userInfoLayout.addWidget(scanDateTime)
 
@@ -1052,7 +907,6 @@ class Ui_dashboardWidget(object):
         layout.addWidget(self.canvas)
         # Call the method to plot the graph
         self.plotBarGraph()
-
 
     def plotBarGraph(self):
         # Simulated data for user scans
@@ -1093,68 +947,13 @@ class Ui_dashboardWidget(object):
         # Redraw the canvas to reflect the changes
         self.canvas.draw()
 
-    def plotLineGraph(self):
-        # Simulated data for user scans
-        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
-
-        # Convert RGB to Matplotlib color format
-        def convert_rgb_to_mpl(color):
-            return tuple(c / 255 for c in color)
-
-        # Define your colors
-        bg_color = convert_rgb_to_mpl((250, 245, 232))
-        font_color = convert_rgb_to_mpl((129, 117, 102))
-        line_color = convert_rgb_to_mpl((129, 117, 102))
-
-        # Clear the previous figure to prepare for a new plot
-        self.figure.clf()
-
-        ax = self.figure.add_subplot(111)
-
-        # Set the background color for the Axes (plot area)
-        ax.set_facecolor(bg_color)
-
-        # Set the graph title, labels, and font properties
-        ax.set_title('Users Scanned per Day', fontsize=18, fontname='Garamond', color=font_color)
-        ax.set_xlabel('Days of the Week', fontsize=18, fontname='Garamond', color=font_color)
-        ax.set_ylabel('Number of Users Scanned', fontsize=18, fontname='Garamond', color=font_color)
-
-        # Plot the line chart with the specified line color
-        ax.plot(days_of_week, users_scanned, marker='o', linestyle='-', color=line_color)
-
-        # Change the font of the ticks on x and y axis
-        for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-            label.set_fontname('Garamond')
-            label.set_fontsize(18)  # Adjust the size as needed
-
-        ax.patch.set_visible(False)
-
-        # Redraw the canvas to reflect the changes
-        self.canvas.draw()
-
     def getData(self):
         # Indirect User number set text
-        self.iUNumber.setText(str(len(dbu.users)))
+        self.userNumberLabel.setText(str(len(dbu.users)))
 
-         # employee Numbers
-        deskTechs = []
-        securityManager = []
-        all_employees = dbe.get_all_employees()
-        for emp in all_employees:
-            if emp.title == "Security Manager":
-                securityManager.append(emp)
-            elif emp.title == "Desk Technician":
-                deskTechs.append(emp)
-            else:
-                pass
-        self.managerNum.setText(str(len(securityManager)))
-        self.techNumber.setText(str(len(deskTechs)))
-
-        # who is scheduled for today
         now = datetime.now()
         current_day_of_week = now.strftime("%A")
-        self.userScheduleTodayNumber.setText(str(len(entitiesMain.getSchedule(current_day_of_week))))
+        self.usersScheduledTodayNumberLabel.setText(str(len(entitiesMain.getSchedule(current_day_of_week))))
 
         # number of current tickets
         directory = '../Database/Tickets'
@@ -1172,16 +971,12 @@ class Ui_dashboardWidget(object):
         users_scanned_today = \
             [log for log in logs if datetime.strptime(log['Timestamp'], '%Y-%m-%d %H:%M:%S').date() == now.date()]
 
-        self.scansTodayNumber.setText(str(len(users_scanned_today)))
+        self.scannedTodayNumberLabel.setText(str(len(users_scanned_today)))
 
         # get users scanned this week
         start_of_week = now - timedelta(days=now.weekday())
         users_scanned_this_week = [log for log in logs if start_of_week.date() <= datetime.strptime(log['Timestamp'],
                                                                                                     '%Y-%m-%d %H:%M:%S').date() <= now.date()]
-
-        self.scansThisWeekNumber.setText(str(len(users_scanned_this_week)))
-
-
 
     def last5Scanned(self):
         logs_directory = "../Database/Logs/log.csv"
@@ -1190,7 +985,7 @@ class Ui_dashboardWidget(object):
             logs = list(reader)
 
             # get last 5 users scanned
-            last_5_users_scanned = logs[-3:] if len(logs) >= 3 else logs
+            last_5_users_scanned = logs[-5:] if len(logs) >= 5 else logs
 
             # Extract user IDs and timestamps from the last 5 scanned entries
             user_ids_and_times = [(log['UserID'], log['Timestamp']) for log in last_5_users_scanned]
@@ -1202,120 +997,142 @@ class Ui_logs(object):
         if not logs.objectName():
             logs.setObjectName("logs")
 
-        self.table_stylesheet = """
-            QTableView {
-                border: 1px solid #d4d4d4;
-                gridline-color: #d4d4d4;
-                selection-background-color: #c2c2c2;
+        self.table_stylesheet = f"""
+            QTableView {{
+                border: 1px solid {bordersLines};
+                gridline-color: {bordersLines};
+                selection-background-color: {interactiveElements1};
                 selection-color: black;
-                background-color: white;
-                color: black;
-            }
+                background-color: {contentCardBackgroundColor};
+                color: {textColor};
+                font: 75 {dataTablesFontSize} "{font}";
+            }}
 
-            QTableView::item {
+            QTableView::item {{
                 padding: 5px;
                 border-color: transparent;
                 gridline-color: #d4d4d4;
-            }
+            }}
 
-            QTableView::item:selected {
+            QTableView::item:selected {{
                 background: #e7e7e7;
                 color: black;
-            }
-            QTableView QLineEdit {
+            }}
+            QTableView QLineEdit {{
         color: black; /* Color of the text while editing */
-    }
+        }}
     
 
-            QTableView::item:hover {
+            QTableView::item:hover {{
                 background-color: #f5f5f5;
-            }
+            }}
 
-            QTableView QTableCornerButton::section {
+            QTableView QTableCornerButton::section {{
                 background: #e6e6e6;
                 border: 1px solid #d4d4d4;
-            }
+            }}
 
-            QHeaderView::section {
+            QHeaderView::section {{
+                font: 75 {bodyFontSize} "{font}";
                 background-color: #f4f4f4;
                 padding: 4px;
-                border: 1px solid #d4d4d4;
-                font-size: 10pt;
+                border: 1px solid {bordersLines};
                 font-weight: bold;
-                color: black;
-            }
+                color: {textColor};
+            }}
 
-            QHeaderView::section:checked {
+            QHeaderView::section:checked {{
                 background-color: #d0d0d0;
-            }
+            }}
 
-            QHeaderView::section:horizontal {
+            QHeaderView::section:horizontal {{
                 border-top: none;
-            }
+            }}
 
-            QHeaderView::section:vertical {
+            QHeaderView::section:vertical {{
                 border-left: none;
-            }
+            }}
         """
-        self.tabStyleSheet = """
-            QTabWidget::tab-bar {
+        self.tabStyleSheet = f"""
+            QTabWidget::tab-bar {{
                 alignment: left;
-                background-color: black;
-            }
+                background-color: {contentCardBackgroundColor};
+                
+            }}
 
-            QTabWidget::pane {
+            QTabWidget::pane {{
                 border-top-left-radius: 10px;
                 border-top-right-radius: 10px;
                 border-bottom-left-radius: 10px;
                 border-bottom-right-radius: 10px;
-                background: white;
-                color:black;
-            }
+                background: {contentCardBackgroundColor};
+                color:{textColor};
+            }}
 
-            QTabBar::tab {
-                background: white;
-                color: black;
+            QTabBar::tab {{
+                background: {buttonColor};
+                font: 75 {bodyFontSize} "{font}";
+                color: {textColor};
                 border: 0px;
                 margin: 5px;
                 padding: 5px;
-                
-                
-                height: 24px;
-               
+                min-width: 250px;
                 border-top-right-radius: 10px; 
                 border-bottom-right-radius: 10px;
                 border-bottom-left-radius: 10px;
                 border-top-left-radius: 10px;
-            }
+            }}
 
 
 
-            QTabBar::tab:selected {
-                background: black;
-                color: white;
-            }
+            QTabBar::tab:selected {{
+                background: {sidebarColor};
+                color: {sideBarTextColor};
+            }}
 
-            QTabBar::tab:hover {
-                background: lightgray;
-            }
+            QTabBar::tab:hover {{
+                background: {interactiveElements1};
+            }}
         """
 
-        self.buttonStyleSheet = """QPushButton {
-    background-color: #5CACEE; /* Light blue background */
-    color: white; /* White text */
-    border-radius: 4px; /* Rounded corners */
-    padding: 5px 10px; /* Top and bottom padding of 5px, left and right padding of 10px */
-    border: none; /* No border */
-    outline: none; /* Remove focus outline */
-}
 
-QPushButton:hover {
-    background-color: #1E90FF; /* Slightly darker blue on hover */
-}
 
-QPushButton:pressed {
-    background-color: #1874CD; /* Even darker blue when pressed */
-}"""
+        self.buttonStyleSheet = f"""
+                    QPushButton {{
+                        background-color: {buttonColor};
+                        color: {textColor};
+                        border-style: outset;
+                        border-width: 2px;
+                        border-radius: 10px;
+                        border-color: {bordersLines};
+                        font: bold {bodyFontSize} "{font}";
+                        padding: 5px;
+                    }}
+                    QPushButton:pressed {{
+                        background-color: {interactiveElements1};
+                        border-style: inset;
+                    }}
+                    QPushButton:hover:!pressed {{
+                        background-color: {interactiveElements2};
+                    }}
+
+                """
+        self.containerStylesheet = f"""
+                                    QFrame {{
+                                        background-color: {contentCardBackgroundColor};
+                                        border: 2px solid {bordersLines};
+                                        border-radius: 20px;
+                                        color: {textColor}
+
+                                    }}
+                                """
+        self.noneStyle = f"""
+                                    QFrame {{
+                                        background-color: transparent;
+                                        border: none;
+                                        border-radius: 0px;
+                                    }}
+                                """
 
         self.fileMap = {}
         logs.setStyleSheet("background-color: transparent;")
@@ -1580,122 +1397,174 @@ class Ui_scheduleWidget(object):
         if not scheduleWidget.objectName():
             scheduleWidget.setObjectName(u"scheduleWidget")
 
-        self.calendar_stylesheet = """
-                                        QCalendarWidget {
-                                background-color: #f9f9f9;  /* Background color of the entire calendar */
-                                border: 3px solid #d9a741;  /* Border color of the entire calendar */
+        self.calendar_stylesheet = f"""
+                                        QCalendarWidget {{
+                                background-color: {contentCardBackgroundColor};  /* Background color of the entire calendar */
+                                border: 3px solid {bordersLines};  /* Border color of the entire calendar */
                                 border-radius: 4px;         /* Rounded corners for the calendar */
-                            }
+                            }}
 
-                            QCalendarWidget QWidget { 
-                                color: black;             /* change day numbers */
-                            }
+                            QCalendarWidget QWidget {{ 
+                                color: {textColor};             /* change day numbers */
+                            }}
 
-                            QCalendarWidget QTableView { 
-                                border: 2px solid #d9a741;  /* Border around the table view (contains the days) */
-                                gridline-color: #d0d0d0;   /* Color of the grid separating the days */
+                            QCalendarWidget QTableView {{ 
+                                border: 2px solid {bordersLines};  /* Border around the table view (contains the days) */
+                                gridline-color: {bordersLines};   /* Color of the grid separating the days */
                                 background-color: white; /* Background color of the entire table view */
-                            }
+                            }}
 
-                            QCalendarWidget QTableView QHeaderView::section { 
-                                background-color: #e9cf8d;  /* Background color of the headers (Mon, Tue, ...) */
+                            QCalendarWidget QTableView QHeaderView::section {{ 
+                                background-color: {contentCardBackgroundColor};  /* Background color of the headers (Mon, Tue, ...) */
                                 padding: 6px;               /* Padding for the headers */
-                                border: 1px solid #d9a741;  /* Border color for the headers */
+                                border: 1px solid {bordersLines};  /* Border color for the headers */
                                 font-size: 12pt;            /* Font size of the headers */
                                 font-weight: bold;          /* Font weight of the headers */
-                                color: #000;                /* Text color of the headers */
-                            }
+                                color: {textColor};                /* Text color of the headers */
+                            }}
 
-                            QCalendarWidget QToolButton { 
+                            QCalendarWidget QToolButton {{ 
                                 icon-size: 24px;            /* Size of the navigation icons (previous and next month) */
                                 border: none;               /* Remove the border from tool buttons */
                                 background-color: transparent;  /* Make tool buttons' background transparent */
-                                color: black;             /* Color of the navigation icons */
-                            }
+                                color: {textColor};             /* Color of the navigation icons */
+                            }}
 
-                            QCalendarWidget QToolButton:hover { 
-                                background-color: #f5e7bc;  /* Background color when hovering over navigation buttons */
-                            }
+                            QCalendarWidget QToolButton:hover {{ 
+                                background-color: {interactiveElements1};  /* Background color when hovering over navigation buttons */
+                            }}
 
-                            QCalendarWidget QMenu { 
-                                border: 1px solid #d9a741;  /* Border around the drop-down menu (from the small arrow button) */
-                            }
+                            QCalendarWidget QMenu {{ 
+                                border: 1px solid {bordersLines};  /* Border around the drop-down menu (from the small arrow button) */
+                            }}
 
-                            QCalendarWidget QMenu::item { 
+                            QCalendarWidget QMenu::item {{ 
                                 padding: 4px 24px 4px 24px; /* Padding around the items inside the drop-down menu */
-                                background-color: #f9f9f9; /* Background color of the menu items */
-                                color: black;            /* Text color of the menu items */
-                            }
+                                background-color: {contentCardBackgroundColor}; /* Background color of the menu items */
+                                color: {textColor};            /* Text color of the menu items */
+                            }}
 
-                            QCalendarWidget QMenu::item:selected { 
-                                background-color: #d9a741;  /* Background color when an item inside the menu is selected */
-                                color: #000;                /* Text color of the selected item inside the menu */
-                            }
+                            QCalendarWidget QMenu::item:selected {{ 
+                                background-color: {contentCardBackgroundColor};  /* Background color when an item inside the menu is selected */
+                                color: {interactiveElements1};                /* Text color of the selected item inside the menu */
+                            }}
 
-                            QCalendarWidget QAbstractItemView {
-                                selection-background-color: #f5e7bc; /* Background color of the selected date */
-                                selection-color: #000;              /* Text color of the selected date */
-                            }
+                            QCalendarWidget QAbstractItemView {{
+                                selection-background-color: {contentCardBackgroundColor}; /* Background color of the selected date */
+                                selection-color: {interactiveElements1};              /* Text color of the selected date */
+                            }}
 
-                            QCalendarWidget QLabel { 
+                            QCalendarWidget QLabel {{ 
                                 font-size: 28pt;            /* Font size of the large month and year label */
-                                color: black;             /* Color of the large month and year label */
+                                color: {textColor};             /* Color of the large month and year label */
                                 font-weight: bold;          /* Font weight of the large month and year label */
-                            }
+                            }}
 
-                            QCalendarWidget #qt_calendar_navigationbar { 
-                                background-color: #f9f9f9;  /* Background color of the navigation bar (contains the month, year, and navigation buttons) */
-                                border: 2px solid #d9a741;  /* Border at the bottom of the navigation bar */
-                                font-size: 18pt;            /* Font size of the navigation bar */
-                            }
+                            QCalendarWidget #qt_calendar_navigationbar {{ 
+                                background-color: {contentCardBackgroundColor};  /* Background color of the navigation bar (contains the month, year, and navigation buttons) */
+                                border: 2px solid {bordersLines};  /* Border at the bottom of the navigation bar */
+                                font: bold {bodyFontSize} "{font}";         /* Font size of the navigation bar */
+                                min-height: 30;
+                                color:{textColor}
+                            }}
                 """
 
-        self.table_stylesheet = """
-    QTableView {
-        border: 1px solid #b6b6b6;
-        gridline-color: #cccccc;
-        selection-background-color: #6ea1f1;
-        selection-color: white;
-        background-color: white;
-        color: black;
-    }
 
-    QTableView::item {
-        padding: 5px;
-        border-color: transparent;
-        gridline-color: #cccccc;
-    }
 
-    QTableView::item:selected {
-        background: #6ea1f1;
-        color: white;
-    }
+        self.table_stylesheet = f"""
+                    QTableView {{
+                        border: 1px solid {bordersLines};
+                        gridline-color: {bordersLines};
+                        selection-background-color: {interactiveElements1};
+                        selection-color: black;
+                        background-color: {contentCardBackgroundColor};
+                        color: {textColor};
+                        font: 75 {dataTablesFontSize} "{font}";
+                    }}
 
-    QTableView::item:hover {
-        background-color: #eaeaea;
-    }
+                    QTableView::item {{
+                        padding: 5px;
+                        border-color: transparent;
+                        gridline-color: #d4d4d4;
+                    }}
 
-    QHeaderView::section {
-        background-color: #f5f5f5;
-        padding: 4px;
-        border: 1px solid #b6b6b6;
-        font-size: 10pt;
-        font-weight: bold;
-        color: black;
-    }
+                    QTableView::item:selected {{
+                        background: #e7e7e7;
+                        color: black;
+                    }}
+                    QTableView QLineEdit {{
+                color: black; /* Color of the text while editing */
+                }}
 
-    QHeaderView::section:horizontal {
-        border-top: none;
-    }
 
-    QHeaderView::section:vertical {
-        border-left: none;
-    }
+                    QTableView::item:hover {{
+                        background-color: #f5f5f5;
+                    }}
 
-    QHeaderView::section:checked {
-        background-color: #d0d0d0;
-    }
-"""
+                    QTableView QTableCornerButton::section {{
+                        background: #e6e6e6;
+                        border: 1px solid #d4d4d4;
+                    }}
+
+                    QHeaderView::section {{
+                        font: 75 {bodyFontSize} "{font}";
+                        background-color: #f4f4f4;
+                        padding: 4px;
+                        border: 1px solid {bordersLines};
+                        font-weight: bold;
+                        color: {textColor};
+                    }}
+
+                    QHeaderView::section:checked {{
+                        background-color: #d0d0d0;
+                    }}
+
+                    QHeaderView::section:horizontal {{
+                        border-top: none;
+                    }}
+
+                    QHeaderView::section:vertical {{
+                        border-left: none;
+                    }}
+                """
+
+
+        self.buttonStyleSheet = f"""
+                            QPushButton {{
+                                background-color: {buttonColor};
+                                color: {textColor};
+                                border-style: outset;
+                                border-width: 2px;
+                                border-radius: 10px;
+                                border-color: {bordersLines};
+                                font: bold {bodyFontSize} "{font}";
+                                padding: 5px;
+                            }}
+                            QPushButton:pressed {{
+                                background-color: {interactiveElements1};
+                                border-style: inset;
+                            }}
+                            QPushButton:hover:!pressed {{
+                                background-color: {interactiveElements2};
+                            }}
+
+                        """
+        self.containerStylesheet = f"""
+                                            QFrame {{
+                                                background-color: {contentCardBackgroundColor};
+                                                border: 2px solid {bordersLines};
+                                                border-radius: 20px;
+                                                color: {textColor}
+
+                                            }}
+                                        """
+        self.noneStyle = f"""
+                                            QFrame {{
+                                                background-color: transparent;
+                                                border: none;
+                                                border-radius: 0px;
+                                            }}
+                                        """
 
 
         self.scheduleLayout = QHBoxLayout(scheduleWidget)
@@ -1719,7 +1588,7 @@ class Ui_scheduleWidget(object):
         self.calendarWidget.setStyleSheet(self.calendar_stylesheet)
         self.calendarWidget.setGridVisible(True)
         format = self.calendarWidget.weekdayTextFormat(Qt.Saturday)
-        format.setForeground(QBrush(QColor("#d9a741"), Qt.SolidPattern))
+        format.setForeground(QBrush(QColor(f"{buttonColor}"), Qt.SolidPattern))
         self.calendarWidget.setWeekdayTextFormat(Qt.Saturday, format)
         self.calendarWidget.setWeekdayTextFormat(Qt.Sunday, format)
 
@@ -1789,7 +1658,7 @@ class Ui_scheduleWidget(object):
 
         # Add new schedules to the model
         for schedule_str in getSchedules:
-            print(f"Processing schedule string: {schedule_str}")  # Debug print
+
 
             # Split each schedule string into name and times
             if ': ' in schedule_str:
@@ -1800,11 +1669,11 @@ class Ui_scheduleWidget(object):
                     times = times.replace(' - ', '-').replace('–', '-')  # Also replace en-dash if present
                     start_time, end_time = times.split('-')
                 else:
-                    print(f"Start and end times not properly formatted in string: {times}")  # Debug print
+
                     start_time = 'N/A'
                     end_time = 'N/A'
             else:
-                print(f"No times found in schedule string: {schedule_str}")  # Debug print
+
                 name = schedule_str  # Assume entire string is the name if no times are provided
                 start_time = 'N/A'
                 end_time = 'N/A'
@@ -1837,57 +1706,46 @@ class Ui_scheduleWidget(object):
 
 class Ui_ticketsWidget(object):
     def setupUi(self, ticketsWidget):
+        self.button_stylesheet = f"""
+            QPushButton {{
+                background-color: {buttonColor};
+                color: {textColor};
+                border-style: outset;
+                border-width: 2px;
+                border-radius: 10px;
+                border-color: {bordersLines};
+                font: bold {bodyFontSize} "{font}";
+                padding: 5px;
+            }}
+            QPushButton:pressed {{
+                background-color: {interactiveElements1};
+                border-style: inset;
+            }}
+            QPushButton:hover:!pressed {{
+                background-color: {interactiveElements2};
+            }}
+
+        """
+        self.containerStylesheet = f"""
+                            QFrame {{
+                                background-color: {contentCardBackgroundColor};
+                                border: 2px solid {bordersLines};
+                                border-radius: 20px;
+                                color: {textColor}
+                                
+                            }}
+                        """
+        self.noneStyle = f"""
+                            QFrame {{
+                                background-color: transparent;
+                                border: none;
+                                border-radius: 0px;
+                            }}
+                        """
+
         if not ticketsWidget.objectName():
             ticketsWidget.setObjectName(u"ticketsWidget")
-        ticketsWidget.setStyleSheet("""
-                    QWidget#ticketsWidget {
-                        background-color: #F5F5F5;
-                    }
-                    QFrame#leftWidget, QFrame#rightWidget {
-                        background-color: #FAF5E8;
-                        border: 2px solid #817562;
-                        border-radius: 20px;
-                    }
-                    QLabel#ticketNameLabel, QLabel#ticketLabel {
-                        font: 700 18pt "Garamond";
-                        background-color: transparent;
-                        border: none;
-                        border-radius: 20px;
-                        color: #333333;
-                    }
-                    QTextEdit#ticketTextEdit {
-                        background-color: white;
-                        border: 2px solid #DDD;
-                        border-radius: 20px;
-                        font: 700 16pt "Garamond";
-                        color: #333333;
-                        padding: 8px;
-                    }
-                    QPushButton#resolvedButton {
-                        background-color: #CCF2F4;
-                        border: 2px solid #30AAB0;
-                        border-radius: 20px;
-                        font: 700 24pt "Garamond";
-                        color: #2F4F4F;
-                        padding: 8px;
-                        margin-top: 10px;
-                    }
-                    QPushButton#ticketButton {
-                        font: 700 16pt "Garamond";
-                        background-color: #F8F8F8;
-                        border: 2px solid #DDD;
-                        border-radius: 20px;
-                        color: #555;
-                        padding: 8px;
-                        margin-bottom: 10px;
-                    }
-                    QPushButton#ticketButton:hover {
-                        background-color: #E8E8E8;
-                    }
-                    QPushButton#ticketButton:pressed {
-                        background-color: #D0D0D0;
-                    }
-                """)
+
         self.ticketsLayout = QHBoxLayout(ticketsWidget)
         self.ticketsLayout.setSpacing(10)
         self.ticketsLayout.setObjectName(u"ticketsLayout")
@@ -1899,9 +1757,7 @@ class Ui_ticketsWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.leftWidget.sizePolicy().hasHeightForWidth())
         self.leftWidget.setSizePolicy(sizePolicy)
-        self.leftWidget.setStyleSheet(u"background-color: rgb(250, 245, 232);"
-                                      "border: 2px solid rgb(129, 117, 102);"
-                                      "border-radius: 20px;")
+        self.leftWidget.setStyleSheet(self.containerStylesheet)
         self.leftWidget.setFrameShape(QFrame.StyledPanel)
         self.leftWidget.setFrameShadow(QFrame.Raised)
         self.leftLayout = QVBoxLayout(self.leftWidget)
@@ -1910,25 +1766,24 @@ class Ui_ticketsWidget(object):
         self.leftLayout.setContentsMargins(10, 10, 10, 10)
         self.ticketNameLabel = QLabel(self.leftWidget)
         self.ticketNameLabel.setObjectName(u"ticketNameLabel")
-        self.ticketNameLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";"
+        self.ticketNameLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font};"
                                            "background-color: transparent;"
                                            "border: none;"
-                                           "border-radius: 20px;")
+                                           "border-radius: 20px;"
+                                           f"color:{textColor}")
         self.leftLayout.addWidget(self.ticketNameLabel, 0, Qt.AlignHCenter)
         self.ticketTextEdit = QTextEdit(self.leftWidget)
         self.ticketTextEdit.setObjectName(u"ticketTextEdit")
-        self.ticketTextEdit.setStyleSheet(u"background-color: white;"
+        self.ticketTextEdit.setStyleSheet(f"background-color: {contentCardBackgroundColor};"
                                           "border: none;"
                                           "border-radius: 20px;"
-                                          "font: 75 16pt \"Garamond\";")
+                                          f"font: 75 {bodyFontSize} {font};"
+                                          f"color:{textColor}")
         self.leftLayout.addWidget(self.ticketTextEdit)
         self.resolvedButton = QPushButton("Resolved")
+        self.resolvedButton.setStyleSheet(self.button_stylesheet)
         self.resolvedButton.clicked.connect(self.deleteCurrentFile)
         self.resolvedButton.setObjectName(u"resolvedButton")
-        self.resolvedButton.setStyleSheet(u"background-color: transparent;"
-                                          "border: none;"
-                                          "border-radius: 20px;"
-                                          "font: 75 24pt \"Garamond\";")
         self.leftLayout.addWidget(self.resolvedButton)
         self.ticketsLayout.addWidget(self.leftWidget)
         self.rightWidget = QFrame(ticketsWidget)
@@ -1938,9 +1793,7 @@ class Ui_ticketsWidget(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.rightWidget.sizePolicy().hasHeightForWidth())
         self.rightWidget.setSizePolicy(sizePolicy1)
-        self.rightWidget.setStyleSheet(u"background-color: rgb(250, 245, 232);"
-                                       "border: 2px solid rgb(129, 117, 102);"
-                                       "border-radius: 20px;")
+        self.rightWidget.setStyleSheet(self.containerStylesheet)
         self.rightWidget.setFrameShape(QFrame.StyledPanel)
         self.rightWidget.setFrameShadow(QFrame.Raised)
         self.rightLayout = QVBoxLayout(self.rightWidget)
@@ -1949,10 +1802,11 @@ class Ui_ticketsWidget(object):
         self.rightLayout.setContentsMargins(10, 10, 10, 10)
         self.ticketLabel = QLabel("Tickets")
         self.ticketLabel.setObjectName(u"ticketLabel")
-        self.ticketLabel.setStyleSheet(u"font: 75 24pt \"Garamond\";"
-                                       "background-color: transparent;"
-                                       "border: none;"
-                                       "border-radius: 20px;")
+        self.ticketLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font};"
+                                           "background-color: transparent;"
+                                           "border: none;"
+                                           "border-radius: 20px;"
+                                           f"color:{textColor}")
         self.rightLayout.addWidget(self.ticketLabel)
         self.ticketFrame = QFrame(self.rightWidget)
         self.ticketFrame.setObjectName(u"ticketFrame")
@@ -1968,17 +1822,18 @@ class Ui_ticketsWidget(object):
         self.rightLayout.addWidget(self.ticketFrame)
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.rightLayout.addItem(self.verticalSpacer)
+
         self.ticketsLayout.addWidget(self.rightWidget)
 
         # Create buttons for each ticket file
         self.create_ticket_buttons()
 
+
     def create_ticket_button(self, text, font_family=f"{font}", font_size=16, font_weight=75):
         ticket_button = QPushButton()
         ticket_button.setObjectName(u"ticketButton")
         ticket_button.setText(text)
-        #style = f"font: {font_weight} {font_size}pt \"{font_family}\";"
-        #ticket_button.setStyleSheet(style)
+        ticket_button.setStyleSheet(self.button_stylesheet)
         return ticket_button
     def create_ticket_buttons(self):
         directory = "../Database/Tickets"
@@ -2039,7 +1894,7 @@ class Ui_addUserWidget(object):
 
         self.containerStylesheet = f"""
                     QFrame {{
-                        background-color: {backgroundColor};
+                        background-color: {contentCardBackgroundColor};
                         border: 2px solid {bordersLines};
                         border-radius: 20px;
                     }}
@@ -2059,7 +1914,6 @@ class Ui_addUserWidget(object):
                     border: none;
                     border-radius: 20px;
                 }}"""
-
         self.fieldLabelStyle = f"""
                     QLabel {{
                     color: {textColor};
@@ -2068,7 +1922,6 @@ class Ui_addUserWidget(object):
                     border: none;
                     border-radius: 20px;
                 }}"""
-
         self.textFieldStyle = f"""
             QLineEdit {{
                 border: 1px solid {bordersLines}; /* Replace with your border color */
@@ -2089,7 +1942,6 @@ class Ui_addUserWidget(object):
                 opacity: 0.5;
             }}
         """
-
         self.comboBoxStyle = f"""QComboBox {{
         border: 1px solid {bordersLines};
         border-radius: 4px;
@@ -2108,8 +1960,26 @@ class Ui_addUserWidget(object):
         border-left-style: solid; /* just a single line for the drop-down arrow */
         border-top-right-radius: 3px; /* same radius as the QComboBox */
         border-bottom-right-radius: 3px;
-    }}"""
+    }}
+    QComboBox QAbstractItemView {{
+    background-color: {contentCardBackgroundColor}; /* Set your desired color here */
+    color: {textColor}; /* Optional: set text color in dropdown */
+    selection-background-color: {interactiveElements1}; /* Optional: background color for selected item */
+    selection-color: {interactiveElements2}; /* Optional: text color for selected item */
+    min-width: 200px;  /* Adjust to desired width */
+    max-width: 200px;  /* Adjust to desired width */
+    border: none; /* Removes border around the dropdown */
+    
+}}
 
+        QComboBox QAbstractItemView::item {{
+            /* Style for the individual items in the dropdown */
+            border: none;  /* Removes borders around the items */
+            outline: none; /* Removes focus outline which could also appear as a line */
+            background-color: {contentCardBackgroundColor}
+        }}
+        
+        """
         self.time_edit_style = f"""
             QTimeEdit {{
                 background-color: {backgroundColor}; /* Replace with your desired background color */
@@ -2186,16 +2056,15 @@ class Ui_addUserWidget(object):
                 color: #aaaaaa; /* Color for the text when the checkbox is disabled */
             }}
         """
-
         self.button_stylesheet = f"""
     QPushButton {{
-        background-color: {buttonBackgroundColor};
+        background-color: {buttonColor};
         color: {textColor};
         border-style: outset;
         border-width: 2px;
         border-radius: 10px;
         border-color: {bordersLines};
-        font: bold 14px;
+        font: bold {bodyFontSize} "{font}";
         padding: 5px;
     }}
     QPushButton:pressed {{
@@ -2570,18 +2439,20 @@ class Ui_addUserWidget(object):
 
         defaultStartTime = QTime(8, 0)
         defaultEndTime = QTime(17, 0)
-        for timeEdit in [self.timeEditStartMonday, self.timeEditEndMonday,
-                         self.timeEditStartTuesday, self.timeEditEndTuesday,
-                         self.timeEditStartWednesday, self.timeEditEndWednesday,
-                         self.timeEditStartThursday, self.timeEditEndThursday,
-                         self.timeEditStartFriday, self.timeEditEndFriday,
-                         self.timeEditStartSaturday, self.timeEditEndSaturday,
-                         self.timeEditStartSunday, self.timeEditEndSunday,
-                         ]:
-            if 'Start' in timeEdit.objectName():
-                timeEdit.setTime(defaultStartTime)
-            else:
-                timeEdit.setTime(defaultEndTime)
+
+        # Loop for setting the default start time
+        for timeEdit in [self.timeEditStartMonday, self.timeEditStartTuesday,
+                         self.timeEditStartWednesday, self.timeEditStartThursday,
+                         self.timeEditStartFriday, self.timeEditStartSaturday,
+                         self.timeEditStartSunday]:
+            timeEdit.setTime(defaultStartTime)
+
+        # Loop for setting the default end time
+        for timeEdit in [self.timeEditEndMonday, self.timeEditEndTuesday,
+                         self.timeEditEndWednesday, self.timeEditEndThursday,
+                         self.timeEditEndFriday, self.timeEditEndSaturday,
+                         self.timeEditEndSunday]:
+            timeEdit.setTime(defaultEndTime)
 
         # Uncheck all CheckBoxes
         for checkBox in [self.checkBoxSunday, self.checkBoxMonday,
@@ -2604,7 +2475,6 @@ class Ui_addUserWidget(object):
     def createButton(self, name, connect):
         button = QPushButton(name)
         button.clicked.connect(connect)
-        button.setStyleSheet(u"font: 75 24pt \"Garamond\";")
         self.buttonLayout.addWidget(button)
         return button
 

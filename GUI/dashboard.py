@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QFr
     QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton
 from PyQt5.QtCore import QCoreApplication, QMetaObject
 from PyQt5.QtWidgets import QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush
+from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter
 from PyQt5.uic.properties import QtWidgets
 from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
@@ -57,13 +57,36 @@ captionsFontSize = "12px"
 dataTablesFontSize = "14px"
 toolTipsFontSize = "16px"
 
-
-
-primaryColor = "rgb(129, 117, 102)"
-secondaryColor = "rgb(250, 250, 232)"
-backgroundColor = "rgb(250, 245, 232)"
 backgroundColorTransparent = "background-color: transparent;"
-textColor = "rgb(0, 0, 0)"
+sidebarColor = "#333940"
+iconColor = "white"
+sideBarTextColor = "#E0E0E0"
+
+mainBackgroundColor = "#FAFAFA"
+contentCardBackgroundColor = "#FEFEFE"
+
+
+employeeNameFontColor = "#4A4A4A"
+headerButtonColor = "#B0BEC5"
+
+textColor = "#4A4A4A"
+
+bordersLines = "#E0E0E0"
+
+
+
+
+
+primaryColor = "#333940"
+secondaryColor = "rgb(250, 250, 232)"
+
+backgroundColor = "#F5F5F5"
+backgroundColor2 = "#ECECEC"
+
+
+
+
+
 textColorSecondary = "rgb(100, 100, 100)"
 accentColor1 = "rgb(200, 200, 200)"
 accentColor2 = "rgb(100, 100, 100)"
@@ -71,12 +94,13 @@ interactiveElements1 = "rgb(220, 220, 220)"
 interactiveElements2 = "rgb(190, 190, 190)"
 
 dataVisualizations = ""
-bordersLines = "rgb(0, 0, 0)"
+
 shadowsHighlights = "rgba(0, 0, 0, 0.5)"
 fieldBackgroundColor = "rgb(255, 255, 255)"
 placeholderColor = "rgb(200, 200, 200)"
-
 buttonBackgroundColor = "rgb(255, 255, 255)"
+
+
 
 graph_background_color = (250, 245, 232)
 graph_font_color = (0, 0, 0)
@@ -107,30 +131,32 @@ search_bar_style = f"""
 
 class Ui_centralWindow(object):
     def setupUi(self, centralWindow):
+        # Ensure the central window has an object name
         if not centralWindow.objectName():
             centralWindow.setObjectName("centralWindow")
 
+        # Set the window title and display it in full screen
         centralWindow.setWindowTitle(QCoreApplication.translate("centralWindow", "MainWindow", None))
         centralWindow.showFullScreen()
 
+        # Create the central widget and set its layout
         self.centralwidget = QWidget(centralWindow)
         self.centralwidget.setObjectName("centralwidget")
-
         self.centralLayout = QHBoxLayout(self.centralwidget)
         self.centralLayout.setSpacing(0)
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
 
+        # Set up the sidebar frame
         self.sideBar = QFrame(self.centralwidget)
         self.sideBar.setObjectName("sideBar")
-        self.sideBar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.sideBar.setStyleSheet(f"background-color: {primaryColor};")
+        self.sideBar.setStyleSheet(f"background-color: {sidebarColor};")
         self.sideBar.setFrameShape(QFrame.StyledPanel)
         self.sideBar.setFrameShadow(QFrame.Raised)
-
         self.sidebarLayout = QVBoxLayout(self.sideBar)
         self.sidebarLayout.setSpacing(0)
         self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
 
+        # Add logo and navigation widgets to the sidebar
         self.logoWidgetContainer = QWidget(self.sideBar)
         self.logoWidgetContainer.setObjectName("logoWidgetContainer")
         self.logoWidgetUi = Ui_logoWidget()
@@ -138,25 +164,26 @@ class Ui_centralWindow(object):
         self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
 
         self.navigationWidgetContainer = QWidget(self.sideBar)
-        self.navigationWidgetContainer.setObjectName("logoWidgetContainer")
+        self.navigationWidgetContainer.setObjectName("navigationWidgetContainer")
         self.navigationWidgetUi = Ui_navigationWidget()
         self.navigationWidgetUi.setupUi(self.navigationWidgetContainer)
         self.sidebarLayout.addWidget(self.navigationWidgetContainer, stretch=10)
 
-
+        # Connect navigation buttons to their respective slot functions
         self.navigationWidgetUi.logsButton.clicked.connect(self.showLogsWidget)
         self.navigationWidgetUi.dashboardButton.clicked.connect(self.showDashBoardWidget)
         self.navigationWidgetUi.scheduleButton.clicked.connect(self.showScheduleWidget)
         self.navigationWidgetUi.ticketsButton.clicked.connect(self.showTicketWidget)
         self.navigationWidgetUi.addUserButton.clicked.connect(self.showAddUserWidget)
 
+        # Set up the main window frame
         self.mainWindow = QFrame(self.centralwidget)
         self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.mainWindow.setStyleSheet(f"background-color: {backgroundColor};")
+        self.mainWindow.setStyleSheet(f"background-color: {mainBackgroundColor};")
         self.mainWindow.setFrameShape(QFrame.StyledPanel)
         self.mainWindow.setFrameShadow(QFrame.Raised)
 
+        # Add user header and display container to the main window
         self.userHeaderContainer = QWidget(self.mainWindow)
         self.userHeaderContainer.setObjectName("userHeaderContainer")
         self.userHeaderUi = Ui_userHeaderWidget()
@@ -167,22 +194,25 @@ class Ui_centralWindow(object):
         self.displayContainer.setStyleSheet(backgroundColorTransparent)
         self.displayLayout = QVBoxLayout(self.displayContainer)
 
+        # Set up the dashboard widget within the display container
         self.dashboardWidgetContainer = QWidget(self.displayContainer)
         self.dashboardWidgetContainer.setObjectName("dashboardWidgetContainer")
-        self.dashboardUi = Ui_dashboardWidget()  # Instantiate your Dashboard UI class
-        self.dashboardUi.setupUi(self.dashboardWidgetContainer)  # Set up the dashboard UI
+        self.dashboardUi = Ui_dashboardWidget()
+        self.dashboardUi.setupUi(self.dashboardWidgetContainer)
         self.displayLayout.addWidget(self.dashboardWidgetContainer)
 
+        # Arrange the main layout with header and display container
         self.mainLayout = QVBoxLayout(self.mainWindow)
         self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
         self.mainLayout.addSpacing(20)
         self.mainLayout.addWidget(self.displayContainer, stretch=10)
 
+        # Add sidebar and main window to the central layout
         self.centralLayout.addWidget(self.sideBar, stretch=2)
         self.centralLayout.addWidget(self.mainWindow, stretch=10)
+
+        # Set the central widget of the main window
         centralWindow.setCentralWidget(self.centralwidget)
-
-
 
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
@@ -269,32 +299,35 @@ class Ui_centralWindow(object):
 
 class Ui_logoWidget(object):
     def setupUi(self, logoWidget):
+        # Ensure the logo widget has an object name
         if not logoWidget.objectName():
             logoWidget.setObjectName("logoWidget")
 
+        # Set the style of the logo widget
         logoWidget.setStyleSheet(backgroundColorTransparent)
 
+        # Create a horizontal layout for the logo
         self.logoLayout = QHBoxLayout(logoWidget)
         self.logoLayout.setSpacing(0)
         self.logoLayout.setObjectName("logoLayout")
         self.logoLayout.setContentsMargins(0, 0, 0, 0)
 
+        # Initialize the label to hold the logo image
         self.logoImg = QLabel(logoWidget)
         self.logoImg.setObjectName("logoImg")
         self.logoImg.setScaledContents(True)
-        self.logoImg.setMaximumSize(80, 80)
+        self.logoImg.setMaximumSize(80, 80)  # Set the maximum size of the logo
 
-
+        # Load the logo image and set it to the label
         pixmap = QPixmap("../GUI/Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
         self.logoImg.setPixmap(pixmap)
+        self.logoLayout.addWidget(self.logoImg)  # Add the logo image to the layout
 
-        self.logoLayout.addWidget(self.logoImg)
-
+        # Initialize the label for the logo text
         self.logoLabel = QLabel("LocUST")
         self.logoLabel.setObjectName("logoLabel")
-        self.logoLabel.setStyleSheet(f"font: 75 {tittleFontSize} '{font}'; color:{textColor};" )
-
-        self.logoLayout.addWidget(self.logoLabel)
+        self.logoLabel.setStyleSheet(f"font: 75 {tittleFontSize} '{font}'; color:{sideBarTextColor};")
+        self.logoLayout.addWidget(self.logoLabel)  # Add the logo text to the layout
 
 class Ui_navigationWidget(object):
 
@@ -307,30 +340,27 @@ class Ui_navigationWidget(object):
         self.navigationLayout.setSpacing(0)
         self.navigationLayout.setContentsMargins(0, 5, 0, 5)
 
+        # Create navigation buttons and labels
         self.mainMenuLabel = self.create_label("Main Menu", "mainMenuLabel")
         self.dashboardButton = self.create_button("Dashboard", "dashboardButton", "home.png")
-        self.inboxdButton = self.create_button("Inbox", "inboxdButton", "paper-plane.png")
-
+        self.inboxButton = self.create_button("Inbox", "inboxButton", "paper-plane.png")
         self.workspaceLabel = self.create_label("Workspace", "workspaceLabel")
         self.ticketsButton = self.create_button("Tickets", "ticketsButton", "receipt.png")
         self.scheduleButton = self.create_button("Schedule", "scheduleButton", "calendar.png")
         self.logsButton = self.create_button("Logs", "logsButton", "document.png")
         self.addUserButton = self.create_button("Add User", "addUserButton", "user-add.png")
-
         self.generalLabel = self.create_label("General", "generalLabel")
         self.faceRecButton = self.create_button("Facial Recognition", "faceRecButton", "face-viewfinder.png")
         self.logoutButton = self.create_button("Logout", "logoutButton", "sign-out-alt.png")
 
         self.navigationLayout.addWidget(self.mainMenuLabel)
         self.navigationLayout.addWidget(self.dashboardButton)
-        self.navigationLayout.addWidget(self.inboxdButton)
-
+        self.navigationLayout.addWidget(self.inboxButton)
         self.navigationLayout.addWidget(self.workspaceLabel)
         self.navigationLayout.addWidget(self.ticketsButton)
         self.navigationLayout.addWidget(self.scheduleButton)
         self.navigationLayout.addWidget(self.logsButton)
         self.navigationLayout.addWidget(self.addUserButton)
-
         self.navigationLayout.addWidget(self.generalLabel)
         self.navigationLayout.addWidget(self.faceRecButton)
         self.navigationLayout.addWidget(self.logoutButton)
@@ -338,32 +368,28 @@ class Ui_navigationWidget(object):
     def create_button(self, text, objectName, iconPath):
         button = QPushButton()
         button.setObjectName(objectName)
-        button.setText("  " + text)
-        button.setIcon(QIcon(f"buttonIcons/{iconPath}"))
+        button.setText(f"{text}")
+
+        # Load the icon
+        pixmap = QPixmap(f"buttonIcons/{iconPath}")
+        # Create a new pixmap with the same size to apply the color change
+        white_pixmap = QPixmap(pixmap.size())
+        white_pixmap.fill(QColor('transparent'))  # Start with a transparent pixmap
+
+        # Create a QPainter to draw on the pixmap
+        painter = QPainter(white_pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter.drawPixmap(0, 0, pixmap)  # Draw the original pixmap onto the transparent one
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        # Set the color to white
+        painter.fillRect(white_pixmap.rect(), QColor(f'{iconColor}'))
+        painter.end()
+
+        # Create the icon with the white pixmap and set it on the button
+        button.setIcon(QIcon(white_pixmap))
         button.setIconSize(QSize(20, 20))
-
-        # Stylesheet with hover and pressed states
-        button.setStyleSheet(f"""
-                    QPushButton {{
-                        color: {textColor}; 
-                        font: 75 {buttonFontSize} '{font}';
-                        padding-left: 30px; /* Size of the icon plus desired spacing */
-                        text-align: left;
-                        border: none; /* Remove border */
-                        background-color: transparent;
-                    }}
-                    QPushButton:hover {{
-                        background-color: {interactiveElements1}; /* Lighter shade for hover */
-                    }}
-                    QPushButton:pressed {{
-                        background-color: {interactiveElements2}; /* Even lighter for pressed */
-                    }}
-                    QPushButton::icon {{
-                        margin-left: -25px; /* Negative margin to align the icon with the button edge */
-                        padding-left: 10px;
-                    }}
-                """)
-
+        button.setStyleSheet(
+            self.button_style('textColor', 'buttonFontSize', 'font', 'interactiveElements1', 'interactiveElements2'))
         button.setMinimumHeight(40)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return button
@@ -372,9 +398,31 @@ class Ui_navigationWidget(object):
         label = QLabel()
         label.setObjectName(objectName)
         label.setText(text)
-        label.setStyleSheet(f"color: {textColor}; font: 75 {buttonLabelSize} '{font}'; padding-left: 10px;")
+        label.setStyleSheet(f"color: {sideBarTextColor}; font: 75 {buttonLabelSize} '{font}'; padding-left: 10px;")
         label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return label
+
+    def button_style(self, textColor, buttonFontSize, font, interactiveElements1, interactiveElements2):
+        return (f"""
+            QPushButton {{
+                color: {sideBarTextColor}; 
+                font: 75 {buttonFontSize} '{font}';
+                padding-left: 30px;
+                text-align: left;
+                border: none;
+                background-color: transparent;
+            }}
+            QPushButton:hover {{
+                background-color: {interactiveElements1};
+            }}
+            QPushButton:pressed {{
+                background-color: {interactiveElements2};
+            }}
+            QPushButton::icon {{
+                margin-left: -25px;
+                padding-left: 10px;
+            }}
+        """)
 
 class Ui_userHeaderWidget(object):
     def setupUi(self, userHeaderWidget):
@@ -392,7 +440,7 @@ class Ui_userHeaderWidget(object):
             QPushButton {{
                 border: none;
                 border-radius: 20px;  /* Half of width and height to make it circular */
-                background-color: {accentColor1};  /* Your desired background color for the normal state */
+                background-color: {headerButtonColor};  /* Your desired background color for the normal state */
             }}
             QPushButton:hover {{
                 background-color: {interactiveElements1};  /* Your desired background color when hovered */
@@ -472,7 +520,7 @@ class Ui_userHeaderWidget(object):
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
         self.employeeName.setText("Nickholas Delavallierre")
-        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{textColor};")
+        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{employeeNameFontColor};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
         opacity_effect = QGraphicsOpacityEffect()
@@ -483,7 +531,7 @@ class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):
         self.containerStylesheet = f"""
             QFrame {{
-                background-color: {backgroundColor};
+                background-color: {contentCardBackgroundColor};
                 border: 2px solid {bordersLines};
                 border-radius: 20px;
             }}

@@ -911,7 +911,38 @@ class Ui_dashboardWidget(object):
     def plotBarGraph(self):
         # Simulated data for user scans
         days_of_week = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun']
-        users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
+       # users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
+        mCount = 0
+        tCount = 0
+        wCount = 0
+        rCount = 0
+        fCount = 0
+        sCount = 0
+        uCount = 0
+
+        logsDirectory = "../Database/Logs/log.csv"
+        with open(logsDirectory, mode='r') as file:
+            reader = csv.DictReader(file)
+            logs = list(reader)
+
+            for log in logs:
+                date = datetime.strptime(log['Timestamp'], '%Y-%m-%d %H:%M:%S')
+                weekday = date.weekday()
+                if weekday == 0:
+                    mCount +=1
+                elif weekday == 1:
+                    tCount+=1
+                elif weekday == 2:
+                    wCount+=1
+                elif weekday == 3:
+                    rCount+=1
+                elif weekday == 4:
+                    fCount+=1
+                elif weekday == 5:
+                    sCount+=1
+                elif weekday == 6:
+                    uCount+=1
+            users_scanned = [mCount, tCount, wCount, rCount, fCount, sCount, uCount]
 
         # Convert RGB to Matplotlib color format
         def convert_rgb_to_mpl(color):

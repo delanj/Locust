@@ -8,34 +8,10 @@ from PyQt5.QtCore import Qt, QTimer
 from Entities.Employee import Employee
 import MainWindow
 import ManagerWindow
+import dashboard
+from dashboard import MainWindow
 
 
-
-class CustomWidgetGradient(QWidget):
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor(250, 250, 250))
-        gradient.setColorAt(1, QColor(230, 230, 230))
-        painter.setBrush(gradient)
-        painter.drawRect(self.rect())
-
-
-
-class CustomWidgetPicture(QWidget):
-    def __init__(self, background_path):
-        super().__init__()
-        self.background_image = QPixmap(background_path)
-        self.setAutoFillBackground(True)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.drawPixmap(0, 0, self.background_image.scaled(self.size()))  # Ensure image fills the widget
-
-# Slogan
-# Unlocking the future with every Face
-# Identity made simple security made strong
-#
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -43,7 +19,7 @@ class LoginWindow(QMainWindow):
         self.setWindowTitle("Login")
         self.showFullScreen()
         #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
-        centralWidget = CustomWidgetGradient()
+        centralWidget = QWidget()
 
         layout = QVBoxLayout()
 
@@ -135,36 +111,23 @@ class LoginWindow(QMainWindow):
 
     def login(self):
         dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
-        employee = Employee.Employee
-        global e
+
+        username = self.username_edit.text()
+        password = self.password_edit.text()
 
         for i in dbe.load_employees():
-            username = self.username_edit.text()
-            password = self.password_edit.text()
-
-            if username == i.employeeID and password == i.passcode:  # Replace with your actual login logic
-
-                e = i.getEmployee()
-                if i.title == "Security Manager":
-                    print("Login Successful")
-
-                    self.w = ManagerWindow.ManagerWindow(e)
-                    self.w.showFullScreen()
-                    self.close()  # Close the login window
-
-
-                if i.title == "Desk Technician":
-                    print("Login Successful")
-
-                    self.w = MainWindow.MainWindow(e)
-                    self.w.showFullScreen()
-                    self.close()  # Close the login window
-
-
+            if username == i.employeeID and password == i.passcode:
+                employee = i.getEmployee()
+                print("Login Successful")
+                self.close()
+                try:
+                    self.dashboard_main = dashboard.MainWindow(emp=employee)
+                    self.dashboard_main.show()
+                except Exception as e:
+                    print("Error opening MainWindow:", e)
             else:
                 print("Login Failed")
                 self.invalid.setText("Login failed. Please check your credentials.")
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()

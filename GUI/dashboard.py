@@ -27,26 +27,27 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from Database.firebaseDatabase import database
 import Entities.entitiesMain
-
+from Entities.Employee import Employee
 from Entities import entitiesMain
 
-
+from GUI import facialRecognition
+import LoginWindow
 # Link to data base
 dbu = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
 # Users
 User = Entities.IndirectUser.User.User
 # Link to data base
-dbe = Entities.Employee.Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
-# Employees
-Employee = Entities.Employee.Employee.Employee
+dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
+
+e = Employee.Employee
 
 userColumnLength = len(dbu.users)
 userRowLength = inspect.getsource(User.__init__).count("self.")
 
 employeeColumnLength = len(dbe.employees)
-employeeRowLength = inspect.getsource(Employee.__init__).count("self.")
-
-font = "Copperplate"
+employeeRowLength = inspect.getsource(e.__init__).count("self.")
+font = "Garamond"
+#font = "Copperplate"
 tittleFontSize = "36px"
 subheaderFontSize = "24px"
 bodyFontSize = "18px"
@@ -132,10 +133,15 @@ search_bar_style = f"""
 
 
 class Ui_centralWindow(object):
-    def setupUi(self, centralWindow):
+    def setupUi(self, centralWindow, employee=None):
+
+        self.employee = employee
+
         # Ensure the central window has an object name
         if not centralWindow.objectName():
             centralWindow.setObjectName("centralWindow")
+
+        print(self.employee.employeeID)
 
         # Set the window title and display it in full screen
         centralWindow.setWindowTitle(QCoreApplication.translate("centralWindow", "MainWindow", None))
@@ -177,6 +183,8 @@ class Ui_centralWindow(object):
         self.navigationWidgetUi.scheduleButton.clicked.connect(self.showScheduleWidget)
         self.navigationWidgetUi.ticketsButton.clicked.connect(self.showTicketWidget)
         self.navigationWidgetUi.addUserButton.clicked.connect(self.showAddUserWidget)
+        self.navigationWidgetUi.logoutButton.clicked.connect(self.logout)
+        self.navigationWidgetUi.faceRecButton.clicked.connect(self.faceRec)
 
         # Set up the main window frame
         self.mainWindow = QFrame(self.centralwidget)
@@ -190,6 +198,8 @@ class Ui_centralWindow(object):
         self.userHeaderContainer.setObjectName("userHeaderContainer")
         self.userHeaderUi = Ui_userHeaderWidget()
         self.userHeaderUi.setupUi(self.userHeaderContainer)
+        if employee:
+            self.userHeaderUi.employeeName.setText(f"{employee.firstName} {employee.lastName}")
 
         self.displayContainer = QWidget(self.mainWindow)
         self.displayContainer.setObjectName("displayContainer")
@@ -285,6 +295,7 @@ class Ui_centralWindow(object):
             traceback.print_exc()  # This will print the stack trace.
 
     def showAddUserWidget(self):
+
         try:
             # Clear any widgets that might be in the displayContainer
             self.clearDisplayContainer()
@@ -298,6 +309,18 @@ class Ui_centralWindow(object):
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
+
+    def logout(self):
+        self.close()
+        # Open the dashboard main window
+        self.login_main = LoginWindow.LoginWindow()
+        self.login_main.show()
+    def faceRec(self):
+
+        self.close()
+        # Open the dashboard main window
+        self.dashboard_main = facialRecognition.MainWindow(emp=self.employee)
+        self.dashboard_main.show()
 
 class Ui_logoWidget(object):
     def setupUi(self, logoWidget):
@@ -521,7 +544,7 @@ class Ui_userHeaderWidget(object):
 
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
-        self.employeeName.setText("Nickholas Delavallierre")
+        self.employeeName.setText("None")
         self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{secondaryFontColor};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
@@ -2648,10 +2671,17 @@ class Ui_addUserWidget(object):
         with open(json_path, 'w') as file:
             json.dump(schedule_data, file, indent=4)
 
+
 class MainWindow(QMainWindow, Ui_centralWindow):
-    def __init__(self, parent=None):
+    def __init__(self, emp=None, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setupUi(self)
+        self.employee = emp
+
+        if self.employee:
+            print(f"Employee logged in: {self.employee.firstName} {self.employee.lastName}")
+            print("dashboard Window")
+            # Adjust all other employee attribute accesses similarly
+        self.setupUi(self, self.employee)
 
 
 

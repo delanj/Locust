@@ -12,6 +12,7 @@ import dashboard
 from dashboard import MainWindow
 
 
+
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -22,6 +23,7 @@ class LoginWindow(QMainWindow):
         centralWidget = QWidget()
 
         layout = QVBoxLayout()
+
 
         innerWidget = QWidget()
         innerWidget.setStyleSheet("background-color: white; border-radius: 30px;")

@@ -226,6 +226,7 @@ class Ui_centralWindow(object):
         self.centralLayout.addWidget(self.sideBar, stretch=2)
         self.centralLayout.addWidget(self.mainWindow, stretch=10)
 
+
         # Set the central widget of the main window
         centralWindow.setCentralWidget(self.centralwidget)
 

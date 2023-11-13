@@ -226,6 +226,7 @@ class Ui_centralWindow(object):
         # Set the central widget of the main window
         centralWindow.setCentralWidget(self.centralwidget)
 
+
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
         for i in reversed(range(self.displayLayout.count())):

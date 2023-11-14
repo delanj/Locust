@@ -157,7 +157,11 @@ class LoginWindow(QMainWindow):
         input_new_password = self.new_password_edit.text()
         input_confirm_password = self.confirm_new_password_edit.text()
         dbe = "../Database/Employees/jsonFile/employee.json"
+        with open(dbe, 'r') as file:
+            data = json.load(file)
         
+
+
         db_conn = database.db
         coll_ref = db_conn.collection("employee")
         docs = coll_ref.stream()

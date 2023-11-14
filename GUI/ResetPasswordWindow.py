@@ -1,3 +1,4 @@
+import csv
 import json
 import sys
 import cv2
@@ -159,8 +160,12 @@ class LoginWindow(QMainWindow):
         dbe = "../Database/Employees/jsonFile/employee.json"
         with open(dbe, 'r') as file:
             data = json.load(file)
-        
 
+            for employee in data:
+                if employee['employeeID'] == input_user:
+                    employee['passcode'] = input_new_password
+                    with open(dbe, 'w') as file:
+                        json.dump(data, file,indent=4)
 
         db_conn = database.db
         coll_ref = db_conn.collection("employee")

@@ -1,24 +1,24 @@
 [
     {
-      "employeeID": "0001",
-      "firstName": "Nickholas",
-      "lastName": "Delavallierre",
-      "gender": "Male",
-      "title": "Security Manager",
-      "passcode": "0001",
-      "phoneNumber": "123-243-5233",
-      "email": "email@gmail.com",
-      "hireDate": "10/10/23"
+        "employeeID": "0001",
+        "firstName": "Nickholas",
+        "lastName": "Delavallierre",
+        "gender": "Male",
+        "title": "Security Manager",
+        "passcode": "pass",
+        "phoneNumber": "123-243-5233",
+        "email": "email@gmail.com",
+        "hireDate": "10/10/23"
     },
-  {
-      "employeeID": "0002",
-      "firstName": "John",
-      "lastName": "Doe",
-      "gender": "Male",
-      "title": "Security Manager",
-      "passcode": "0002",
-      "phoneNumber": "123-243-5233",
-      "email": "email@gmail.com",
-      "hireDate": "10/10/23"
+    {
+        "employeeID": "0002",
+        "firstName": "John",
+        "lastName": "Doe",
+        "gender": "Male",
+        "title": "Security Manager",
+        "passcode": "0002",
+        "phoneNumber": "123-243-5233",
+        "email": "email@gmail.com",
+        "hireDate": "10/10/23"
     }
 ]

@@ -171,6 +171,8 @@ class Ui_centralWindow(object):
         self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
         self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
         self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
+        self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
+        self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
 
 
 
@@ -422,6 +424,31 @@ class Ui_centralWindow(object):
             id.setText("Unknown")
             company.setText("Unknown")
             title.setText("Unknown")
+
+    def acceptHandle(self):
+        try:
+            user = self.current_user
+
+            current_time = datetime.now()
+            formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+
+            data_to_append = [formatted_time,
+                              self.employee.employeeID,
+                              user.id,
+                              user.firstName,
+                              user.lastName,
+                              user.company,
+                              user.title]
+
+            with open('../Database/Logs/log.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(data_to_append)
+
+        except:
+            print("error")
+
+    def rejectHandle(self):
+        pass
 
 class Ui_scanInfo(object):
     def setupUi(self, scanInfo):

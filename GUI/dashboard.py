@@ -489,6 +489,7 @@ class Ui_logoWidget(object):
         self.logoImg.setScaledContents(True)
         self.logoImg.setMaximumSize(80, 80)  # Set the maximum size of the logo
 
+
         # Load the logo image and set it to the label
         pixmap = QPixmap("../GUI/Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
         self.logoImg.setPixmap(pixmap)

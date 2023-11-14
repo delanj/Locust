@@ -12,13 +12,14 @@ import cv2
 import dlib
 import numpy as np
 from IPython.external.qt_for_kernel import QtCore, QtGui
-from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot, QEvent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QFrame, QSizePolicy, QVBoxLayout, QLabel, \
     QPushButton, QLineEdit, QGraphicsOpacityEffect, QSpacerItem, QTabWidget, QTableView, QCalendarWidget, QTextEdit, \
-    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton
+    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton, QDialog
 from PyQt5.QtCore import QCoreApplication, QMetaObject
 from PyQt5.QtWidgets import QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter, \
+    QTextOption
 from PyQt5.uic.properties import QtWidgets
 from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
@@ -78,18 +79,11 @@ textColor = "#4A4A4A"
 bordersLines = "#E0E0E0"
 
 
-
-
-
 primaryColor = "#333940"
 secondaryColor = "rgb(250, 250, 232)"
 
 backgroundColor = "#F5F5F5"
 backgroundColor2 = "#ECECEC"
-
-
-
-
 
 textColorSecondary = "rgb(100, 100, 100)"
 accentColor1 = "rgb(200, 200, 200)"
@@ -135,7 +129,8 @@ search_bar_style = f"""
 class Ui_centralWindow(object):
     def setupUi(self, centralWindow, employee=None):
 
-        self.employee = employee
+        if employee:
+            self.employee = employee
 
         self.webcam_handler = WebcamHandler()
         # Ensure the central window has an object name
@@ -191,6 +186,7 @@ class Ui_centralWindow(object):
         self.userHeaderContainer.setObjectName("userHeaderContainer")
         self.userHeaderUi = Ui_userHeaderWidget()
         self.userHeaderUi.setupUi(self.userHeaderContainer)
+        self.userHeaderUi.employeeName.setText(f"{self.employee.firstName} {self.employee.lastName}")
 
         self.displayContainer = QWidget(self.mainWindow)
         self.displayContainer.setObjectName("displayContainer")
@@ -232,6 +228,9 @@ class Ui_centralWindow(object):
         # Set the central widget of the main window
         centralWindow.setCentralWidget(self.centralwidget)
 
+        self.userHeaderUi.employeeProfile.clicked.connect(self.showPopupWindow)
+        QApplication.instance().installEventFilter(self.centralwidget)
+
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
         for i in reversed(range(self.displayLayout.count())):
@@ -252,6 +251,140 @@ class Ui_centralWindow(object):
         # Open the dashboard main window
         self.dashboard_main = dashboard.MainWindow(emp=self.employee)
         self.dashboard_main.show()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popupDialog'):
+                dialog = self.userHeaderWidget.popupDialog
+                if dialog and dialog.isVisible():
+                    # Check if the click is outside the dialog
+                    if not dialog.geometry().contains(event.globalPos()):
+                        dialog.hide()
+                        return True
+        return super(self).eventFilter(obj, event)
+
+    def showPopupWindow(self):
+        if hasattr(self, 'popupDialog') and self.popupDialog.isVisible():
+            self.popupDialog.hide()
+            return
+
+        self.popupDialog = QDialog()
+        self.popupDialog.setWindowFlags(Qt.FramelessWindowHint)
+
+        self.popupDialog.setWindowTitle("Create a Ticket")
+
+
+
+        self.popupDialog.setStyleSheet("""
+            QDialog {
+                background-color: #fafafa;
+                border: 2px solid #fafafa;
+            }
+
+            QLabel {
+                color: #4a4a4a;
+                font-family: Copperplate;
+                font-size: 14px;
+            }
+
+            QLineEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QTextEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QPushButton {
+                background-color: #adbec6;
+                border: 1px solid #adbec6;
+                padding: 5px;
+                font-size: 14px;
+            }
+        """)
+
+        # Create layout for the pop-up window
+        layout = QVBoxLayout()
+
+        # Add widgets to the layout (customize this based on your needs)
+        # label_fonts = QFont()
+
+        subject_label = QLabel("Subject")
+
+        self.subject_line_edit = QLineEdit()
+
+        description_label = QLabel("Description")
+        self.description_line_edit = QTextEdit()
+        self.description_line_edit.setFixedHeight(100)
+        self.description_line_edit.setAlignment(Qt.AlignTop)
+        self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+
+        submit_button = QPushButton("Submit")
+        submit_button.clicked.connect(self.submitTicket)
+
+        layout.addWidget(subject_label)
+        layout.addWidget(self.subject_line_edit)
+        layout.addWidget(description_label)
+        layout.addWidget(self.description_line_edit)
+        layout.addWidget(submit_button)
+
+
+        # Set the layout for the pop-up dialog
+        self.popupDialog.setLayout(layout)
+
+        # Find the main window this widget is part of
+        main_window = self.userHeaderUi.employeeProfile.window()
+
+        # Get the global position of the bottom-left corner of the button
+        global_button_position = main_window.mapToGlobal(self.userHeaderUi.employeeProfile.pos())
+
+        # Calculate new X and Y position
+        x_position = global_button_position.x()
+        y_position = global_button_position.y() + self.userHeaderUi.employeeProfile.height()
+
+        # Move the dialog to appear directly below the button
+        self.popupDialog.move(x_position, y_position)
+
+        if self.popupDialog.isVisible():
+            self.popupDialog.hide()
+        else:
+            self.popupDialog.show()
+
+        # Show the pop-up dialog
+        self.popupDialog.exec_()
+
+    def submitTicket(self):
+        try:
+            current_time = datetime.now()
+            formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
+            print(formatted_time)
+            empName = f"{self.employee.firstName} {self.employee.lastName}"
+            empID = self.employee.employeeID
+            subjectHeader = "Subject: "
+            subject = self.subject_line_edit.text()
+            descriptionHeader = "Description: "
+            description = self.description_line_edit.toPlainText()
+            print(description)
+
+            fileName = f"../Database/Tickets/{subject}_{str(formatted_time)}.txt"
+
+            with open(fileName,
+                      'w') as file:  # 'a' mode is for appending to the file, use 'w' to overwrite the file
+                file.write("Timestamp: " + formatted_time + '\n')
+                file.write("Employee Name: " + empName + '\n')
+                file.write("Employee ID: " + empID + '\n')
+                file.write(subjectHeader + subject + '\n')
+                file.write(descriptionHeader + description + '\n')
+                file.write('-' * 40 + '\n')  # Add a separator line for clarity
+
+            self.subject_line_edit.clear()
+            self.description_line_edit.clear()
+
+
+        except Exception as e:
+            print(f"Error: {e}")
 
 
 

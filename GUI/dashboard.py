@@ -11,13 +11,15 @@ from datetime import datetime, timedelta
 import cv2
 import dlib
 from IPython.external.qt_for_kernel import QtCore, QtGui
-from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot, QPoint, \
+    QEvent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QFrame, QSizePolicy, QVBoxLayout, QLabel, \
     QPushButton, QLineEdit, QGraphicsOpacityEffect, QSpacerItem, QTabWidget, QTableView, QCalendarWidget, QTextEdit, \
-    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton
+    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton, QDialog
 from PyQt5.QtCore import QCoreApplication, QMetaObject
 from PyQt5.QtWidgets import QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter, \
+    QTextOption
 from PyQt5.uic.properties import QtWidgets
 from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
@@ -73,32 +75,18 @@ textColor = "#4A4A4A"
 bordersLines = "#E0E0E0"
 
 
-
-
-
 primaryColor = "#333940"
 secondaryColor = "rgb(250, 250, 232)"
-
 backgroundColor = "#F5F5F5"
 backgroundColor2 = "#ECECEC"
 
-
-
-
-
 textColorSecondary = "rgb(100, 100, 100)"
-
 interactiveElements1 = "rgb(220, 220, 220)"
 interactiveElements2 = "rgb(190, 190, 190)"
-
 dataVisualizations = ""
-
 shadowsHighlights = "rgba(0, 0, 0, 0.5)"
 fieldBackgroundColor = "rgb(255, 255, 255)"
 placeholderColor = "rgb(200, 200, 200)"
-
-
-
 
 graph_background_color = (250, 245, 232)
 graph_font_color = (74, 74, 74)
@@ -130,13 +118,15 @@ search_bar_style = f"""
 class Ui_centralWindow(object):
     def setupUi(self, centralWindow, employee=None):
 
-        self.employee = employee
+        if employee:
+
+            self.employee = employee
 
         # Ensure the central window has an object name
         if not centralWindow.objectName():
             centralWindow.setObjectName("centralWindow")
 
-        print(self.employee.employeeID)
+
 
         # Set the window title and display it in full screen
         centralWindow.setWindowTitle(QCoreApplication.translate("centralWindow", "MainWindow", None))
@@ -222,6 +212,8 @@ class Ui_centralWindow(object):
         centralWindow.setCentralWidget(self.centralwidget)
         self.employeeView()
 
+        self.userHeaderUi.employeeProfile.clicked.connect(self.showPopupWindow)
+        QApplication.instance().installEventFilter(self.centralwidget)
     def employeeView(self):
         if self.employee:
             if self.employee.title == "Security Manager":
@@ -246,6 +238,7 @@ class Ui_centralWindow(object):
 
 
     def clearDisplayContainer(self):
+        self.dashboardUi.timer.stop()
         # This will remove all widgets from displayLayout
         for i in reversed(range(self.displayLayout.count())):
             widget = self.displayLayout.itemAt(i).widget()
@@ -340,6 +333,140 @@ class Ui_centralWindow(object):
         # Open the dashboard main window
         self.dashboard_main = facialRecognition.MainWindow(emp=self.employee)
         self.dashboard_main.show()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popupDialog'):
+                dialog = self.userHeaderWidget.popupDialog
+                if dialog and dialog.isVisible():
+                    # Check if the click is outside the dialog
+                    if not dialog.geometry().contains(event.globalPos()):
+                        dialog.hide()
+                        return True
+        return super(self).eventFilter(obj, event)
+
+    def showPopupWindow(self):
+        if hasattr(self, 'popupDialog') and self.popupDialog.isVisible():
+            self.popupDialog.hide()
+            return
+
+        self.popupDialog = QDialog()
+        self.popupDialog.setWindowFlags(Qt.FramelessWindowHint)
+
+        self.popupDialog.setWindowTitle("Create a Ticket")
+
+
+
+        self.popupDialog.setStyleSheet("""
+            QDialog {
+                background-color: #fafafa;
+                border: 2px solid #fafafa;
+            }
+
+            QLabel {
+                color: #4a4a4a;
+                font-family: Copperplate;
+                font-size: 14px;
+            }
+
+            QLineEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QTextEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QPushButton {
+                background-color: #adbec6;
+                border: 1px solid #adbec6;
+                padding: 5px;
+                font-size: 14px;
+            }
+        """)
+
+        # Create layout for the pop-up window
+        layout = QVBoxLayout()
+
+        # Add widgets to the layout (customize this based on your needs)
+        # label_fonts = QFont()
+
+        subject_label = QLabel("Subject")
+
+        self.subject_line_edit = QLineEdit()
+
+        description_label = QLabel("Description")
+        self.description_line_edit = QTextEdit()
+        self.description_line_edit.setFixedHeight(100)
+        self.description_line_edit.setAlignment(Qt.AlignTop)
+        self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+
+        submit_button = QPushButton("Submit")
+        submit_button.clicked.connect(self.submitTicket)
+
+        layout.addWidget(subject_label)
+        layout.addWidget(self.subject_line_edit)
+        layout.addWidget(description_label)
+        layout.addWidget(self.description_line_edit)
+        layout.addWidget(submit_button)
+
+
+        # Set the layout for the pop-up dialog
+        self.popupDialog.setLayout(layout)
+
+        # Find the main window this widget is part of
+        main_window = self.userHeaderUi.employeeProfile.window()
+
+        # Get the global position of the bottom-left corner of the button
+        global_button_position = main_window.mapToGlobal(self.userHeaderUi.employeeProfile.pos())
+
+        # Calculate new X and Y position
+        x_position = global_button_position.x()
+        y_position = global_button_position.y() + self.userHeaderUi.employeeProfile.height()
+
+        # Move the dialog to appear directly below the button
+        self.popupDialog.move(x_position, y_position)
+
+        if self.popupDialog.isVisible():
+            self.popupDialog.hide()
+        else:
+            self.popupDialog.show()
+
+        # Show the pop-up dialog
+        self.popupDialog.exec_()
+
+    def submitTicket(self):
+        try:
+            current_time = datetime.now()
+            formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
+            print(formatted_time)
+            empName = f"{self.employee.firstName} {self.employee.lastName}"
+            empID = self.employee.employeeID
+            subjectHeader = "Subject: "
+            subject = self.subject_line_edit.text()
+            descriptionHeader = "Description: "
+            description = self.description_line_edit.toPlainText()
+            print(description)
+
+            fileName = f"../Database/Tickets/{subject}_{str(formatted_time)}.txt"
+
+            with open(fileName,
+                      'w') as file:  # 'a' mode is for appending to the file, use 'w' to overwrite the file
+                file.write("Timestamp: " + formatted_time + '\n')
+                file.write("Employee Name: " + empName + '\n')
+                file.write("Employee ID: " + empID + '\n')
+                file.write(subjectHeader + subject + '\n')
+                file.write(descriptionHeader + description + '\n')
+                file.write('-' * 40 + '\n')  # Add a separator line for clarity
+
+            self.subject_line_edit.clear()
+            self.description_line_edit.clear()
+
+
+        except Exception as e:
+            print(f"Error: {e}")
 
 class Ui_logoWidget(object):
     def setupUi(self, logoWidget):
@@ -559,6 +686,7 @@ class Ui_userHeaderWidget(object):
         self.employeeProfile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
         self.employeeProfile.setStyleSheet(buttonStyleSheet)
         self.employeeProfile.setFixedSize(40, 40)
+
         self.userHeaderLayout.addWidget(self.employeeProfile)
 
         self.employeeName = QLabel(userHeaderWidget)
@@ -570,6 +698,10 @@ class Ui_userHeaderWidget(object):
         opacity_effect = QGraphicsOpacityEffect()
         opacity_effect.setOpacity(0.5)
         self.employeeName.setGraphicsEffect(opacity_effect)
+
+
+
+
 
 class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):
@@ -838,6 +970,9 @@ class Ui_dashboardWidget(object):
         self.timer.timeout.connect(self.update_time_label)
         self.timer.start(60000)  # Update every 60000 milliseconds (1 minute)
 
+
+
+
     def update_date_label(self):
         # Update the QLabel with the current date
         current_date = QDate.currentDate().toString("dddd, MMMM dd, yyyy")
@@ -953,14 +1088,44 @@ class Ui_dashboardWidget(object):
     def plotBarGraph(self):
         # Simulated data for user scans
         days_of_week = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun']
-        users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
+        # users_scanned = [20, 35, 30, 15, 40, 60, 45]  # Random user counts for each day
+        mCount = 0
+        tCount = 0
+        wCount = 0
+        rCount = 0
+        fCount = 0
+        sCount = 0
+        uCount = 0
+
+        logsDirectory = "../Database/Logs/log.csv"
+        with open(logsDirectory, mode='r') as file:
+            reader = csv.DictReader(file)
+            logs = list(reader)
+
+            for log in logs:
+                date = datetime.strptime(log['Timestamp'], '%Y-%m-%d %H:%M:%S')
+                weekday = date.weekday()
+                if weekday == 0:
+                    mCount += 1
+                elif weekday == 1:
+                    tCount += 1
+                elif weekday == 2:
+                    wCount += 1
+                elif weekday == 3:
+                    rCount += 1
+                elif weekday == 4:
+                    fCount += 1
+                elif weekday == 5:
+                    sCount += 1
+                elif weekday == 6:
+                    uCount += 1
+            users_scanned = [mCount, tCount, wCount, rCount, fCount, sCount, uCount]
 
         # Convert RGB to Matplotlib color format
         def convert_rgb_to_mpl(color):
             return tuple(c / 255 for c in color)
 
         # Define your colors
-
 
         bg_color = convert_rgb_to_mpl(graph_background_color)
         font_color = convert_rgb_to_mpl(graph_font_color)
@@ -2697,10 +2862,10 @@ class MainWindow(QMainWindow, Ui_centralWindow):
         self.employee = emp
 
         if self.employee:
-            print(f"Employee logged in: {self.employee.firstName} {self.employee.lastName}")
-            print("dashboard Window")
-            # Adjust all other employee attribute accesses similarly
-        self.setupUi(self, self.employee)
+
+            self.setupUi(self, self.employee)
+        else:
+            self.setupUi(self)
 
 
 

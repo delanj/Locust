@@ -41,11 +41,7 @@ dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
 
 e = Employee.Employee
 
-userColumnLength = len(dbu.users)
-userRowLength = inspect.getsource(User.__init__).count("self.")
 
-employeeColumnLength = len(dbe.employees)
-employeeRowLength = inspect.getsource(e.__init__).count("self.")
 font = "Garamond"
 #font = "Copperplate"
 tittleFontSize = "36px"
@@ -91,8 +87,7 @@ backgroundColor2 = "#ECECEC"
 
 
 textColorSecondary = "rgb(100, 100, 100)"
-accentColor1 = "rgb(200, 200, 200)"
-accentColor2 = "rgb(100, 100, 100)"
+
 interactiveElements1 = "rgb(220, 220, 220)"
 interactiveElements2 = "rgb(190, 190, 190)"
 
@@ -101,7 +96,7 @@ dataVisualizations = ""
 shadowsHighlights = "rgba(0, 0, 0, 0.5)"
 fieldBackgroundColor = "rgb(255, 255, 255)"
 placeholderColor = "rgb(200, 200, 200)"
-buttonBackgroundColor = "rgb(255, 255, 255)"
+
 
 
 
@@ -225,6 +220,29 @@ class Ui_centralWindow(object):
 
         # Set the central widget of the main window
         centralWindow.setCentralWidget(self.centralwidget)
+        self.employeeView()
+
+    def employeeView(self):
+        if self.employee:
+            if self.employee.title == "Security Manager":
+                self.navigationWidgetUi.logsButton.setEnabled(True)
+                self.navigationWidgetUi.scheduleButton.setEnabled(True)
+                self.navigationWidgetUi.ticketsButton.setEnabled(True)
+                self.navigationWidgetUi.addUserButton.setEnabled(True)
+
+                self.navigationWidgetUi.logoutButton.setEnabled(True)
+                self.navigationWidgetUi.faceRecButton.setEnabled(True)
+                self.navigationWidgetUi.dashboardButton.setEnabled(True)
+
+            if self.employee.title == "Desk Technician":
+                self.navigationWidgetUi.logsButton.setEnabled(False)
+                self.navigationWidgetUi.scheduleButton.setEnabled(True)
+                self.navigationWidgetUi.ticketsButton.setEnabled(False)
+                self.navigationWidgetUi.addUserButton.setEnabled(False)
+
+                self.navigationWidgetUi.logoutButton.setEnabled(True)
+                self.navigationWidgetUi.faceRecButton.setEnabled(True)
+                self.navigationWidgetUi.dashboardButton.setEnabled(True)
 
 
     def clearDisplayContainer(self):

@@ -11,22 +11,61 @@ import ManagerWindow
 import dashboard
 from dashboard import MainWindow
 
-
+font = "Garamond"
+tittleFontSize = "36px"
+buttonFontSize = "16px"
+dataTablesFontSize = "14px"
+bodySecondaryFontSize = "16px"
+captionsFontSize = "12px"
+buttonLabelSize = "14px"
+buttonColor = "#B0BEC5"
+textColor = "#E0E0E0"
+bordersLines = "#E0E0E0"
+interactiveElements1 = "rgb(220, 220, 220)"
+interactiveElements2 = "rgb(190, 190, 190)"
+buttonTextColor = "#4A4A4A"
+mainBackgroundColor = "#FAFAFA"
 
 class LoginWindow(QMainWindow):
     def __init__(self):
+
+        self.button_stylesheet = f"""
+                    QPushButton {{
+                        background-color: {buttonColor};
+                        color: {buttonTextColor};
+                        border-style: outset;
+                        border-width: 1px;
+                        border-radius: 10px;
+                        border-color: {bordersLines};
+                        font: bold {buttonLabelSize} "{font}";
+                        padding: 5px;
+                    }}
+                    QPushButton:pressed {{
+                        background-color: {interactiveElements1};
+                        border-style: inset;
+                    }}
+                    QPushButton:hover:!pressed {{
+                        background-color: {interactiveElements2};
+                    }}
+
+                """
+        self.lineEditStylesheet = (f"font: 75 {bodySecondaryFontSize} {font}; background: transparent; "
+                                   f"border: 1px solid transparent; border-bottom: 1px solid {textColor}; "
+                                   f"selection-background-color: transparent; outline: none; color: {textColor};")
+
         super().__init__()
 
         self.setWindowTitle("Login")
         self.showFullScreen()
         #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
         centralWidget = QWidget()
+        centralWidget.setStyleSheet(f"background-color: {mainBackgroundColor};")
 
         layout = QVBoxLayout()
 
 
         innerWidget = QWidget()
-        innerWidget.setStyleSheet("background-color: white; border-radius: 30px;")
+        innerWidget.setStyleSheet("background-color: #333940; border-radius: 30px;")
         innerLayout = QVBoxLayout(innerWidget)
         innerLayout.setAlignment(Qt.AlignCenter)
 
@@ -43,11 +82,10 @@ class LoginWindow(QMainWindow):
 
         label = QLabel("LocUST")
         label.setStyleSheet('font-size: 56pt; '
-                            'font-family: Copperplate;'
-                            'color: black; '
+                            f'font-family: {font};'
+                            f'color: {textColor}; '
                             'padding: 6px;'
-                            'min-width: 10;'
-                            'color: black;')
+                            'min-width: 10;')
 
         label.setFixedHeight(75)
         label.setAlignment(Qt.AlignCenter)
@@ -63,14 +101,13 @@ class LoginWindow(QMainWindow):
 
         self.invalid = QLabel("")
         self.invalid.setAlignment(Qt.AlignCenter)
-        self.invalid.setStyleSheet("color: black;")
+        self.invalid.setStyleSheet(f"color: {textColor}; font: 75 {captionsFontSize} {font};")
         innerLayout.addWidget(self.invalid)
         innerLayout.addSpacing(15)
 
         self.username_edit = QLineEdit()
         self.username_edit.setPlaceholderText("Username")
-        self.username_edit.setStyleSheet("background: transparent; border: 1px solid transparent; border-bottom: 1px solid black; "
-                                         "selection-background-color: transparent; outline: none; color: black;")
+        self.username_edit.setStyleSheet(self.lineEditStylesheet)
         self.username_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
 
         self.username_edit.setFixedWidth(250)
@@ -78,8 +115,7 @@ class LoginWindow(QMainWindow):
         innerLayout.addWidget(self.username_edit)
         self.password_edit = QLineEdit()
         self.password_edit.setPlaceholderText("Password")
-        self.password_edit.setStyleSheet("background: transparent; border: none; border-bottom: 1px solid black; "
-                                         "selection-background-color: transparent; color: black; ")
+        self.password_edit.setStyleSheet(self.lineEditStylesheet)
         self.password_edit.setEchoMode(QLineEdit.Password)
         self.password_edit.setFixedWidth(250)
         self.password_edit.setFixedHeight(30)
@@ -91,7 +127,7 @@ class LoginWindow(QMainWindow):
         login_button = QPushButton("Login")
         login_button.setFixedWidth(150)
         login_button.setFixedHeight(40)
-        login_button.setStyleSheet("background-color: black; color:white; border-radius: 20px;")
+        login_button.setStyleSheet(self.button_stylesheet)
         login_button.clicked.connect(self.login)
 
         innerLayout.addSpacing(30)
@@ -101,7 +137,7 @@ class LoginWindow(QMainWindow):
         innerLayout.addSpacing(30)
 
         copright = QLabel("©2023 LocUST.inc ")
-        copright.setStyleSheet("color: black;")
+        copright.setStyleSheet(f"color: {textColor}; font: 75 {captionsFontSize} {font};")
         copright.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
         innerLayout.addWidget(copright)
 
@@ -130,6 +166,11 @@ class LoginWindow(QMainWindow):
             else:
                 print("Login Failed")
                 self.invalid.setText("Login failed. Please check your credentials.")
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+            self.login()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()

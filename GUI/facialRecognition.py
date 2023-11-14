@@ -135,6 +135,8 @@ search_bar_style = f"""
 class Ui_centralWindow(object):
     def setupUi(self, centralWindow, employee=None):
 
+        self.employee = employee
+
         self.webcam_handler = WebcamHandler()
         # Ensure the central window has an object name
         if not centralWindow.objectName():
@@ -242,13 +244,13 @@ class Ui_centralWindow(object):
         self.current_user = user
 
     def closeCam(self):
-        e = employee
+
         if hasattr(self, 'webcam_handler'):
             self.webcam_handler.close_webcam()
 
         self.close()
         # Open the dashboard main window
-        self.dashboard_main = dashboard.MainWindow(emp=e)
+        self.dashboard_main = dashboard.MainWindow(emp=self.employee)
         self.dashboard_main.show()
 
 

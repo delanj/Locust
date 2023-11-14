@@ -461,6 +461,7 @@ class Ui_scanInfo(object):
         self.mainLayout.setSpacing(5)
         self.mainLayout.setObjectName(u"mainLayout")
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
+
         self.pictureContainer = QFrame(scanInfo)
         self.pictureContainer.setObjectName(u"pictureContainer")
         self.pictureContainer.setFrameShape(QFrame.StyledPanel)
@@ -484,74 +485,81 @@ class Ui_scanInfo(object):
         self.infoContainer.setObjectName(u"infoContainer")
         self.infoContainer.setFrameShape(QFrame.StyledPanel)
         self.infoContainer.setFrameShadow(QFrame.Raised)
+
+        self.infoContainer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.infoLayout = QFormLayout(self.infoContainer)
         self.infoLayout.setObjectName(u"infoLayout")
         self.infoLayout.setHorizontalSpacing(10)
         self.infoLayout.setVerticalSpacing(5)
         self.infoLayout.setContentsMargins(5, 5, 5, 5)
 
-
-
+        # Set up 'Name' label and field
         self.nameLabel = QLabel("Name: ")
         self.nameLabel.setObjectName(u"nameLabel")
         self.nameLabel.setStyleSheet(self.labelStyle)
-
+        self.nameLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(0, QFormLayout.LabelRole, self.nameLabel)
 
+        self.name = QLabel(self.infoContainer)
+        self.name.setStyleSheet(self.fieldStyle)
+        self.name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.infoLayout.setWidget(0, QFormLayout.FieldRole, self.name)
+
+        # Set up 'Gender' label and field
         self.genderLabel = QLabel("Gender: ")
         self.genderLabel.setObjectName(u"genderLabel")
         self.genderLabel.setStyleSheet(self.labelStyle)
-
+        self.genderLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(1, QFormLayout.LabelRole, self.genderLabel)
 
+
+        self.gender = QLabel(self.infoContainer)
+        self.gender.setStyleSheet(self.fieldStyle)
+        self.gender.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.infoLayout.setWidget(1, QFormLayout.FieldRole, self.gender)
+
+        # Set up 'ID' label and field
         self.idLabel = QLabel("ID: ")
         self.idLabel.setObjectName(u"idLabel")
         self.idLabel.setStyleSheet(self.labelStyle)
-
+        self.idLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(2, QFormLayout.LabelRole, self.idLabel)
 
+        self.id = QLabel(self.infoContainer)
+        self.id.setStyleSheet(self.fieldStyle)
+        self.id.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.infoLayout.setWidget(2, QFormLayout.FieldRole, self.id)
+
+        # Set up 'Company' label and field
         self.companyLabel = QLabel("Company: ")
         self.companyLabel.setObjectName(u"companyLabel")
         self.companyLabel.setStyleSheet(self.labelStyle)
-
+        self.companyLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(3, QFormLayout.LabelRole, self.companyLabel)
 
+        self.company = QLabel(self.infoContainer)
+        self.company.setStyleSheet(self.fieldStyle)
+        self.company.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.infoLayout.setWidget(3, QFormLayout.FieldRole, self.company)
+
+        # Set up 'Title' label and field
         self.titleLabel = QLabel("Title: ")
         self.titleLabel.setObjectName(u"titleLabel")
         self.titleLabel.setStyleSheet(self.labelStyle)
-
+        self.titleLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(4, QFormLayout.LabelRole, self.titleLabel)
 
         self.title = QLabel(self.infoContainer)
         self.title.setStyleSheet(self.fieldStyle)
-
+        self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.infoLayout.setWidget(4, QFormLayout.FieldRole, self.title)
 
-        self.company = QLabel(self.infoContainer)
-        self.company.setStyleSheet(self.fieldStyle)
 
-        self.infoLayout.setWidget(3, QFormLayout.FieldRole, self.company)
 
-        self.id = QLabel(self.infoContainer)
-        self.id.setStyleSheet(self.fieldStyle)
-
-        self.infoLayout.setWidget(2, QFormLayout.FieldRole, self.id)
-
-        self.gender = QLabel(self.infoContainer)
-        self.gender.setStyleSheet(self.fieldStyle)
-
-        self.infoLayout.setWidget(1, QFormLayout.FieldRole, self.gender)
-
-        self.name = QLabel(self.infoContainer)
-        self.name.setStyleSheet(self.fieldStyle)
-
-        self.infoLayout.setWidget(0, QFormLayout.FieldRole, self.name)
 
 
         self.mainLayout.addWidget(self.infoContainer)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.mainLayout.addItem(self.verticalSpacer_2)
 
         self.buttonContainer = QFrame(scanInfo)
@@ -590,6 +598,9 @@ class Ui_scanInfo(object):
         self.frame_3Layout.addWidget(self.logoutButton)
 
         self.mainLayout.addWidget(self.frame_3)
+
+
+
 
     def create_button(self, text, objectName, iconPath, setColor):
         button = QPushButton()

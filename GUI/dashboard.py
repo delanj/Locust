@@ -14,10 +14,11 @@ from IPython.external.qt_for_kernel import QtCore, QtGui
 from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QFrame, QSizePolicy, QVBoxLayout, QLabel, \
     QPushButton, QLineEdit, QGraphicsOpacityEffect, QSpacerItem, QTabWidget, QTableView, QCalendarWidget, QTextEdit, \
-    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton
+    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton, QDialog
 from PyQt5.QtCore import QCoreApplication, QMetaObject
 from PyQt5.QtWidgets import QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter, \
+    QTextOption
 from PyQt5.uic.properties import QtWidgets
 from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
@@ -528,6 +529,85 @@ class Ui_userHeaderWidget(object):
         opacity_effect = QGraphicsOpacityEffect()
         opacity_effect.setOpacity(0.5)
         self.employeeName.setGraphicsEffect(opacity_effect)
+
+        # Connecting the button to the combobox
+        self.employeeProfile.clicked.connect(self.showPopupWindow)
+        # userHeaderWidget.window().installEventFilter(self)
+
+    def showPopupWindow(self):
+        self.popupDialog = QDialog()
+        # self.popupDialog.setWindowFlag(Qt.FramelessWindowHint)
+        self.popupDialog.setWindowTitle("Create a Ticket")
+
+        self.popupDialog.setStyleSheet("""
+            QDialog {
+                background-color: #fafafa;
+                border: 2px solid #fafafa;
+            }
+
+            QLabel {
+                color: #4a4a4a;
+                font-family: Copperplate;
+                font-size: 14px;
+            }
+
+            QLineEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QTextEdit {
+                background-color: #FFFFFF;
+                border: 1px solid #adbec6;
+            }
+
+            QPushButton {
+                background-color: #adbec6;
+                border: 1px solid #adbec6;
+                padding: 5px;
+                font-size: 14px;
+            }
+        """)
+
+        # Create layout for the pop-up window
+        layout = QVBoxLayout()
+
+        # Add widgets to the layout (customize this based on your needs)
+        #label_fonts = QFont()
+
+        subject_label = QLabel("Subject")
+
+        subject_line_edit = QLineEdit()
+
+        description_label = QLabel("Description")
+        description_line_edit = QTextEdit()
+        description_line_edit.setFixedHeight(100)
+        description_line_edit.setAlignment(Qt.AlignTop)
+        description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+
+        submit_button = QPushButton("Submit")
+
+        layout.addWidget(subject_label)
+        layout.addWidget(subject_line_edit)
+        layout.addWidget(description_label)
+        layout.addWidget(description_line_edit)
+        layout.addWidget(submit_button)
+
+        # Set the layout for the pop-up dialog
+        self.popupDialog.setLayout(layout)
+
+        self.button_position = self.employeeProfile.mapToGlobal(self.employeeProfile.pos())
+        self.popupDialog.move(self.button_position.x() - 1075, self.button_position.y() + 12)
+
+        # Show the pop-up dialog
+        self.popupDialog.exec_()
+
+    # def eventFilter(self, obj, event):
+    #     # Close the popupDialog if a mouse press event occurs outside of it
+    #     if obj == self.userHeaderWidget.window() and event.type() == QEvent.MouseButtonPress:
+    #         if not self.popupDialog.geometry().contains(event.globalPos()):
+    #             self.popupDialog.close()
+    #     return super().eventFilter(obj, event)
 
 class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):

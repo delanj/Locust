@@ -31,7 +31,7 @@ from Database.firebaseDatabase import database
 import Entities.entitiesMain
 
 
-from GUI.MainWindow import db
+
 import dashboard
 from Entities.Employee import Employee
 # Link to data base
@@ -841,7 +841,7 @@ class WebcamHandler(QWidget):
                         break
                 if match_found:
                     id = name[:4]
-                    for i in db.load_users():
+                    for i in dbu.load_users():
                         if i.id == id:
                             face_names[-1] = f"{i.firstName} {i.lastName}"
                             name = face_names[-1]

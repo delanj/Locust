@@ -43,76 +43,50 @@ dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
 
 e = Employee.Employee
 
+# Fonts
+FONT = "Garamond"
 
-font = "Garamond"
-#font = "Copperplate"
-tittleFontSize = "36px"
-subheaderFontSize = "24px"
-bodyFontSize = "18px"
-bodySecondaryFontSize = "16px"
-buttonFontSize = "16px"
-buttonLabelSize = "14px"
-captionsFontSize = "12px"
-dataTablesFontSize = "14px"
-toolTipsFontSize = "16px"
+# Font Sizes
+TITLE_FONT_SIZE = "36px"
+SUBHEADER_FONT_SIZE = "24px"
+BODY_FONT_SIZE = "18px"
+BODY_SECONDARY_FONT_SIZE = "16px"
+BUTTON_FONT_SIZE = "16px"
+BUTTON_LABEL_SIZE = "14px"
+CAPTIONS_FONT_SIZE = "12px"
+DATA_TABLES_FONT_SIZE = "14px"
+TOOLTIPS_FONT_SIZE = "16px"
 
-backgroundColorTransparent = "background-color: transparent;"
-sidebarColor = "#333940"
-iconColor = "white"
-sideBarTextColor = "#E0E0E0"
+# Colors
+BACKGROUND_COLOR_TRANSPARENT = "background-color: transparent;"
+SIDEBAR_COLOR = "#333940"
+ICON_COLOR = "white"
+SIDEBAR_TEXT_COLOR = "#E0E0E0"
+MAIN_BACKGROUND_COLOR = "#FAFAFA"
+CONTENT_CARD_BACKGROUND_COLOR = "#FEFEFE"
+SECONDARY_FONT_COLOR = "#4A4A4A"
+BUTTON_COLOR = "#B0BEC5"
+TEXT_COLOR = "#4A4A4A"
+BORDERS_LINES_COLOR = "#E0E0E0"
+TEXT_COLOR_SECONDARY = "rgb(100, 100, 100)"
+INTERACTIVE_ELEMENT_COLOR_1 = "rgb(220, 220, 220)"
+INTERACTIVE_ELEMENT_COLOR_2 = "rgb(190, 190, 190)"
+FIELD_BACKGROUND_COLOR = "rgb(255, 255, 255)"
+PLACEHOLDER_COLOR = "rgb(200, 200, 200)"
 
-mainBackgroundColor = "#FAFAFA"
-contentCardBackgroundColor = "#FEFEFE"
+# Graph Colors
+GRAPH_BACKGROUND_COLOR = (250, 245, 232)
+GRAPH_FONT_COLOR = (74, 74, 74)
+GRAPH_BAR_COLOR = (176, 190, 197)
 
-secondaryFontColor = "#4A4A4A"
-opacity_effect = QGraphicsOpacityEffect()
-opacity_effect.setOpacity(0.5)
-
-buttonColor = "#B0BEC5"
-
-textColor = "#4A4A4A"
-
-bordersLines = "#E0E0E0"
+# Other UI Elements
+OPACITY_EFFECT = QGraphicsOpacityEffect()
+OPACITY_EFFECT.setOpacity(0.5)
 
 
-primaryColor = "#333940"
-secondaryColor = "rgb(250, 250, 232)"
-backgroundColor = "#F5F5F5"
-backgroundColor2 = "#ECECEC"
 
-textColorSecondary = "rgb(100, 100, 100)"
-interactiveElements1 = "rgb(220, 220, 220)"
-interactiveElements2 = "rgb(190, 190, 190)"
-dataVisualizations = ""
-shadowsHighlights = "rgba(0, 0, 0, 0.5)"
-fieldBackgroundColor = "rgb(255, 255, 255)"
-placeholderColor = "rgb(200, 200, 200)"
 
-graph_background_color = (250, 245, 232)
-graph_font_color = (74, 74, 74)
-graph_bar_color = (176, 190, 197)
 
-search_bar_style = f"""
-            QLineEdit {{
-                border: 1px solid {bordersLines}; /* Light grey border */
-                border-radius: 20px; /* Rounded corners */
-                padding: 0 8px; /* Text padding */
-                background: {fieldBackgroundColor}; /* White background */
-                selection-background-color: {interactiveElements1}; /* Color when text is selected */
-                font-size: {bodySecondaryFontSize}; /* Adjust the font size as needed */
-                opacity: 0.5;
-                color:{textColor}
-            }}
-            QLineEdit::placeholder {{
-                color: {placeholderColor}; /* Replace with your placeholder text color */
-                font-style: italic;
-                opacity: 0.5;
-            }}
-            QLineEdit:focus {{
-                border: 2px solid {bordersLines}; /* Highlighted border color when focused */
-
-            }}
-        """
 
 
 class Ui_centralWindow(object):
@@ -142,7 +116,7 @@ class Ui_centralWindow(object):
         # Set up the sidebar frame
         self.sideBar = QFrame(self.centralwidget)
         self.sideBar.setObjectName("sideBar")
-        self.sideBar.setStyleSheet(f"background-color: {sidebarColor};")
+        self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
         self.sideBar.setFrameShape(QFrame.StyledPanel)
         self.sideBar.setFrameShadow(QFrame.Raised)
         self.sidebarLayout = QVBoxLayout(self.sideBar)
@@ -174,7 +148,7 @@ class Ui_centralWindow(object):
         # Set up the main window frame
         self.mainWindow = QFrame(self.centralwidget)
         self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setStyleSheet(f"background-color: {mainBackgroundColor};")
+        self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
         self.mainWindow.setFrameShape(QFrame.StyledPanel)
         self.mainWindow.setFrameShadow(QFrame.Raised)
 
@@ -188,7 +162,7 @@ class Ui_centralWindow(object):
 
         self.displayContainer = QWidget(self.mainWindow)
         self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet(backgroundColorTransparent)
+        self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
         self.displayLayout = QVBoxLayout(self.displayContainer)
 
         # Set up the dashboard widget within the display container
@@ -475,7 +449,7 @@ class Ui_logoWidget(object):
             logoWidget.setObjectName("logoWidget")
 
         # Set the style of the logo widget
-        logoWidget.setStyleSheet(backgroundColorTransparent)
+        logoWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
 
         # Create a horizontal layout for the logo
         self.logoLayout = QHBoxLayout(logoWidget)
@@ -489,7 +463,6 @@ class Ui_logoWidget(object):
         self.logoImg.setScaledContents(True)
         self.logoImg.setMaximumSize(80, 80)  # Set the maximum size of the logo
 
-
         # Load the logo image and set it to the label
         pixmap = QPixmap("../GUI/Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
         self.logoImg.setPixmap(pixmap)
@@ -498,7 +471,7 @@ class Ui_logoWidget(object):
         # Initialize the label for the logo text
         self.logoLabel = QLabel("LocUST")
         self.logoLabel.setObjectName("logoLabel")
-        self.logoLabel.setStyleSheet(f"font: 75 {tittleFontSize} '{font}'; color:{sideBarTextColor};")
+        self.logoLabel.setStyleSheet(f"font: 75 {TITLE_FONT_SIZE} '{FONT}'; color:{SIDEBAR_TEXT_COLOR};")
         self.logoLayout.addWidget(self.logoLabel)  # Add the logo text to the layout
 
 class Ui_navigationWidget(object):
@@ -506,7 +479,7 @@ class Ui_navigationWidget(object):
     def setupUi(self, navigationWidget):
         if not navigationWidget.objectName():
             navigationWidget.setObjectName("navigationWidget")
-        navigationWidget.setStyleSheet(backgroundColorTransparent)
+        navigationWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
 
         self.navigationLayout = QVBoxLayout(navigationWidget)
         self.navigationLayout.setSpacing(0)
@@ -554,7 +527,7 @@ class Ui_navigationWidget(object):
         painter.drawPixmap(0, 0, pixmap)  # Draw the original pixmap onto the transparent one
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
         # Set the color to white
-        painter.fillRect(white_pixmap.rect(), QColor(f'{iconColor}'))
+        painter.fillRect(white_pixmap.rect(), QColor(f'{ICON_COLOR}'))
         painter.end()
 
         # Create the icon with the white pixmap and set it on the button
@@ -570,14 +543,14 @@ class Ui_navigationWidget(object):
         label = QLabel()
         label.setObjectName(objectName)
         label.setText(text)
-        label.setStyleSheet(f"color: {sideBarTextColor}; font: 75 {buttonLabelSize} '{font}'; padding-left: 10px;")
+        label.setStyleSheet(f"color: {SIDEBAR_TEXT_COLOR}; font: 75 {BUTTON_LABEL_SIZE} '{FONT}'; padding-left: 10px;")
         label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return label
 
     def button_style(self, textColor, buttonFontSize, font, interactiveElements1, interactiveElements2):
         return (f"""
             QPushButton {{
-                color: {sideBarTextColor}; 
+                color: {SIDEBAR_TEXT_COLOR}; 
                 font: 75 {buttonFontSize} '{font}';
                 padding-left: 30px;
                 text-align: left;
@@ -601,7 +574,7 @@ class Ui_userHeaderWidget(object):
         if not userHeaderWidget.objectName():
             userHeaderWidget.setObjectName(u"userHeaderWidget")
 
-        userHeaderWidget.setStyleSheet(backgroundColorTransparent)
+        userHeaderWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
         self.userHeaderLayout = QHBoxLayout(userHeaderWidget)
         self.userHeaderLayout.setSpacing(20)
         self.userHeaderLayout.setObjectName(u"userHeaderLayout")
@@ -612,13 +585,13 @@ class Ui_userHeaderWidget(object):
             QPushButton {{
                 border: none;
                 border-radius: 20px;  /* Half of width and height to make it circular */
-                background-color: {buttonColor};  /* Your desired background color for the normal state */
+                background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
             }}
             QPushButton:hover {{
-                background-color: {interactiveElements1};  /* Your desired background color when hovered */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
             }}
             QPushButton:pressed {{
-                background-color: {interactiveElements2};  /* Your desired background color when pressed */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
             }}
         """
 
@@ -636,26 +609,26 @@ class Ui_userHeaderWidget(object):
         self.searchBar.setFixedHeight(24)
         search_bar_style = f"""
             QLineEdit {{
-                border: 1px solid {bordersLines}; /* Light grey border */
+                border: 1px solid {BORDERS_LINES_COLOR}; /* Light grey border */
                 border-radius: 12px; /* Rounded corners */
                 padding: 0 8px; /* Text padding */
-                background: {fieldBackgroundColor}; /* White background */
-                selection-background-color: {interactiveElements1}; /* Color when text is selected */
-                font-size: {bodySecondaryFontSize}; /* Adjust the font size as needed */
+                background: {FIELD_BACKGROUND_COLOR}; /* White background */
+                selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Color when text is selected */
+                font-size: {BODY_SECONDARY_FONT_SIZE}; /* Adjust the font size as needed */
                 opacity: 0.5;
             }}
             QLineEdit::placeholder {{
-                color: {placeholderColor}; /* Replace with your placeholder text color */
+                color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
                 font-style: italic;
                 opacity: 0.5;
             }}
             QLineEdit:focus {{
-                border: 2px solid {bordersLines}; /* Highlighted border color when focused */
+                border: 2px solid {BORDERS_LINES_COLOR}; /* Highlighted border color when focused */
                 
             }}
         """
         palette = self.searchBar.palette()
-        palette.setColor(QPalette.PlaceholderText, QColor(placeholderColor))
+        palette.setColor(QPalette.PlaceholderText, QColor(PLACEHOLDER_COLOR))
         self.searchBar.setPalette(palette)
         self.searchBar.setStyleSheet(search_bar_style)
         self.searchBar.setFocusPolicy(Qt.NoFocus)
@@ -693,7 +666,7 @@ class Ui_userHeaderWidget(object):
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
         self.employeeName.setText("None")
-        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{secondaryFontColor};")
+        self.employeeName.setStyleSheet(f"font: 75 {BODY_FONT_SIZE} '{FONT}'; color:{SECONDARY_FONT_COLOR};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
         opacity_effect = QGraphicsOpacityEffect()
@@ -708,23 +681,23 @@ class Ui_dashboardWidget(object):
     def setupUi(self, dashboardWidget):
         self.containerStylesheet = f"""
             QFrame {{
-                background-color: {contentCardBackgroundColor};
-                border: 2px solid {bordersLines};
+                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                border: 2px solid {BORDERS_LINES_COLOR};
                 border-radius: 20px;
             }}
         """
         self.font1 = f"""
             QLabel {{
-            font: 75 {subheaderFontSize} "{font}";
-            color: {textColor};
+            font: 75 {SUBHEADER_FONT_SIZE} "{FONT}";
+            color: {TEXT_COLOR};
             background-color: transparent;
             border: none;
             border-radius: 20px;
         }}"""
         self.font2 = f"""
             QLabel {{
-            color: {textColor};
-            font: 75 {bodyFontSize} "{font}";
+            color: {TEXT_COLOR};
+            font: 75 {BODY_FONT_SIZE} "{FONT}";
             background-color: transparent;
             border: none;
             border-radius: 20px;
@@ -733,7 +706,7 @@ class Ui_dashboardWidget(object):
 
         # Dashboard widget
         dashboardWidget.setObjectName(u"dashboardWidget")
-        dashboardWidget.setStyleSheet(backgroundColorTransparent)
+        dashboardWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
         self.dashboardLayout = QHBoxLayout(dashboardWidget)
         self.dashboardLayout.setSpacing(10)
         self.dashboardLayout.setContentsMargins(10, 10, 10, 10)
@@ -948,7 +921,7 @@ class Ui_dashboardWidget(object):
         sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy4.setHeightForWidth(self.recentscansLabel.sizePolicy().hasHeightForWidth())
         self.recentscansLabel.setSizePolicy(sizePolicy4)
-        self.recentscansLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font}; color:{textColor}")
+        self.recentscansLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT}; color:{TEXT_COLOR}")
         recentScansHeaderLayout.addWidget(self.recentscansLabel)
         self.recentScansframeLayout.addWidget(self.recentScansHeader)
 
@@ -1037,14 +1010,14 @@ class Ui_dashboardWidget(object):
         # User ID Label
         userID = QLabel(userInfo)
         userID.setObjectName("userID")
-        userID.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{textColor};")
+        userID.setStyleSheet(f"font: 75 {BODY_SECONDARY_FONT_SIZE} '{FONT}'; color:{TEXT_COLOR};")
         userID.setText(user_id_text)
         userInfoLayout.addWidget(userID)
 
         # User Name Label
         userName = QLabel(userInfo)
         userName.setObjectName("userName")
-        userName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{textColor};")
+        userName.setStyleSheet(f"font: 75 {BODY_FONT_SIZE} '{FONT}'; color:{TEXT_COLOR};")
         userName.setText(user_name_text)
         userInfoLayout.addWidget(userName)
 
@@ -1053,7 +1026,7 @@ class Ui_dashboardWidget(object):
         # Scan Date Time Label
         scanDateTime = QLabel(userInfo)
         scanDateTime.setObjectName("scanDateTime")
-        scanDateTime.setStyleSheet(f"font: 75 {bodySecondaryFontSize} '{font}'; color:{secondaryFontColor};")
+        scanDateTime.setStyleSheet(f"font: 75 {BODY_SECONDARY_FONT_SIZE} '{FONT}'; color:{SECONDARY_FONT_COLOR};")
         scanDateTime.setGraphicsEffect(opacity_effect)
         scanDateTime.setText(scan_date_time_text)
         userInfoLayout.addWidget(scanDateTime)
@@ -1128,9 +1101,9 @@ class Ui_dashboardWidget(object):
 
         # Define your colors
 
-        bg_color = convert_rgb_to_mpl(graph_background_color)
-        font_color = convert_rgb_to_mpl(graph_font_color)
-        bar_color = convert_rgb_to_mpl(graph_bar_color)
+        bg_color = convert_rgb_to_mpl(GRAPH_BACKGROUND_COLOR)
+        font_color = convert_rgb_to_mpl(GRAPH_FONT_COLOR)
+        bar_color = convert_rgb_to_mpl(GRAPH_BAR_COLOR)
 
         ax = self.figure.add_subplot(111)
 
@@ -1138,16 +1111,16 @@ class Ui_dashboardWidget(object):
         ax.set_facecolor(bg_color)
 
         # Set the graph title, labels, and font properties
-        ax.set_title('Scans per Day', fontsize=14, fontname=f'{font}', color=font_color)
-        ax.set_xlabel('Days of the Week', fontsize=14, fontname=f'{font}', color=font_color)
-        ax.set_ylabel('Users Scanned', fontsize=14, fontname=f'{font}', color=font_color)
+        ax.set_title('Scans per Day', fontsize=14, fontname=f'{FONT}', color=font_color)
+        ax.set_xlabel('Days of the Week', fontsize=14, fontname=f'{FONT}', color=font_color)
+        ax.set_ylabel('Users Scanned', fontsize=14, fontname=f'{FONT}', color=font_color)
 
         # Plot the bar chart with the specified bar color
         bars = ax.bar(days_of_week, users_scanned, color=[bar_color] * len(days_of_week))
 
         # Change the font of the ticks on x and y axis
         for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-            label.set_fontname(f'{font}')
+            label.set_fontname(f'{FONT}')
             label.set_fontsize(14)  # Adjust the size as needed
 
         ax.patch.set_visible(False)
@@ -1205,15 +1178,37 @@ class Ui_logs(object):
         if not logs.objectName():
             logs.setObjectName("logs")
 
+        self.search_bar_style = f"""
+                    QLineEdit {{
+                        border: 1px solid {BORDERS_LINES_COLOR}; /* Light grey border */
+                        border-radius: 20px; /* Rounded corners */
+                        padding: 0 8px; /* Text padding */
+                        background: {FIELD_BACKGROUND_COLOR}; /* White background */
+                        selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Color when text is selected */
+                        font-size: {BODY_SECONDARY_FONT_SIZE}; /* Adjust the font size as needed */
+                        opacity: 0.5;
+                        color:{TEXT_COLOR}
+                    }}
+                    QLineEdit::placeholder {{
+                        color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
+                        font-style: italic;
+                        opacity: 0.5;
+                    }}
+                    QLineEdit:focus {{
+                        border: 2px solid {BORDERS_LINES_COLOR}; /* Highlighted border color when focused */
+
+                    }}
+                """
+
         self.table_stylesheet = f"""
             QTableView {{
-                border: 1px solid {bordersLines};
-                gridline-color: {bordersLines};
-                selection-background-color: {interactiveElements1};
+                border: 1px solid {BORDERS_LINES_COLOR};
+                gridline-color: {BORDERS_LINES_COLOR};
+                selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1};
                 selection-color: black;
-                background-color: {contentCardBackgroundColor};
-                color: {textColor};
-                font: 75 {dataTablesFontSize} "{font}";
+                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                color: {TEXT_COLOR};
+                font: 75 {DATA_TABLES_FONT_SIZE} "{FONT}";
             }}
 
             QTableView::item {{
@@ -1241,12 +1236,12 @@ class Ui_logs(object):
             }}
 
             QHeaderView::section {{
-                font: 75 {bodyFontSize} "{font}";
+                font: 75 {BODY_FONT_SIZE} "{FONT}";
                 background-color: #f4f4f4;
                 padding: 4px;
-                border: 1px solid {bordersLines};
+                border: 1px solid {BORDERS_LINES_COLOR};
                 font-weight: bold;
-                color: {textColor};
+                color: {TEXT_COLOR};
             }}
 
             QHeaderView::section:checked {{
@@ -1264,7 +1259,7 @@ class Ui_logs(object):
         self.tabStyleSheet = f"""
             QTabWidget::tab-bar {{
                 alignment: left;
-                background-color: {contentCardBackgroundColor};
+                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
                 
             }}
 
@@ -1273,14 +1268,14 @@ class Ui_logs(object):
                 border-top-right-radius: 10px;
                 border-bottom-left-radius: 10px;
                 border-bottom-right-radius: 10px;
-                background: {contentCardBackgroundColor};
-                color:{textColor};
+                background: {CONTENT_CARD_BACKGROUND_COLOR};
+                color:{TEXT_COLOR};
             }}
 
             QTabBar::tab {{
-                background: {buttonColor};
-                font: 75 {bodyFontSize} "{font}";
-                color: {textColor};
+                background: {BUTTON_COLOR};
+                font: 75 {BODY_FONT_SIZE} "{FONT}";
+                color: {TEXT_COLOR};
                 border: 0px;
                 margin: 5px;
                 padding: 5px;
@@ -1294,12 +1289,12 @@ class Ui_logs(object):
 
 
             QTabBar::tab:selected {{
-                background: {sidebarColor};
-                color: {sideBarTextColor};
+                background: {SIDEBAR_COLOR};
+                color: {SIDEBAR_TEXT_COLOR};
             }}
 
             QTabBar::tab:hover {{
-                background: {interactiveElements1};
+                background: {INTERACTIVE_ELEMENT_COLOR_1};
             }}
         """
 
@@ -1307,30 +1302,30 @@ class Ui_logs(object):
 
         self.buttonStyleSheet = f"""
                     QPushButton {{
-                        background-color: {buttonColor};
-                        color: {textColor};
+                        background-color: {BUTTON_COLOR};
+                        color: {TEXT_COLOR};
                         border-style: outset;
                         border-width: 2px;
                         border-radius: 10px;
-                        border-color: {bordersLines};
-                        font: bold {bodyFontSize} "{font}";
+                        border-color: {BORDERS_LINES_COLOR};
+                        font: bold {BODY_FONT_SIZE} "{FONT}";
                         padding: 5px;
                     }}
                     QPushButton:pressed {{
-                        background-color: {interactiveElements1};
+                        background-color: {INTERACTIVE_ELEMENT_COLOR_1};
                         border-style: inset;
                     }}
                     QPushButton:hover:!pressed {{
-                        background-color: {interactiveElements2};
+                        background-color: {INTERACTIVE_ELEMENT_COLOR_2};
                     }}
 
                 """
         self.containerStylesheet = f"""
                                     QFrame {{
-                                        background-color: {contentCardBackgroundColor};
-                                        border: 2px solid {bordersLines};
+                                        background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                                        border: 2px solid {BORDERS_LINES_COLOR};
                                         border-radius: 20px;
-                                        color: {textColor}
+                                        color: {TEXT_COLOR}
 
                                     }}
                                 """
@@ -1434,7 +1429,7 @@ class Ui_logs(object):
         search_input = QLineEdit(search_widget)
         search_input.setObjectName(object_name + "SearchInput")
 
-        search_input.setStyleSheet(search_bar_style)
+        search_input.setStyleSheet(self.search_bar_style)
 
         # Setup the search functionality
         search_input.textChanged.connect(lambda: self.searchTable(object_name + "TableView", search_input.text()))
@@ -1607,73 +1602,73 @@ class Ui_scheduleWidget(object):
 
         self.calendar_stylesheet = f"""
                                         QCalendarWidget {{
-                                background-color: {contentCardBackgroundColor};  /* Background color of the entire calendar */
-                                border: 3px solid {bordersLines};  /* Border color of the entire calendar */
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};  /* Background color of the entire calendar */
+                                border: 3px solid {BORDERS_LINES_COLOR};  /* Border color of the entire calendar */
                                 border-radius: 4px;         /* Rounded corners for the calendar */
                             }}
 
                             QCalendarWidget QWidget {{ 
-                                color: {textColor};             /* change day numbers */
+                                color: {TEXT_COLOR};             /* change day numbers */
                             }}
 
                             QCalendarWidget QTableView {{ 
-                                border: 2px solid {bordersLines};  /* Border around the table view (contains the days) */
-                                gridline-color: {bordersLines};   /* Color of the grid separating the days */
+                                border: 2px solid {BORDERS_LINES_COLOR};  /* Border around the table view (contains the days) */
+                                gridline-color: {BORDERS_LINES_COLOR};   /* Color of the grid separating the days */
                                 background-color: white; /* Background color of the entire table view */
                             }}
 
                             QCalendarWidget QTableView QHeaderView::section {{ 
-                                background-color: {contentCardBackgroundColor};  /* Background color of the headers (Mon, Tue, ...) */
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};  /* Background color of the headers (Mon, Tue, ...) */
                                 padding: 6px;               /* Padding for the headers */
-                                border: 1px solid {bordersLines};  /* Border color for the headers */
+                                border: 1px solid {BORDERS_LINES_COLOR};  /* Border color for the headers */
                                 font-size: 12pt;            /* Font size of the headers */
                                 font-weight: bold;          /* Font weight of the headers */
-                                color: {textColor};                /* Text color of the headers */
+                                color: {TEXT_COLOR};                /* Text color of the headers */
                             }}
 
                             QCalendarWidget QToolButton {{ 
                                 icon-size: 24px;            /* Size of the navigation icons (previous and next month) */
                                 border: none;               /* Remove the border from tool buttons */
                                 background-color: transparent;  /* Make tool buttons' background transparent */
-                                color: {textColor};             /* Color of the navigation icons */
+                                color: {TEXT_COLOR};             /* Color of the navigation icons */
                             }}
 
                             QCalendarWidget QToolButton:hover {{ 
-                                background-color: {interactiveElements1};  /* Background color when hovering over navigation buttons */
+                                background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Background color when hovering over navigation buttons */
                             }}
 
                             QCalendarWidget QMenu {{ 
-                                border: 1px solid {bordersLines};  /* Border around the drop-down menu (from the small arrow button) */
+                                border: 1px solid {BORDERS_LINES_COLOR};  /* Border around the drop-down menu (from the small arrow button) */
                             }}
 
                             QCalendarWidget QMenu::item {{ 
                                 padding: 4px 24px 4px 24px; /* Padding around the items inside the drop-down menu */
-                                background-color: {contentCardBackgroundColor}; /* Background color of the menu items */
-                                color: {textColor};            /* Text color of the menu items */
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR}; /* Background color of the menu items */
+                                color: {TEXT_COLOR};            /* Text color of the menu items */
                             }}
 
                             QCalendarWidget QMenu::item:selected {{ 
-                                background-color: {contentCardBackgroundColor};  /* Background color when an item inside the menu is selected */
-                                color: {interactiveElements1};                /* Text color of the selected item inside the menu */
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};  /* Background color when an item inside the menu is selected */
+                                color: {INTERACTIVE_ELEMENT_COLOR_1};                /* Text color of the selected item inside the menu */
                             }}
 
                             QCalendarWidget QAbstractItemView {{
-                                selection-background-color: {contentCardBackgroundColor}; /* Background color of the selected date */
-                                selection-color: {interactiveElements1};              /* Text color of the selected date */
+                                selection-background-color: {CONTENT_CARD_BACKGROUND_COLOR}; /* Background color of the selected date */
+                                selection-color: {INTERACTIVE_ELEMENT_COLOR_1};              /* Text color of the selected date */
                             }}
 
                             QCalendarWidget QLabel {{ 
                                 font-size: 28pt;            /* Font size of the large month and year label */
-                                color: {textColor};             /* Color of the large month and year label */
+                                color: {TEXT_COLOR};             /* Color of the large month and year label */
                                 font-weight: bold;          /* Font weight of the large month and year label */
                             }}
 
                             QCalendarWidget #qt_calendar_navigationbar {{ 
-                                background-color: {contentCardBackgroundColor};  /* Background color of the navigation bar (contains the month, year, and navigation buttons) */
-                                border: 2px solid {bordersLines};  /* Border at the bottom of the navigation bar */
-                                font: bold {bodyFontSize} "{font}";         /* Font size of the navigation bar */
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};  /* Background color of the navigation bar (contains the month, year, and navigation buttons) */
+                                border: 2px solid {BORDERS_LINES_COLOR};  /* Border at the bottom of the navigation bar */
+                                font: bold {BODY_FONT_SIZE} "{FONT}";         /* Font size of the navigation bar */
                                 min-height: 30;
-                                color:{textColor}
+                                color:{TEXT_COLOR}
                             }}
                 """
 
@@ -1681,13 +1676,13 @@ class Ui_scheduleWidget(object):
 
         self.table_stylesheet = f"""
                     QTableView {{
-                        border: 1px solid {bordersLines};
-                        gridline-color: {bordersLines};
-                        selection-background-color: {interactiveElements1};
+                        border: 1px solid {BORDERS_LINES_COLOR};
+                        gridline-color: {BORDERS_LINES_COLOR};
+                        selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1};
                         selection-color: black;
-                        background-color: {contentCardBackgroundColor};
-                        color: {textColor};
-                        font: 75 {dataTablesFontSize} "{font}";
+                        background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                        color: {TEXT_COLOR};
+                        font: 75 {DATA_TABLES_FONT_SIZE} "{FONT}";
                     }}
 
                     QTableView::item {{
@@ -1715,12 +1710,12 @@ class Ui_scheduleWidget(object):
                     }}
 
                     QHeaderView::section {{
-                        font: 75 {bodyFontSize} "{font}";
+                        font: 75 {BODY_FONT_SIZE} "{FONT}";
                         background-color: #f4f4f4;
                         padding: 4px;
-                        border: 1px solid {bordersLines};
+                        border: 1px solid {BORDERS_LINES_COLOR};
                         font-weight: bold;
-                        color: {textColor};
+                        color: {TEXT_COLOR};
                     }}
 
                     QHeaderView::section:checked {{
@@ -1739,30 +1734,30 @@ class Ui_scheduleWidget(object):
 
         self.buttonStyleSheet = f"""
                             QPushButton {{
-                                background-color: {buttonColor};
-                                color: {textColor};
+                                background-color: {BUTTON_COLOR};
+                                color: {TEXT_COLOR};
                                 border-style: outset;
                                 border-width: 2px;
                                 border-radius: 10px;
-                                border-color: {bordersLines};
-                                font: bold {bodyFontSize} "{font}";
+                                border-color: {BORDERS_LINES_COLOR};
+                                font: bold {BODY_FONT_SIZE} "{FONT}";
                                 padding: 5px;
                             }}
                             QPushButton:pressed {{
-                                background-color: {interactiveElements1};
+                                background-color: {INTERACTIVE_ELEMENT_COLOR_1};
                                 border-style: inset;
                             }}
                             QPushButton:hover:!pressed {{
-                                background-color: {interactiveElements2};
+                                background-color: {INTERACTIVE_ELEMENT_COLOR_2};
                             }}
 
                         """
         self.containerStylesheet = f"""
                                             QFrame {{
-                                                background-color: {contentCardBackgroundColor};
-                                                border: 2px solid {bordersLines};
+                                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                                                border: 2px solid {BORDERS_LINES_COLOR};
                                                 border-radius: 20px;
-                                                color: {textColor}
+                                                color: {TEXT_COLOR}
 
                                             }}
                                         """
@@ -1796,7 +1791,7 @@ class Ui_scheduleWidget(object):
         self.calendarWidget.setStyleSheet(self.calendar_stylesheet)
         self.calendarWidget.setGridVisible(True)
         format = self.calendarWidget.weekdayTextFormat(Qt.Saturday)
-        format.setForeground(QBrush(QColor(f"{buttonColor}"), Qt.SolidPattern))
+        format.setForeground(QBrush(QColor(f"{BUTTON_COLOR}"), Qt.SolidPattern))
         self.calendarWidget.setWeekdayTextFormat(Qt.Saturday, format)
         self.calendarWidget.setWeekdayTextFormat(Qt.Sunday, format)
 
@@ -1916,30 +1911,30 @@ class Ui_ticketsWidget(object):
     def setupUi(self, ticketsWidget):
         self.button_stylesheet = f"""
             QPushButton {{
-                background-color: {buttonColor};
-                color: {textColor};
+                background-color: {BUTTON_COLOR};
+                color: {TEXT_COLOR};
                 border-style: outset;
                 border-width: 2px;
                 border-radius: 10px;
-                border-color: {bordersLines};
-                font: bold {bodyFontSize} "{font}";
+                border-color: {BORDERS_LINES_COLOR};
+                font: bold {BODY_FONT_SIZE} "{FONT}";
                 padding: 5px;
             }}
             QPushButton:pressed {{
-                background-color: {interactiveElements1};
+                background-color: {INTERACTIVE_ELEMENT_COLOR_1};
                 border-style: inset;
             }}
             QPushButton:hover:!pressed {{
-                background-color: {interactiveElements2};
+                background-color: {INTERACTIVE_ELEMENT_COLOR_2};
             }}
 
         """
         self.containerStylesheet = f"""
                             QFrame {{
-                                background-color: {contentCardBackgroundColor};
-                                border: 2px solid {bordersLines};
+                                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                                border: 2px solid {BORDERS_LINES_COLOR};
                                 border-radius: 20px;
-                                color: {textColor}
+                                color: {TEXT_COLOR}
                                 
                             }}
                         """
@@ -1974,19 +1969,19 @@ class Ui_ticketsWidget(object):
         self.leftLayout.setContentsMargins(10, 10, 10, 10)
         self.ticketNameLabel = QLabel(self.leftWidget)
         self.ticketNameLabel.setObjectName(u"ticketNameLabel")
-        self.ticketNameLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font};"
+        self.ticketNameLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
                                            "background-color: transparent;"
                                            "border: none;"
                                            "border-radius: 20px;"
-                                           f"color:{textColor}")
+                                           f"color:{TEXT_COLOR}")
         self.leftLayout.addWidget(self.ticketNameLabel, 0, Qt.AlignHCenter)
         self.ticketTextEdit = QTextEdit(self.leftWidget)
         self.ticketTextEdit.setObjectName(u"ticketTextEdit")
-        self.ticketTextEdit.setStyleSheet(f"background-color: {contentCardBackgroundColor};"
+        self.ticketTextEdit.setStyleSheet(f"background-color: {CONTENT_CARD_BACKGROUND_COLOR};"
                                           "border: none;"
                                           "border-radius: 20px;"
-                                          f"font: 75 {bodyFontSize} {font};"
-                                          f"color:{textColor}")
+                                          f"font: 75 {BODY_FONT_SIZE} {FONT};"
+                                          f"color:{TEXT_COLOR}")
         self.leftLayout.addWidget(self.ticketTextEdit)
         self.resolvedButton = QPushButton("Resolved")
         self.resolvedButton.setStyleSheet(self.button_stylesheet)
@@ -2010,11 +2005,11 @@ class Ui_ticketsWidget(object):
         self.rightLayout.setContentsMargins(10, 10, 10, 10)
         self.ticketLabel = QLabel("Tickets")
         self.ticketLabel.setObjectName(u"ticketLabel")
-        self.ticketLabel.setStyleSheet(f"font: 75 {subheaderFontSize} {font};"
+        self.ticketLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
                                            "background-color: transparent;"
                                            "border: none;"
                                            "border-radius: 20px;"
-                                           f"color:{textColor}")
+                                           f"color:{TEXT_COLOR}")
         self.rightLayout.addWidget(self.ticketLabel)
         self.ticketFrame = QFrame(self.rightWidget)
         self.ticketFrame.setObjectName(u"ticketFrame")
@@ -2037,7 +2032,7 @@ class Ui_ticketsWidget(object):
         self.create_ticket_buttons()
 
 
-    def create_ticket_button(self, text, font_family=f"{font}", font_size=16, font_weight=75):
+    def create_ticket_button(self, text, font_family=f"{FONT}", font_size=16, font_weight=75):
         ticket_button = QPushButton()
         ticket_button.setObjectName(u"ticketButton")
         ticket_button.setText(text)
@@ -2102,8 +2097,8 @@ class Ui_addUserWidget(object):
 
         self.containerStylesheet = f"""
                     QFrame {{
-                        background-color: {contentCardBackgroundColor};
-                        border: 2px solid {bordersLines};
+                        background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+                        border: 2px solid {BORDERS_LINES_COLOR};
                         border-radius: 20px;
                     }}
                 """
@@ -2116,64 +2111,64 @@ class Ui_addUserWidget(object):
                 """
         self.subHeaderLabelStyle = f"""
                     QLabel {{
-                    font: 75 {subheaderFontSize} "{font}";
-                    color: {textColor};
+                    font: 75 {SUBHEADER_FONT_SIZE} "{FONT}";
+                    color: {TEXT_COLOR};
                     background-color: transparent;
                     border: none;
                     border-radius: 20px;
                 }}"""
         self.fieldLabelStyle = f"""
                     QLabel {{
-                    color: {textColor};
-                    font: 75 {bodyFontSize} "{font}";
+                    color: {TEXT_COLOR};
+                    font: 75 {BODY_FONT_SIZE} "{FONT}";
                     background-color: transparent;
                     border: none;
                     border-radius: 20px;
                 }}"""
         self.textFieldStyle = f"""
             QLineEdit {{
-                border: 1px solid {bordersLines}; /* Replace with your border color */
+                border: 1px solid {BORDERS_LINES_COLOR}; /* Replace with your border color */
                 border-radius: 4px;
                 padding: 5px;
-                background-color: {fieldBackgroundColor}; /* Replace with your background color */
-                color: {textColor}; /* Replace with your text color */
-                font-size: {bodySecondaryFontSize}px; /* Replace with the size of your font */
-                font-family: {font}; /* Replace with your font family */
+                background-color: {FIELD_BACKGROUND_COLOR}; /* Replace with your background color */
+                color: {TEXT_COLOR}; /* Replace with your text color */
+                font-size: {BODY_SECONDARY_FONT_SIZE}px; /* Replace with the size of your font */
+                font-family: {FONT}; /* Replace with your font family */
             }}
             QLineEdit:focus {{
-                border: 2px solid {interactiveElements1}; /* Replace with your focus border color */
-                background-color: {interactiveElements2}; /* Replace with your focus background color */
+                border: 2px solid {INTERACTIVE_ELEMENT_COLOR_1}; /* Replace with your focus border color */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_2}; /* Replace with your focus background color */
             }}
             QLineEdit::placeholder {{
-                color: {placeholderColor}; /* Replace with your placeholder text color */
+                color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
                 font-style: italic;
                 opacity: 0.5;
             }}
         """
         self.comboBoxStyle = f"""QComboBox {{
-        border: 1px solid {bordersLines};
+        border: 1px solid {BORDERS_LINES_COLOR};
         border-radius: 4px;
         padding: 5px;
-        background-color: {fieldBackgroundColor};
-        color: {textColor};
-        font-size: {bodySecondaryFontSize}px;
-        font-family: {font};
+        background-color: {FIELD_BACKGROUND_COLOR};
+        color: {TEXT_COLOR};
+        font-size: {BODY_SECONDARY_FONT_SIZE}px;
+        font-family: {FONT};
     }}
     QComboBox::drop-down {{
         subcontrol-origin: padding;
         subcontrol-position: top right;
         width: 15px;
         border-left-width: 1px;
-        border-left-color: {bordersLines};
+        border-left-color: {BORDERS_LINES_COLOR};
         border-left-style: solid; /* just a single line for the drop-down arrow */
         border-top-right-radius: 3px; /* same radius as the QComboBox */
         border-bottom-right-radius: 3px;
     }}
     QComboBox QAbstractItemView {{
-    background-color: {contentCardBackgroundColor}; /* Set your desired color here */
-    color: {textColor}; /* Optional: set text color in dropdown */
-    selection-background-color: {interactiveElements1}; /* Optional: background color for selected item */
-    selection-color: {interactiveElements2}; /* Optional: text color for selected item */
+    background-color: {CONTENT_CARD_BACKGROUND_COLOR}; /* Set your desired color here */
+    color: {TEXT_COLOR}; /* Optional: set text color in dropdown */
+    selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Optional: background color for selected item */
+    selection-color: {INTERACTIVE_ELEMENT_COLOR_2}; /* Optional: text color for selected item */
     min-width: 200px;  /* Adjust to desired width */
     max-width: 200px;  /* Adjust to desired width */
     border: none; /* Removes border around the dropdown */
@@ -2184,65 +2179,65 @@ class Ui_addUserWidget(object):
             /* Style for the individual items in the dropdown */
             border: none;  /* Removes borders around the items */
             outline: none; /* Removes focus outline which could also appear as a line */
-            background-color: {contentCardBackgroundColor}
+            background-color: {CONTENT_CARD_BACKGROUND_COLOR}
         }}
         
         """
         self.time_edit_style = f"""
             QTimeEdit {{
-                background-color: {backgroundColor}; /* Replace with your desired background color */
-                color: {textColor}; /* Replace with your desired text color */
-                border: 1px solid {bordersLines}; /* Replace with your desired border color */
+                background-color: {MAIN_BACKGROUND_COLOR}; /* Replace with your desired background color */
+                color: {TEXT_COLOR}; /* Replace with your desired text color */
+                border: 1px solid {BORDERS_LINES_COLOR}; /* Replace with your desired border color */
                 border-radius: 5px;
                 padding: 5px;
                 margin: 2px;
-                font-size: {bodySecondaryFontSize}px; /* Replace with your desired font size */
-                font-family: {font}; /* Replace with your desired font family */
+                font-size: {BODY_SECONDARY_FONT_SIZE}px; /* Replace with your desired font size */
+                font-family: {FONT}; /* Replace with your desired font family */
             }}
             QTimeEdit::up-button {{
                 subcontrol-origin: border;
                 subcontrol-position: top right; /* Position can be changed if needed */
                 border-left-width: 1px;
-                border-left-color: {bordersLines}; /* Replace with your desired border color */
+                border-left-color: {BORDERS_LINES_COLOR}; /* Replace with your desired border color */
                 border-left-style: solid; /* Can be changed if needed */
-                width: {bodyFontSize}px; /* Replace with your desired button width */
+                width: {BODY_FONT_SIZE}px; /* Replace with your desired button width */
             }}
             QTimeEdit::down-button {{
                 subcontrol-origin: border;
                 subcontrol-position: bottom right; /* Position can be changed if needed */
                 border-left-width: 1px;
-                border-left-color: {bordersLines}; /* Replace with your desired border color */
+                border-left-color: {BORDERS_LINES_COLOR}; /* Replace with your desired border color */
                 border-left-style: solid; /* Can be changed if needed */
-                width: {bodyFontSize}px; /* Replace with your desired button width */
+                width: {BODY_FONT_SIZE}px; /* Replace with your desired button width */
             }}
             QTimeEdit::up-arrow {{
                 image: url(:/icons/up-arrow.png); /* Replace with your desired icon */
-                width: {bodyFontSize}px; /* Replace with your desired width */
-                height: {bodyFontSize}px; /* Replace with your desired height */
+                width: {BODY_FONT_SIZE}px; /* Replace with your desired width */
+                height: {BODY_FONT_SIZE}px; /* Replace with your desired height */
             }}
             QTimeEdit::down-arrow {{
                 image: url(:/icons/down-arrow.png); /* Replace with your desired icon */
-                width: {bodyFontSize}px; /* Replace with your desired width */
-                height: {bodyFontSize}px; /* Replace with your desired height */
+                width: {BODY_FONT_SIZE}px; /* Replace with your desired width */
+                height: {BODY_FONT_SIZE}px; /* Replace with your desired height */
             }}
             QTimeEdit::up-arrow:hover, QTimeEdit::down-arrow:hover {{
                 image: url(:/icons/hover-arrow.png); /* Replace with an icon for hover state */
             }}
             QTimeEdit:focus {{
-                border: 2px solid {interactiveElements1}; /* Replace with your desired focus border color */
+                border: 2px solid {INTERACTIVE_ELEMENT_COLOR_1}; /* Replace with your desired focus border color */
             }}
         """
         self.checkbox_style = f"""
             QCheckBox {{
-                font-family: {font};  /* Change to your preferred font family */
-                font-size: {bodyFontSize};       /* Change to the desired font size */
-                color: {textColor};    /* Set your preferred text color, replace {textColor} with a color variable or value */
+                font-family: {FONT};  /* Change to your preferred font family */
+                font-size: {BODY_FONT_SIZE};       /* Change to the desired font size */
+                color: {TEXT_COLOR};    /* Set your preferred text color, replace {TEXT_COLOR} with a color variable or value */
             }}
             QCheckBox::indicator {{
                 width: 20px;
                 height: 20px;
-                border: 1px solid {bordersLines};  /* Replace {bordersLines} with your color variable */
-                background-color: {backgroundColor}; /* Replace {backgroundColor} with your color variable */
+                border: 1px solid {BORDERS_LINES_COLOR};  /* Replace {BORDERS_LINES_COLOR} with your color variable */
+                background-color: {MAIN_BACKGROUND_COLOR}; /* Replace {MAIN_BACKGROUND_COLOR} with your color variable */
             }}
             QCheckBox::indicator:unchecked:hover {{
                 border-color: #a0a0a0;
@@ -2252,7 +2247,7 @@ class Ui_addUserWidget(object):
                 border: 1px solid #5ca941;
             }}
             QCheckBox::indicator:checked:hover {{
-                background-color: {interactiveElements1}; /* Replace {interactiveElements1} with your color variable */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Replace {INTERACTIVE_ELEMENT_COLOR_1} with your color variable */
             }}
             /* Disabled states */
             QCheckBox::indicator:disabled {{
@@ -2266,27 +2261,27 @@ class Ui_addUserWidget(object):
         """
         self.button_stylesheet = f"""
     QPushButton {{
-        background-color: {buttonColor};
-        color: {textColor};
+        background-color: {BUTTON_COLOR};
+        color: {TEXT_COLOR};
         border-style: outset;
         border-width: 2px;
         border-radius: 10px;
-        border-color: {bordersLines};
-        font: bold {bodyFontSize} "{font}";
+        border-color: {BORDERS_LINES_COLOR};
+        font: bold {BODY_FONT_SIZE} "{FONT}";
         padding: 5px;
     }}
     QPushButton:pressed {{
-        background-color: {interactiveElements1};
+        background-color: {INTERACTIVE_ELEMENT_COLOR_1};
         border-style: inset;
     }}
     QPushButton:hover:!pressed {{
-        background-color: {interactiveElements2};
+        background-color: {INTERACTIVE_ELEMENT_COLOR_2};
     }}
     
 """
 
 
-        addUserWidget.setStyleSheet(backgroundColorTransparent)
+        addUserWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
         self.addUserLayout = QVBoxLayout(addUserWidget)
         self.addUserLayout.setSpacing(10)
         self.addUserLayout.setContentsMargins(0, 0, 0, 0)

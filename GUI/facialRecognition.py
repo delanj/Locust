@@ -29,26 +29,17 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from Database.firebaseDatabase import database
 import Entities.entitiesMain
+from Entities import entitiesMain
 
 
-from GUI.MainWindow import db
 import dashboard
 from Entities.Employee import Employee
 # Link to data base
-dbu = Entities.IndirectUser.User.UserDatabase("../Database/IndirectUsers/jsonFile/users.json")
-# Users
-User = Entities.IndirectUser.User.User
-# Link to data base
-dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
+
 
 employee = Employee.Employee
 
-userColumnLength = len(dbu.users)
-userRowLength = inspect.getsource(User.__init__).count("self.")
-
-employeeColumnLength = len(dbe.employees)
-employeeRowLength = inspect.getsource(employee.__init__).count("self.")
-font = "Garamond"
+font = "Copperplate"
 #font = "Copperplate"
 tittleFontSize = "36px"
 subheaderFontSize = "24px"
@@ -188,7 +179,10 @@ class Ui_centralWindow(object):
         self.userHeaderContainer.setObjectName("userHeaderContainer")
         self.userHeaderUi = Ui_userHeaderWidget()
         self.userHeaderUi.setupUi(self.userHeaderContainer)
-        self.userHeaderUi.employeeName.setText(f"{self.employee.firstName} {self.employee.lastName}")
+        if employee:
+            self.userHeaderUi.employeeName.setText(f"{self.employee.first_name} {self.employee.last_name}")
+        else:
+            pass
 
         self.displayContainer = QWidget(self.mainWindow)
         self.displayContainer.setObjectName("displayContainer")
@@ -250,9 +244,12 @@ class Ui_centralWindow(object):
             self.webcam_handler.close_webcam()
 
         self.close()
-        # Open the dashboard main window
-        self.dashboard_main = dashboard.MainWindow(emp=self.employee)
-        self.dashboard_main.show()
+        if employee:
+            self.dashboard_main = dashboard.MainWindow(emp=self.employee)
+            self.dashboard_main.show()
+        else:
+            self.dashboard_main = dashboard.MainWindow()
+            self.dashboard_main.show()
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
@@ -362,7 +359,7 @@ class Ui_centralWindow(object):
             current_time = datetime.now()
             formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
             print(formatted_time)
-            empName = f"{self.employee.firstName} {self.employee.lastName}"
+            empName = f"{self.employee.first_name} {self.employee.last_name}"
             empID = self.employee.employeeID
             subjectHeader = "Subject: "
             subject = self.subject_line_edit.text()
@@ -403,7 +400,7 @@ class Ui_centralWindow(object):
         if user:
             new_pixmap = QPixmap("../Database/IndirectUsers/photos/" + user.photos)  # Load the new image
             picture.setPixmap(new_pixmap.scaled(150, 150))
-            name.setText(f"{user.firstName} {user.lastName}")
+            name.setText(f"{user.first_name} {user.last_name}")
             gender.setText(user.gender)
             id.setText(user.id)
             company.setText(user.company)
@@ -435,8 +432,8 @@ class Ui_centralWindow(object):
             data_to_append = [formatted_time,
                               self.employee.employeeID,
                               user.id,
-                              user.firstName,
-                              user.lastName,
+                              user.first_name,
+                              user.last_name,
                               user.company,
                               user.title]
 
@@ -775,7 +772,7 @@ class Ui_userHeaderWidget(object):
 
         self.employeeName = QLabel(userHeaderWidget)
         self.employeeName.setObjectName(u"employeeName")
-        self.employeeName.setText("Nickholas Delavallierre")
+        self.employeeName.setText("None")
         self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{secondaryFontColor};")
         self.userHeaderLayout.addWidget(self.employeeName)
 
@@ -841,9 +838,9 @@ class WebcamHandler(QWidget):
                         break
                 if match_found:
                     id = name[:4]
-                    for i in db.load_users():
+                    for i in entitiesMain.getUsers():
                         if i.id == id:
-                            face_names[-1] = f"{i.firstName} {i.lastName}"
+                            face_names[-1] = f"{i.first_name} {i.last_name}"
                             name = face_names[-1]
                             user = i
                             self.user_updated.emit(user)
@@ -908,11 +905,11 @@ class MainWindow(QMainWindow, Ui_centralWindow):
         self.employee = emp
 
         if self.employee:
-            print(f"Employee logged in: {self.employee.firstName} {self.employee.lastName}")
-
+            print(f"Employee logged in: {self.employee.first_name} {self.employee.last_name}")
             print("face rec window")
-            # Adjust all other employee attribute accesses similarly
-        self.setupUi(self, self.employee)
+            self.setupUi(self, self.employee)
+        else:
+            self.setupUi(self)
 
 
 if __name__ == "__main__":

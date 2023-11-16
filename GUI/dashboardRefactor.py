@@ -72,203 +72,205 @@ OPACITY_EFFECT.setOpacity(0.5)
 
 
 class DashboardWindow(QMainWindow):
+    """ Initialize the main login window. """
     def __init__(self, employee=None):
-        """ Initialize the main login window. """
-        self.employee = employee
         super().__init__()
-        self.setupUi()
+        self.employee = employee
+        self.setup_ui()
 
-    def setupUi(self):
-        if self.employee:
-            self.employee = self.employee
-        else:
-            self.employee = None
-        self.centralwidget = QWidget()
-        self.setCentralWidget(self.centralwidget)
+    def setup_ui(self):
+        """ Initialize the main user interface."""
+        self.init_central_widget()
+        self.setup_sidebar()
+        self.setup_main_window()
 
-        self.centralLayout = QHBoxLayout(self.centralwidget)
-        self.centralLayout.setSpacing(0)
-        self.centralLayout.setContentsMargins(0, 0, 0, 0)
+    def init_central_widget(self):
+        """ Initialize the central widget."""
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        #QApplication.instance().installEventFilter(self.central_widget)
 
+        self.central_layout = QHBoxLayout(self.central_widget)
+        self.central_layout.setSpacing(0)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+
+    def setup_sidebar(self):
+        """ Initialize the sidebar."""
         # Set up the sidebar frame
-        self.sideBar = QFrame(self.centralwidget)
-        self.sideBar.setObjectName("sideBar")
-        self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
-        self.sideBar.setFrameShape(QFrame.StyledPanel)
-        self.sideBar.setFrameShadow(QFrame.Raised)
-        self.sidebarLayout = QVBoxLayout(self.sideBar)
-        self.sidebarLayout.setSpacing(0)
-        self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
+        self.sidebar_frame = QFrame(self.central_widget)
+        self.sidebar_frame.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
 
-        # Add logo and navigation widgets to the sidebar
-        self.logoWidgetContainer = QWidget(self.sideBar)
-        self.logoWidgetContainer.setObjectName("logoWidgetContainer")
-        self.logoWidgetUi = Ui_logoWidget()
-        self.logoWidgetUi.setupUi(self.logoWidgetContainer)
-        self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+        self.sidebar_layout = QVBoxLayout(self.sidebar_frame)
+        self.sidebar_layout.setSpacing(0)
+        self.sidebar_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.navigationWidgetContainer = QWidget(self.sideBar)
-        self.navigationWidgetContainer.setObjectName("navigationWidgetContainer")
-        self.navigationWidgetUi = Ui_navigationWidget()
-        self.navigationWidgetUi.setupUi(self.navigationWidgetContainer)
-        self.sidebarLayout.addWidget(self.navigationWidgetContainer, stretch=10)
+        def logo_widget():
+            # Add logo and navigation widgets to the sidebar
+            self.logo_widget_container = QWidget(self.sidebar_frame)
+            self.logo_widget_ui = Ui_logoWidget()
+            self.logo_widget_ui.setupUi(self.logo_widget_container)
+            self.sidebar_layout.addWidget(self.logo_widget_container, stretch=2)
+        logo_widget()
 
-        # Connect navigation buttons to their respective slot functions
-        self.navigationWidgetUi.logsButton.clicked.connect(self.showLogsWidget)
-        self.navigationWidgetUi.dashboardButton.clicked.connect(self.showDashBoardWidget)
-        self.navigationWidgetUi.scheduleButton.clicked.connect(self.showScheduleWidget)
-        self.navigationWidgetUi.ticketsButton.clicked.connect(self.showTicketWidget)
-        self.navigationWidgetUi.addUserButton.clicked.connect(self.showAddUserWidget)
-        self.navigationWidgetUi.logoutButton.clicked.connect(self.logout)
-        self.navigationWidgetUi.faceRecButton.clicked.connect(self.faceRec)
+        def navigation_widget():
+            # Add logo and navigation widgets to the sidebar
+            self.navigation_widget_container = QWidget(self.sidebar_frame)
+            self.navigation_widget_ui = Ui_navigationWidget()
+            self.navigation_widget_ui.setupUi(self.navigation_widget_container)
+            self.sidebar_layout.addWidget(self.navigation_widget_container, stretch=10)
 
-        # Set up the main window frame
-        self.mainWindow = QFrame(self.centralwidget)
-        self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
-        self.mainWindow.setFrameShape(QFrame.StyledPanel)
-        self.mainWindow.setFrameShadow(QFrame.Raised)
+            # Connect navigation buttons to their respective slot functions
+            self.navigation_widget_ui.logsButton.clicked.connect(self.show_logs_widget)
+            self.navigation_widget_ui.dashboardButton.clicked.connect(self.show_dash_board_widget)
+            self.navigation_widget_ui.scheduleButton.clicked.connect(self.show_schedule_widget)
+            self.navigation_widget_ui.ticketsButton.clicked.connect(self.show_ticket_widget)
+            self.navigation_widget_ui.addUserButton.clicked.connect(self.show_add_user_widget)
+            self.navigation_widget_ui.logoutButton.clicked.connect(self.logout)
+            self.navigation_widget_ui.faceRecButton.clicked.connect(self.faceRec)
+        navigation_widget()
 
-        # Add user header and display container to the main window
-        self.userHeaderContainer = QWidget(self.mainWindow)
-        self.userHeaderContainer.setObjectName("userHeaderContainer")
-        self.userHeaderUi = Ui_userHeaderWidget()
-        self.userHeaderUi.setupUi(self.userHeaderContainer)
-        if self.employee:
-            self.userHeaderUi.employeeName.setText(f"{self.employee.first_name} {self.employee.last_name}")
+        def adjust_view_for_employee():
+            if self.employee:
+                if self.employee.title == "Security Manager":
+                    self.navigationWidgetUi.logsButton.setEnabled(True)
+                    self.navigationWidgetUi.scheduleButton.setEnabled(True)
+                    self.navigationWidgetUi.ticketsButton.setEnabled(True)
+                    self.navigationWidgetUi.addUserButton.setEnabled(True)
 
-        self.displayContainer = QWidget(self.mainWindow)
-        self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.displayLayout = QVBoxLayout(self.displayContainer)
+                    self.navigationWidgetUi.logoutButton.setEnabled(True)
+                    self.navigationWidgetUi.faceRecButton.setEnabled(True)
+                    self.navigationWidgetUi.dashboardButton.setEnabled(True)
 
-        # Set up the dashboard widget within the display container
-        self.dashboardWidgetContainer = QWidget(self.displayContainer)
-        self.dashboardWidgetContainer.setObjectName("dashboardWidgetContainer")
-        self.dashboardUi = Ui_dashboardWidget()
-        self.dashboardUi.setupUi(self.dashboardWidgetContainer)
-        self.displayLayout.addWidget(self.dashboardWidgetContainer)
+                if self.employee.title == "Desk Technician":
+                    self.navigationWidgetUi.logsButton.setEnabled(False)
+                    self.navigationWidgetUi.scheduleButton.setEnabled(True)
+                    self.navigationWidgetUi.ticketsButton.setEnabled(False)
+                    self.navigationWidgetUi.addUserButton.setEnabled(False)
 
-        # Arrange the main layout with header and display container
-        self.mainLayout = QVBoxLayout(self.mainWindow)
-        self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
-        self.mainLayout.addSpacing(20)
-        self.mainLayout.addWidget(self.displayContainer, stretch=10)
+                    self.navigationWidgetUi.logoutButton.setEnabled(True)
+                    self.navigationWidgetUi.faceRecButton.setEnabled(True)
+                    self.navigationWidgetUi.dashboardButton.setEnabled(True)
+        adjust_view_for_employee()
 
-        # Add sidebar and main window to the central layout
-        self.centralLayout.addWidget(self.sideBar, stretch=2)
-        self.centralLayout.addWidget(self.mainWindow, stretch=10)
+        self.central_layout.addWidget(self.sidebar_frame, stretch=2)
 
-        # Set the central widget of the main window
-        #self.centralWindow.setCentralWidget(self.centralwidget)
-        self.employeeView()
+    def setup_main_window(self):
+        """ Initialize the main window."""
+        self.main_window = QFrame(self.central_widget)
+        self.main_window.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
+        self.main_layout = QVBoxLayout(self.main_window)
 
-        self.userHeaderUi.employeeProfile.clicked.connect(self.showPopupWindow)
-        QApplication.instance().installEventFilter(self.centralwidget)
+        def header_widget():
+            # Add user header and display container to the main window
+            self.userHeaderContainer = QWidget(self.main_window)
+            self.userHeaderUi = Ui_userHeaderWidget()
+            self.userHeaderUi.setupUi(self.userHeaderContainer)
+            if self.employee:
+                self.userHeaderUi.employeeName.setText(f"{self.employee.first_name} {self.employee.last_name}")
 
-    def employeeView(self):
-        if self.employee:
-            if self.employee.title == "Security Manager":
-                self.navigationWidgetUi.logsButton.setEnabled(True)
-                self.navigationWidgetUi.scheduleButton.setEnabled(True)
-                self.navigationWidgetUi.ticketsButton.setEnabled(True)
-                self.navigationWidgetUi.addUserButton.setEnabled(True)
+            self.userHeaderUi.employeeProfile.clicked.connect(self.show_popup_window)
+            self.main_layout.addWidget(self.userHeaderContainer, stretch=1)
+        header_widget()
 
-                self.navigationWidgetUi.logoutButton.setEnabled(True)
-                self.navigationWidgetUi.faceRecButton.setEnabled(True)
-                self.navigationWidgetUi.dashboardButton.setEnabled(True)
+        def display_widget():
+            # Set up the display container
+            self.display_container = QWidget(self.main_window)
+            self.display_container.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
+            self.display_layout = QVBoxLayout(self.display_container)
 
-            if self.employee.title == "Desk Technician":
-                self.navigationWidgetUi.logsButton.setEnabled(False)
-                self.navigationWidgetUi.scheduleButton.setEnabled(True)
-                self.navigationWidgetUi.ticketsButton.setEnabled(False)
-                self.navigationWidgetUi.addUserButton.setEnabled(False)
+            def dashboard_widget():
+                # Set up the dashboard widget within the display container
+                self.dashboard_widget_container = QWidget(self.display_container)
+                self.dashboard_ui = Ui_dashboardWidget()
+                self.dashboard_ui.setupUi(self.dashboard_widget_container)
+                self.display_layout.addWidget(self.dashboard_widget_container)
+            dashboard_widget()
 
-                self.navigationWidgetUi.logoutButton.setEnabled(True)
-                self.navigationWidgetUi.faceRecButton.setEnabled(True)
-                self.navigationWidgetUi.dashboardButton.setEnabled(True)
+            self.main_layout.addWidget(self.display_container, stretch=10)
+        display_widget()
 
-    def clearDisplayContainer(self):
-        self.dashboardUi.timer.stop()
-        # This will remove all widgets from displayLayout
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
+        self.central_layout.addWidget(self.main_window, stretch=10)
+
+    def clear_display_container(self):
+        # Check if the timer exists and is running, then stop it
+        if hasattr(self, 'dashboard_ui') and hasattr(self.dashboard_ui, 'timer') and self.dashboard_ui.timer.isActive():
+            self.dashboard_ui.timer.stop()
+
+        # Remove all widgets from displayLayout
+        for i in reversed(range(self.display_layout.count())):
+            widget = self.display_layout.itemAt(i).widget()
             if widget is not None:
-                self.displayLayout.removeWidget(widget)
+                self.display_layout.removeWidget(widget)
                 widget.deleteLater()
 
-    def showDashBoardWidget(self):
+    def show_dash_board_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.dashboardWidgetContainer = QWidget(self.displayContainer)
-            self.dashboardWidgetContainer.setObjectName("dashboardWidgetContainer")
-            self.dashboardUi = Ui_dashboardWidget()  # Instantiate your Dashboard UI class
-            self.dashboardUi.setupUi(self.dashboardWidgetContainer)  # Set up the dashboard UI
-            self.displayLayout.addWidget(self.dashboardWidgetContainer)
+            self.dashboard_widget_container = QWidget(self.display_container)
+            self.dashboard_ui = Ui_dashboardWidget()
+            self.dashboard_ui.setupUi(self.dashboard_widget_container)
+            self.display_layout.addWidget(self.dashboard_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showLogsWidget(self):
+    def show_logs_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.logsWidgetContainer = QWidget(self.displayContainer)
-            self.logsWidgetContainer.setObjectName("logsWidgetContainer")
-            self.logsUi = Ui_logs()
-            self.logsUi.setupUi(self.logsWidgetContainer)
-            self.displayLayout.addWidget(self.logsWidgetContainer)
+            self.logs_widget_container = QWidget(self.display_container)
+            self.logs_ui = Ui_logs()
+            self.logs_ui.setupUi(self.logs_widget_container)
+            self.display_layout.addWidget(self.logs_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showScheduleWidget(self):
+    def show_schedule_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.scheduleWidgetContainer = QWidget(self.displayContainer)
-            self.scheduleWidgetContainer.setObjectName("scheduleWidgetContainer")
-            self.scheduleUi = Ui_scheduleWidget()
-            self.scheduleUi.setupUi(self.scheduleWidgetContainer)
-            self.displayLayout.addWidget(self.scheduleWidgetContainer)
+            self.schedule_widget_container = QWidget(self.display_container)
+            self.schedule_ui = Ui_scheduleWidget()
+            self.schedule_ui.setupUi(self.schedule_widget_container)
+            self.display_layout.addWidget(self.schedule_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showTicketWidget(self):
+    def show_ticket_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.ticketWidgetContainer = QWidget(self.displayContainer)
-            self.ticketWidgetContainer.setObjectName("ticketWidgetContainer")
-            self.ticketUi = Ui_ticketsWidget()
-            self.ticketUi.setupUi(self.ticketWidgetContainer)
-            self.displayLayout.addWidget(self.ticketWidgetContainer)
+            self.ticket_widget_container = QWidget(self.display_container)
+            self.ticket_ui = Ui_ticketsWidget()
+            self.ticket_ui.setupUi(self.ticket_widget_container)
+            self.display_layout.addWidget(self.ticket_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showAddUserWidget(self):
+    def show_add_user_widget(self):
 
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.addUserWidgetContainer = QWidget(self.displayContainer)
-            self.addUserWidgetContainer.setObjectName("addUserWidgetContainer")
-            self.addUserUi = Ui_addUserWidget()
-            self.addUserUi.setupUi(self.addUserWidgetContainer)
-            self.displayLayout.addWidget(self.addUserWidgetContainer)
+            self.add_user_widget_container = QWidget(self.display_container)
+            self.add_user_widget_container.setObjectName("addUserWidgetContainer")
+            self.add_user_ui = Ui_addUserWidget()
+            self.add_user_ui.setupUi(self.add_user_widget_container)
+            self.display_layout.addWidget(self.add_user_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
@@ -297,7 +299,7 @@ class DashboardWindow(QMainWindow):
                         return True
         return super(self).eventFilter(obj, event)
 
-    def showPopupWindow(self):
+    def show_popup_window(self):
         if hasattr(self, 'popupDialog') and self.popupDialog.isVisible():
             self.popupDialog.hide()
             return
@@ -354,7 +356,7 @@ class DashboardWindow(QMainWindow):
         self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
 
         submit_button = QPushButton("Submit")
-        submit_button.clicked.connect(self.submitTicket)
+        submit_button.clicked.connect(self.submit_ticket)
 
         layout.addWidget(subject_label)
         layout.addWidget(self.subject_line_edit)
@@ -386,7 +388,7 @@ class DashboardWindow(QMainWindow):
         # Show the pop-up dialog
         self.popupDialog.exec_()
 
-    def submitTicket(self):
+    def submit_ticket(self):
         try:
             current_time = datetime.now()
             formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')

@@ -1,178 +1,211 @@
 import sys
-import cv2
-from IPython.external.qt_for_kernel import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
-    QHBoxLayout, QFrame, QTableWidgetItem, QTableWidget, QGraphicsDropShadowEffect
-from PyQt5.QtGui import QPixmap, QPainter, QImage, QBitmap, QColor, QPalette, QLinearGradient, QBrush
-from PyQt5.QtCore import Qt, QTimer
-from Entities.Employee import Employee
-import MainWindow
-import ManagerWindow
-import dashboard
-from dashboard import MainWindow
+import logging
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
 
-font = "Garamond"
-tittleFontSize = "36px"
-buttonFontSize = "16px"
-dataTablesFontSize = "14px"
-bodySecondaryFontSize = "16px"
-captionsFontSize = "12px"
-buttonLabelSize = "14px"
-buttonColor = "#B0BEC5"
-textColor = "#E0E0E0"
-bordersLines = "#E0E0E0"
-interactiveElements1 = "rgb(220, 220, 220)"
-interactiveElements2 = "rgb(190, 190, 190)"
-buttonTextColor = "#4A4A4A"
-mainBackgroundColor = "#FAFAFA"
+from Entities import entitiesMain as db
+import dashboard
 
 class LoginWindow(QMainWindow):
+    # Constants
+    FONT_FAMILY = "Copperplate"
+    FONT_COLOR = "#E0E0E0"
+    MAIN_BACKGROUND_COLOR = "#FAFAFA"
+    BACKGROUND_COLOR = "#333940"
+    BUTTON_COLOR = "#B0BEC5"
+    BUTTON_TEXT_COLOR = "#4A4A4A"
+    BORDER_COLOR = "#E0E0E0"
+    BUTTON_HOVER_COLOR = "rgb(190, 190, 190)"
+    BUTTON_PRESSED_COLOR = "rgb(220, 220, 220)"
+
     def __init__(self):
-
-        self.button_stylesheet = f"""
-                    QPushButton {{
-                        background-color: {buttonColor};
-                        color: {buttonTextColor};
-                        border-style: outset;
-                        border-width: 1px;
-                        border-radius: 10px;
-                        border-color: {bordersLines};
-                        font: bold {buttonLabelSize} "{font}";
-                        padding: 5px;
-                    }}
-                    QPushButton:pressed {{
-                        background-color: {interactiveElements1};
-                        border-style: inset;
-                    }}
-                    QPushButton:hover:!pressed {{
-                        background-color: {interactiveElements2};
-                    }}
-
-                """
-        self.lineEditStylesheet = (f"font: 75 {bodySecondaryFontSize} {font}; background: transparent; "
-                                   f"border: 1px solid transparent; border-bottom: 1px solid {textColor}; "
-                                   f"selection-background-color: transparent; outline: none; color: {textColor};")
-
+        """ Initialize the main login window. """
         super().__init__()
+        logging.basicConfig(level=logging.INFO)
+        self.initUI()
 
+    def initUI(self):
+        """ Initialize the main user interface. """
         self.setWindowTitle("Login")
         self.showFullScreen()
-        #self.setGeometry(0, 0, 1920, 1080)  # Set your desired screen resolution
-        centralWidget = QWidget()
-        centralWidget.setStyleSheet(f"background-color: {mainBackgroundColor};")
+        self.centralWidget = QWidget(self)
+        self.centralWidget.setStyleSheet(f"background-color:{self.MAIN_BACKGROUND_COLOR};")
+        self.setCentralWidget(self.centralWidget)
+        self.layout = QVBoxLayout(self.centralWidget)
+        self.layout.addWidget(self.createLoginWidget(), alignment=Qt.AlignCenter)
 
-        layout = QVBoxLayout()
+    def createLoginWidget(self):
+        """ Creates and returns the main login widget. """
+        loginWidget = QWidget()
+        loginWidget.setFixedSize(350, 600)
+        loginWidget.setStyleSheet(f"background-color: {self.BACKGROUND_COLOR}; border-radius: 30px;")
+        loginWidget.setGraphicsEffect(self.createShadowEffect())
 
+        loginLayout = QVBoxLayout(loginWidget)
+        loginLayout.setAlignment(Qt.AlignCenter)
+        loginLayout.addWidget(self.createLogoLabel())
+        loginLayout.addWidget(self.createImageLabel())
+        self.invalidLabel = self.createInvalidLoginLabel()
+        loginLayout.addWidget(self.invalidLabel)
+        loginLayout.addSpacing(15)
+        self.usernameEdit = self.createLineEdit("Username")
+        self.passwordEdit = self.createLineEdit("Password", True)
+        loginLayout.addWidget(self.usernameEdit)
+        loginLayout.addWidget(self.passwordEdit)
+        loginLayout.addSpacing(30)
+        loginLayout.addLayout(self.createButtonLayout())
+        loginLayout.addSpacing(30)
+        loginLayout.addWidget(self.createCopyrightLabel())
 
-        innerWidget = QWidget()
-        innerWidget.setStyleSheet("background-color: #333940; border-radius: 30px;")
-        innerLayout = QVBoxLayout(innerWidget)
-        innerLayout.setAlignment(Qt.AlignCenter)
+        return loginWidget
 
-        innerWidget.setFixedWidth(350)
-        innerWidget.setFixedHeight(600)
+    def createShadowEffect(self):
+        """ Creates and returns a shadow effect."""
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(30)
-        shadow.setOffset(3,3)
+        shadow.setOffset(3, 3)
+        return shadow
 
-        shadowColor = QColor(0, 0, 0)
-        #shadow.setColor(shadowColor)
-        # adding shadow to the label
-        innerWidget.setGraphicsEffect(shadow)
-
+    def createLogoLabel(self):
+        """ Creates and returns the logo label. """
         label = QLabel("LocUST")
-        label.setStyleSheet('font-size: 56pt; '
-                            f'font-family: {font};'
-                            f'color: {textColor}; '
-                            'padding: 6px;'
-                            'min-width: 10;')
-
+        label.setStyleSheet('font-size: 56pt; font-family: "Garamond"; color: #E0E0E0; padding: 6px; min-width: 10;')
         label.setFixedHeight(75)
         label.setAlignment(Qt.AlignCenter)
-        innerLayout.addWidget(label)
+        return label
 
+    def createImageLabel(self):
+        """ Creates and returns the image label."""
+        imageLabel = QLabel(self)
+        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+        imageLabel.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        imageLabel.setAlignment(Qt.AlignCenter)
+        imageLabel.setFixedHeight(225)
+        return imageLabel
 
-        image_label = QLabel(self)
-        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")  # Replace with your image path
-        image_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        image_label.setAlignment(Qt.AlignCenter)
-        image_label.setFixedHeight(225)
-        innerLayout.addWidget(image_label)
+    def createInvalidLoginLabel(self):
+        """ Creates and returns the invalid login label."""
+        invalidLabel = QLabel("")
+        invalidLabel.setAlignment(Qt.AlignCenter)
+        invalidLabel.setStyleSheet('color: #E0E0E0; font: 75 12px "Garamond";')
+        return invalidLabel
 
-        self.invalid = QLabel("")
-        self.invalid.setAlignment(Qt.AlignCenter)
-        self.invalid.setStyleSheet(f"color: {textColor}; font: 75 {captionsFontSize} {font};")
-        innerLayout.addWidget(self.invalid)
-        innerLayout.addSpacing(15)
+    def createLineEdit(self, placeholder, isPassword=False):
+        """
+        Create and return line edit.
+        @param placeholder: Placeholder text for line edit.
+        @param isPassword: Boolean value to determine if line edit is a password field.
+        """
 
-        self.username_edit = QLineEdit()
-        self.username_edit.setPlaceholderText("Username")
-        self.username_edit.setStyleSheet(self.lineEditStylesheet)
-        self.username_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
+        lineEdit = QLineEdit()
+        lineEdit.setPlaceholderText(placeholder)
+        lineEdit.setStyleSheet(self.lineEditStylesheet())
+        lineEdit.setFixedWidth(250)
+        lineEdit.setFixedHeight(30)
+        lineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0)
+        if isPassword:
+            lineEdit.setEchoMode(QLineEdit.Password)
+        return lineEdit
 
-        self.username_edit.setFixedWidth(250)
-        self.username_edit.setFixedHeight(30)
-        innerLayout.addWidget(self.username_edit)
-        self.password_edit = QLineEdit()
-        self.password_edit.setPlaceholderText("Password")
-        self.password_edit.setStyleSheet(self.lineEditStylesheet)
-        self.password_edit.setEchoMode(QLineEdit.Password)
-        self.password_edit.setFixedWidth(250)
-        self.password_edit.setFixedHeight(30)
-        self.password_edit.setAttribute(Qt.WA_MacShowFocusRect, 0);
-        innerLayout.addWidget(self.password_edit)
+    def createButtonLayout(self):
+        """Create and return button layout."""
+        layout = QHBoxLayout()
+        loginButton = QPushButton("Login")
+        loginButton.setFixedWidth(150)
+        loginButton.setFixedHeight(40)
+        loginButton.setStyleSheet(self.buttonStylesheet())
+        loginButton.clicked.connect(self.login)
+        layout.addWidget(loginButton)
+        return layout
 
-        layout2 = QHBoxLayout()
+    def createCopyrightLabel(self):
+        """Create and return copy right label."""
+        copyrightLabel = QLabel("©2023 LocUST.inc")
+        copyrightLabel.setStyleSheet('color: #E0E0E0; font: 75 12px "Garamond";')
+        copyrightLabel.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
+        return copyrightLabel
 
-        login_button = QPushButton("Login")
-        login_button.setFixedWidth(150)
-        login_button.setFixedHeight(40)
-        login_button.setStyleSheet(self.button_stylesheet)
-        login_button.clicked.connect(self.login)
+    def buttonStylesheet(self):
+        """Create and return button stylesheet."""
+        return f'''
+               QPushButton {{
+                   background-color: {self.BUTTON_COLOR};
+                   color: {self.BUTTON_TEXT_COLOR};
+                   border-style: outset;
+                   border-width: 1px;
+                   border-radius: 10px;
+                   border-color: {self.BORDER_COLOR};
+                   font: bold 14px "{self.FONT_FAMILY}";
+                   padding: 5px;
+               }}
+               QPushButton:pressed {{
+                   background-color: {self.BUTTON_PRESSED_COLOR};
+                   border-style: inset;
+               }}
+               QPushButton:hover:!pressed {{
+                   background-color: {self.BUTTON_HOVER_COLOR};
+               }}
+           '''
 
-        innerLayout.addSpacing(30)
-
-        layout2.addWidget(login_button)  # Add the button to layout2
-        innerLayout.addLayout(layout2)  # Add layout2 to the parent layout
-        innerLayout.addSpacing(30)
-
-        copright = QLabel("©2023 LocUST.inc ")
-        copright.setStyleSheet(f"color: {textColor}; font: 75 {captionsFontSize} {font};")
-        copright.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
-        innerLayout.addWidget(copright)
-
-
-
-        layout.addWidget(innerWidget, alignment=Qt.AlignCenter)
-        centralWidget.setLayout(layout)
-        self.setCentralWidget(centralWidget)
+    def lineEditStylesheet(self):
+        """Create and return line edit stylesheet."""
+        return f'''
+               font: 75 16px "{self.FONT_FAMILY}"; 
+               background: transparent; 
+               border: 1px solid transparent; 
+               border-bottom: 1px solid {self.BORDER_COLOR}; 
+               selection-background-color: transparent; 
+               outline: none; 
+               color: {self.FONT_COLOR};
+           '''
 
     def login(self):
-        dbe = Employee.EmployeeDatabase("../Database/Employees/jsonFile/employee.json")
+        """ Attempt to log in with provided credentials. """
+        username = self.usernameEdit.text()
+        password = self.passwordEdit.text()
 
-        username = self.username_edit.text()
-        password = self.password_edit.text()
+        if not username or not password:
+            self.invalidLabel.setText("Please enter both username and password.")
+            return
 
-        for i in dbe.load_employees():
-            if username == i.employeeID and password == i.passcode:
-                employee = i.getEmployee()
-                print("Login Successful")
-                self.close()
-                try:
-                    self.dashboard_main = dashboard.MainWindow(emp=employee)
-                    self.dashboard_main.show()
-                except Exception as e:
-                    print("Error opening MainWindow:", e)
-            else:
+        try:
+            username = self.usernameEdit.text()
+            password = self.passwordEdit.text()
+
+            login_successful = False
+            for i in db.getEmployees():
+                if username == i.get_special_id() and password == i.passcode:
+                    employee = i
+                    print("Login Successful")
+                    login_successful = True
+                    self.close()
+                    try:
+                        self.dashboard_main = dashboard.MainWindow(emp=employee)
+                        self.dashboard_main.show()
+                    except Exception as e:
+                        print("Error opening MainWindow:", e)
+                        self.invalidLabel.setText("Error: Problem opening the dashboard.")
+                    break
+
+            if not login_successful:
                 print("Login Failed")
-                self.invalid.setText("Login failed. Please check your credentials.")
+                self.invalidLabel.setText("Invalid username or password. Please try again.")
+
+        except Exception as e:
+            logging.error(f"Login error: {e}")
+            self.invalidLabel.setText("Login error. Please try again.")
 
     def keyPressEvent(self, event):
+        """
+        Override keyPressEvent to allow for login on enter press.
+        @param event: Key press event.
+        """
         if event.key() in (Qt.Key_Enter, Qt.Key_Return):
             self.login()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()
-    window.showFullScreen()  # Show the window in full screen
+    window.showFullScreen()
     sys.exit(app.exec_())

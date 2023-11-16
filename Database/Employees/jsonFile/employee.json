@@ -1,6 +1,7 @@
 [
     {
-        "employeeID": "0001",
+        "managerID": "M001",
+        "employeeID": "E001",
         "firstName": "Nickholas",
         "lastName": "Delavallierre",
         "gender": "M",
@@ -11,7 +12,8 @@
         "hireDate": "10/10/23"
     },
     {
-        "employeeID": "0002",
+        "techID": "T002",
+        "employeeID": "E002",
         "firstName": "John",
         "lastName": "Doe",
         "gender": "M",
@@ -22,7 +24,8 @@
         "hireDate": "10/10/23"
     },
     {
-        "employeeID": "0003",
+        "techID": "T003",
+        "employeeID": "E003",
         "firstName": "Jessica",
         "lastName": "Hartely",
         "gender": "Female",

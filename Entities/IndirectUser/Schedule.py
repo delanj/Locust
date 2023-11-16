@@ -10,8 +10,8 @@ class Schedule:
         self.workdays = workdays
 
 class ScheduleDatabase:
-    def __init__(self, json_file_path):
-        self.json_file_path = json_file_path
+    def __init__(self):
+        self.json_file_path = '../Database/IndirectUsers/jsonFile/schedule.json'
         self.schedules = self.load_schedules()
 
     def load_schedules(self):
@@ -22,7 +22,7 @@ class ScheduleDatabase:
             for schedule_data in schedules_data:
                 schedule = Schedule(
                     schedule_data.get("user_id"),
-                    schedule_data.get("schedule")  # Notice the key here is "schedule", not "workdays"
+                    schedule_data.get("schedule")
                 )
                 schedules.append(schedule)
             return schedules

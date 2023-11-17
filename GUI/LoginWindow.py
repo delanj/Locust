@@ -181,7 +181,7 @@ class LoginWindow(QMainWindow):
                     login_successful = True
                     self.close()
                     try:
-                        self.dashboard_main = dashboard.MainWindow(emp=employee)
+                        self.dashboard_main = dashboard.DashboardWindow(employee=employee)
                         self.dashboard_main.show()
                     except Exception as e:
                         print("Error opening MainWindow:", e)

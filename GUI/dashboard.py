@@ -1,11 +1,13 @@
 import csv
 import json
+import logging
 import os
 import pickle
 import shutil
 import sys
 import traceback
 from datetime import datetime, timedelta
+import re
 
 import cv2
 import dlib
@@ -21,7 +23,6 @@ from PyQt5.QtWidgets import QLabel, QHBoxLayout
 from holoviews.examples.reference.apps.bokeh.player import layout
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
 
 import Entities.entitiesMain
 import LoginWindow
@@ -72,203 +73,214 @@ OPACITY_EFFECT.setOpacity(0.5)
 
 
 class DashboardWindow(QMainWindow):
+    """ Initialize the main login window. """
+
     def __init__(self, employee=None):
-        """ Initialize the main login window. """
-        self.employee = employee
         super().__init__()
-        self.setupUi()
+        self.employee = employee
+        self.setup_ui()
+        self.showFullScreen()
 
-    def setupUi(self):
-        if self.employee:
-            self.employee = self.employee
-        else:
-            self.employee = None
-        self.centralwidget = QWidget()
-        self.setCentralWidget(self.centralwidget)
+    def setup_ui(self):
+        """ Initialize the main user interface."""
+        self.init_central_widget()
+        self.setup_sidebar()
+        self.setup_main_window()
 
-        self.centralLayout = QHBoxLayout(self.centralwidget)
-        self.centralLayout.setSpacing(0)
-        self.centralLayout.setContentsMargins(0, 0, 0, 0)
+    def init_central_widget(self):
+        """ Initialize the central widget."""
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
+        self.central_layout = QHBoxLayout(self.central_widget)
+        self.central_layout.setSpacing(0)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+
+    def setup_sidebar(self):
+        """ Initialize the sidebar."""
         # Set up the sidebar frame
-        self.sideBar = QFrame(self.centralwidget)
-        self.sideBar.setObjectName("sideBar")
-        self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
-        self.sideBar.setFrameShape(QFrame.StyledPanel)
-        self.sideBar.setFrameShadow(QFrame.Raised)
-        self.sidebarLayout = QVBoxLayout(self.sideBar)
-        self.sidebarLayout.setSpacing(0)
-        self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
+        self.sidebar_frame = QFrame(self.central_widget)
+        self.sidebar_frame.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
 
-        # Add logo and navigation widgets to the sidebar
-        self.logoWidgetContainer = QWidget(self.sideBar)
-        self.logoWidgetContainer.setObjectName("logoWidgetContainer")
-        self.logoWidgetUi = Ui_logoWidget()
-        self.logoWidgetUi.setupUi(self.logoWidgetContainer)
-        self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+        self.sidebar_layout = QVBoxLayout(self.sidebar_frame)
+        self.sidebar_layout.setSpacing(0)
+        self.sidebar_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.navigationWidgetContainer = QWidget(self.sideBar)
-        self.navigationWidgetContainer.setObjectName("navigationWidgetContainer")
-        self.navigationWidgetUi = Ui_navigationWidget()
-        self.navigationWidgetUi.setupUi(self.navigationWidgetContainer)
-        self.sidebarLayout.addWidget(self.navigationWidgetContainer, stretch=10)
+        def logo_widget():
+            # Add logo and navigation widgets to the sidebar
+            self.logo_widget_container = QWidget(self.sidebar_frame)
+            self.logo_widget_ui = Ui_logoWidget()
+            self.logo_widget_ui.setupUi(self.logo_widget_container)
+            self.sidebar_layout.addWidget(self.logo_widget_container, stretch=2)
 
-        # Connect navigation buttons to their respective slot functions
-        self.navigationWidgetUi.logsButton.clicked.connect(self.showLogsWidget)
-        self.navigationWidgetUi.dashboardButton.clicked.connect(self.showDashBoardWidget)
-        self.navigationWidgetUi.scheduleButton.clicked.connect(self.showScheduleWidget)
-        self.navigationWidgetUi.ticketsButton.clicked.connect(self.showTicketWidget)
-        self.navigationWidgetUi.addUserButton.clicked.connect(self.showAddUserWidget)
-        self.navigationWidgetUi.logoutButton.clicked.connect(self.logout)
-        self.navigationWidgetUi.faceRecButton.clicked.connect(self.faceRec)
+        logo_widget()
 
-        # Set up the main window frame
-        self.mainWindow = QFrame(self.centralwidget)
-        self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
-        self.mainWindow.setFrameShape(QFrame.StyledPanel)
-        self.mainWindow.setFrameShadow(QFrame.Raised)
+        def navigation_widget():
+            # Add logo and navigation widgets to the sidebar
+            self.navigation_widget_container = QWidget(self.sidebar_frame)
+            self.navigation_widget_ui = Ui_navigationWidget()
+            self.navigation_widget_ui.setupUi(self.navigation_widget_container)
+            self.sidebar_layout.addWidget(self.navigation_widget_container, stretch=10)
 
-        # Add user header and display container to the main window
-        self.userHeaderContainer = QWidget(self.mainWindow)
-        self.userHeaderContainer.setObjectName("userHeaderContainer")
-        self.userHeaderUi = Ui_userHeaderWidget()
-        self.userHeaderUi.setupUi(self.userHeaderContainer)
-        if self.employee:
-            self.userHeaderUi.employeeName.setText(f"{self.employee.first_name} {self.employee.last_name}")
+            # Connect navigation buttons to their respective slot functions
+            self.navigation_widget_ui.logsButton.clicked.connect(self.show_logs_widget)
+            self.navigation_widget_ui.dashboardButton.clicked.connect(self.show_dash_board_widget)
+            self.navigation_widget_ui.scheduleButton.clicked.connect(self.show_schedule_widget)
+            self.navigation_widget_ui.ticketsButton.clicked.connect(self.show_ticket_widget)
+            self.navigation_widget_ui.addUserButton.clicked.connect(self.show_add_user_widget)
+            self.navigation_widget_ui.logoutButton.clicked.connect(self.logout)
+            self.navigation_widget_ui.faceRecButton.clicked.connect(self.faceRec)
 
-        self.displayContainer = QWidget(self.mainWindow)
-        self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.displayLayout = QVBoxLayout(self.displayContainer)
+        navigation_widget()
 
-        # Set up the dashboard widget within the display container
-        self.dashboardWidgetContainer = QWidget(self.displayContainer)
-        self.dashboardWidgetContainer.setObjectName("dashboardWidgetContainer")
-        self.dashboardUi = Ui_dashboardWidget()
-        self.dashboardUi.setupUi(self.dashboardWidgetContainer)
-        self.displayLayout.addWidget(self.dashboardWidgetContainer)
+        def adjust_view_for_employee():
+            if self.employee:
+                if self.employee.title == "Security Manager":
+                    self.navigation_widget_ui.logsButton.setEnabled(True)
+                    self.navigation_widget_ui.scheduleButton.setEnabled(True)
+                    self.navigation_widget_ui.ticketsButton.setEnabled(True)
+                    self.navigation_widget_ui.addUserButton.setEnabled(True)
 
-        # Arrange the main layout with header and display container
-        self.mainLayout = QVBoxLayout(self.mainWindow)
-        self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
-        self.mainLayout.addSpacing(20)
-        self.mainLayout.addWidget(self.displayContainer, stretch=10)
+                    self.navigation_widget_ui.logoutButton.setEnabled(True)
+                    self.navigation_widget_ui.faceRecButton.setEnabled(True)
+                    self.navigation_widget_ui.dashboardButton.setEnabled(True)
 
-        # Add sidebar and main window to the central layout
-        self.centralLayout.addWidget(self.sideBar, stretch=2)
-        self.centralLayout.addWidget(self.mainWindow, stretch=10)
+                if self.employee.title == "Desk Technician":
+                    self.navigation_widget_ui.logsButton.setEnabled(False)
+                    self.navigation_widget_ui.scheduleButton.setEnabled(True)
+                    self.navigation_widget_ui.ticketsButton.setEnabled(False)
+                    self.navigation_widget_ui.addUserButton.setEnabled(False)
 
-        # Set the central widget of the main window
-        #self.centralWindow.setCentralWidget(self.centralwidget)
-        self.employeeView()
+                    self.navigation_widget_ui.logoutButton.setEnabled(True)
+                    self.navigation_widget_ui.faceRecButton.setEnabled(True)
+                    self.navigation_widget_ui.dashboardButton.setEnabled(True)
+        adjust_view_for_employee()
 
-        self.userHeaderUi.employeeProfile.clicked.connect(self.showPopupWindow)
-        QApplication.instance().installEventFilter(self.centralwidget)
+        self.central_layout.addWidget(self.sidebar_frame, stretch=2)
 
-    def employeeView(self):
-        if self.employee:
-            if self.employee.title == "Security Manager":
-                self.navigationWidgetUi.logsButton.setEnabled(True)
-                self.navigationWidgetUi.scheduleButton.setEnabled(True)
-                self.navigationWidgetUi.ticketsButton.setEnabled(True)
-                self.navigationWidgetUi.addUserButton.setEnabled(True)
+    def setup_main_window(self):
+        """ Initialize the main window."""
+        self.main_window = QFrame(self.central_widget)
+        self.main_window.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
+        self.main_layout = QVBoxLayout(self.main_window)
 
-                self.navigationWidgetUi.logoutButton.setEnabled(True)
-                self.navigationWidgetUi.faceRecButton.setEnabled(True)
-                self.navigationWidgetUi.dashboardButton.setEnabled(True)
+        def header_widget():
+            # Add user header and display container to the main window
+            self.userHeaderContainer = QWidget(self.main_window)
+            self.userHeaderUi = Ui_userHeaderWidget()
+            self.userHeaderUi.setupUi(self.userHeaderContainer)
 
-            if self.employee.title == "Desk Technician":
-                self.navigationWidgetUi.logsButton.setEnabled(False)
-                self.navigationWidgetUi.scheduleButton.setEnabled(True)
-                self.navigationWidgetUi.ticketsButton.setEnabled(False)
-                self.navigationWidgetUi.addUserButton.setEnabled(False)
+            if self.employee:
+                self.userHeaderUi.employee_name.setText(f"{self.employee.first_name} {self.employee.last_name}")
 
-                self.navigationWidgetUi.logoutButton.setEnabled(True)
-                self.navigationWidgetUi.faceRecButton.setEnabled(True)
-                self.navigationWidgetUi.dashboardButton.setEnabled(True)
+            self.userHeaderUi.employee_profile.clicked.connect(self.show_popup_window)
+            QApplication.instance().installEventFilter(self.central_widget)
 
-    def clearDisplayContainer(self):
-        self.dashboardUi.timer.stop()
-        # This will remove all widgets from displayLayout
-        for i in reversed(range(self.displayLayout.count())):
-            widget = self.displayLayout.itemAt(i).widget()
+            self.main_layout.addWidget(self.userHeaderContainer, stretch=1)
+
+        header_widget()
+
+        def display_widget():
+            # Set up the display container
+            self.display_container = QWidget(self.main_window)
+            self.display_container.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
+            self.display_layout = QVBoxLayout(self.display_container)
+
+            def dashboard_widget():
+                # Set up the dashboard widget within the display container
+                self.dashboard_widget_container = QWidget(self.display_container)
+                self.dashboard_ui = Ui_dashboardWidget()
+                self.dashboard_ui.setupUi(self.dashboard_widget_container)
+                self.display_layout.addWidget(self.dashboard_widget_container)
+
+            dashboard_widget()
+
+            self.main_layout.addWidget(self.display_container, stretch=10)
+
+        display_widget()
+
+        self.central_layout.addWidget(self.main_window, stretch=10)
+
+    def clear_display_container(self):
+        # Check if the timer exists and is running, then stop it
+        if hasattr(self, 'dashboard_ui') and hasattr(self.dashboard_ui, 'timer') and self.dashboard_ui.timer.isActive():
+            self.dashboard_ui.timer.stop()
+
+        # Remove all widgets from displayLayout
+        for i in reversed(range(self.display_layout.count())):
+            widget = self.display_layout.itemAt(i).widget()
             if widget is not None:
-                self.displayLayout.removeWidget(widget)
+                self.display_layout.removeWidget(widget)
                 widget.deleteLater()
 
-    def showDashBoardWidget(self):
+    def show_dash_board_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.dashboardWidgetContainer = QWidget(self.displayContainer)
-            self.dashboardWidgetContainer.setObjectName("dashboardWidgetContainer")
-            self.dashboardUi = Ui_dashboardWidget()  # Instantiate your Dashboard UI class
-            self.dashboardUi.setupUi(self.dashboardWidgetContainer)  # Set up the dashboard UI
-            self.displayLayout.addWidget(self.dashboardWidgetContainer)
+            self.dashboard_widget_container = QWidget(self.display_container)
+            self.dashboard_ui = Ui_dashboardWidget()
+            self.dashboard_ui.setupUi(self.dashboard_widget_container)
+            self.display_layout.addWidget(self.dashboard_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showLogsWidget(self):
+    def show_logs_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.logsWidgetContainer = QWidget(self.displayContainer)
-            self.logsWidgetContainer.setObjectName("logsWidgetContainer")
-            self.logsUi = Ui_logs()
-            self.logsUi.setupUi(self.logsWidgetContainer)
-            self.displayLayout.addWidget(self.logsWidgetContainer)
+            self.logs_widget_container = QWidget(self.display_container)
+            self.logs_ui = Ui_logs()
+            self.logs_ui.setupUi(self.logs_widget_container)
+            self.display_layout.addWidget(self.logs_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showScheduleWidget(self):
+    def show_schedule_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.scheduleWidgetContainer = QWidget(self.displayContainer)
-            self.scheduleWidgetContainer.setObjectName("scheduleWidgetContainer")
-            self.scheduleUi = Ui_scheduleWidget()
-            self.scheduleUi.setupUi(self.scheduleWidgetContainer)
-            self.displayLayout.addWidget(self.scheduleWidgetContainer)
+            self.schedule_widget_container = QWidget(self.display_container)
+            self.schedule_ui = Ui_scheduleWidget()
+            self.schedule_ui.setupUi(self.schedule_widget_container)
+            self.display_layout.addWidget(self.schedule_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showTicketWidget(self):
+    def show_ticket_widget(self):
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.ticketWidgetContainer = QWidget(self.displayContainer)
-            self.ticketWidgetContainer.setObjectName("ticketWidgetContainer")
-            self.ticketUi = Ui_ticketsWidget()
-            self.ticketUi.setupUi(self.ticketWidgetContainer)
-            self.displayLayout.addWidget(self.ticketWidgetContainer)
+            self.ticket_widget_container = QWidget(self.display_container)
+            self.ticket_ui = Ui_ticketsWidget()
+            self.ticket_ui.setupUi(self.ticket_widget_container)
+            self.display_layout.addWidget(self.ticket_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
-    def showAddUserWidget(self):
+    def show_add_user_widget(self):
 
         try:
             # Clear any widgets that might be in the displayContainer
-            self.clearDisplayContainer()
+            self.clear_display_container()
 
             # Create and set up the logs widget
-            self.addUserWidgetContainer = QWidget(self.displayContainer)
-            self.addUserWidgetContainer.setObjectName("addUserWidgetContainer")
-            self.addUserUi = Ui_addUserWidget()
-            self.addUserUi.setupUi(self.addUserWidgetContainer)
-            self.displayLayout.addWidget(self.addUserWidgetContainer)
+            self.add_user_widget_container = QWidget(self.display_container)
+            self.add_user_widget_container.setObjectName("addUserWidgetContainer")
+            self.add_user_ui = Ui_addUserWidget()
+            self.add_user_ui.setupUi(self.add_user_widget_container)
+            self.display_layout.addWidget(self.add_user_widget_container)
         except Exception as e:
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
@@ -288,8 +300,8 @@ class DashboardWindow(QMainWindow):
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
-            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popupDialog'):
-                dialog = self.userHeaderWidget.popupDialog
+            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popup_dialog'):
+                dialog = self.userHeaderWidget.popup_dialog
                 if dialog and dialog.isVisible():
                     # Check if the click is outside the dialog
                     if not dialog.geometry().contains(event.globalPos()):
@@ -297,102 +309,157 @@ class DashboardWindow(QMainWindow):
                         return True
         return super(self).eventFilter(obj, event)
 
-    def showPopupWindow(self):
-        if hasattr(self, 'popupDialog') and self.popupDialog.isVisible():
-            self.popupDialog.hide()
+    def show_popup_window(self):
+        if hasattr(self, 'popup_dialog') and self.popup_dialog.isVisible():
+
+            self.popup_dialog.hide()
+            buttonStyleSheetNormal = f"""
+                QPushButton {{
+                    border: none;
+                    border-radius: 20px;  /* Half of width and height to make it circular */
+                    background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
+                }}
+                QPushButton:hover {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                }}
+                QPushButton:pressed {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                }}
+            """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetNormal)
             return
 
-        self.popupDialog = QDialog()
-        self.popupDialog.setWindowFlags(Qt.FramelessWindowHint)
+        self.popup_dialog = QDialog()
+        self.popup_dialog.setWindowFlags(Qt.FramelessWindowHint)
 
-        self.popupDialog.setWindowTitle("Create a Ticket")
+        self.popup_dialog.setStyleSheet(f"""
+            QDialog {{
+                background-color: {MAIN_BACKGROUND_COLOR};
+                border: 2px solid {BORDERS_LINES_COLOR};
+            }}
 
-        self.popupDialog.setStyleSheet("""
-            QDialog {
-                background-color: #fafafa;
-                border: 2px solid #fafafa;
-            }
+            QLabel {{
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+            }}
 
-            QLabel {
-                color: #4a4a4a;
-                font-family: Copperplate;
-                font-size: 14px;
-            }
+            QLineEdit {{
+                background-color: {FIELD_BACKGROUND_COLOR};
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+                border: 1px solid {BORDERS_LINES_COLOR};
+            }}
 
-            QLineEdit {
-                background-color: #FFFFFF;
-                border: 1px solid #adbec6;
-            }
+            QTextEdit {{
+                background-color: {FIELD_BACKGROUND_COLOR};
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+                border: 1px solid {BORDERS_LINES_COLOR};
+            }}
 
-            QTextEdit {
-                background-color: #FFFFFF;
-                border: 1px solid #adbec6;
-            }
-
-            QPushButton {
-                background-color: #adbec6;
-                border: 1px solid #adbec6;
+            QPushButton {{
+                background-color: {BUTTON_COLOR};
+                border: 1px solid {BORDERS_LINES_COLOR};
                 padding: 5px;
-                font-size: 14px;
-            }
+                font-family: {FONT};
+                font-size: {BUTTON_FONT_SIZE};
+                font-size: {BODY_FONT_SIZE};
+            }}
         """)
 
-        # Create layout for the pop-up window
-        layout = QVBoxLayout()
+        def dialog_layout():
+            # Create layout for the pop-up window
+            self.popup_dialog_layout = QVBoxLayout()
 
-        # Add widgets to the layout (customize this based on your needs)
-        # label_fonts = QFont()
+            subject_label = QLabel("Subject")
+            self.subject_line_edit = QLineEdit()
 
-        subject_label = QLabel("Subject")
+            description_label = QLabel("Description")
+            self.description_line_edit = QTextEdit()
+            self.description_line_edit.setFixedHeight(100)
+            self.description_line_edit.setAlignment(Qt.AlignTop)
+            self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
 
-        self.subject_line_edit = QLineEdit()
+            submit_button = QPushButton("Submit")
+            submit_button.clicked.connect(self.submit_ticket)
 
-        description_label = QLabel("Description")
-        self.description_line_edit = QTextEdit()
-        self.description_line_edit.setFixedHeight(100)
-        self.description_line_edit.setAlignment(Qt.AlignTop)
-        self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+            self.popup_dialog_layout.addWidget(subject_label)
+            self.popup_dialog_layout.addWidget(self.subject_line_edit)
+            self.popup_dialog_layout.addWidget(description_label)
+            self.popup_dialog_layout.addWidget(self.description_line_edit)
+            self.popup_dialog_layout.addWidget(submit_button)
 
-        submit_button = QPushButton("Submit")
-        submit_button.clicked.connect(self.submitTicket)
+            self.popup_dialog.setLayout(self.popup_dialog_layout)
 
-        layout.addWidget(subject_label)
-        layout.addWidget(self.subject_line_edit)
-        layout.addWidget(description_label)
-        layout.addWidget(self.description_line_edit)
-        layout.addWidget(submit_button)
+        dialog_layout()
 
-        # Set the layout for the pop-up dialog
-        self.popupDialog.setLayout(layout)
+        main_window = self.userHeaderUi.employee_profile.window()
 
-        # Find the main window this widget is part of
-        main_window = self.userHeaderUi.employeeProfile.window()
+        def set_position():
+            # Get the global position of the button
+            global_button_position = main_window.mapToGlobal(self.userHeaderUi.employee_profile.pos())
 
-        # Get the global position of the bottom-left corner of the button
-        global_button_position = main_window.mapToGlobal(self.userHeaderUi.employeeProfile.pos())
+            # Calculate new X and Y position
+            x_position = global_button_position.x()
+            y_position = global_button_position.y() + self.userHeaderUi.employee_profile.height()
 
-        # Calculate new X and Y position
-        x_position = global_button_position.x()
-        y_position = global_button_position.y() + self.userHeaderUi.employeeProfile.height()
+            # Move the dialog to appear directly below the button
+            self.popup_dialog.move(x_position, y_position + 30)
 
-        # Move the dialog to appear directly below the button
-        self.popupDialog.move(x_position, y_position)
+        set_position()
 
-        if self.popupDialog.isVisible():
-            self.popupDialog.hide()
+        if self.popup_dialog.isVisible():
+            self.popup_dialog.hide()
+            buttonStyleSheetNormal = f"""
+                QPushButton {{
+                    border: none;
+                    border-radius: 20px;  /* Half of width and height to make it circular */
+                    background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
+                }}
+                QPushButton:hover {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                }}
+                QPushButton:pressed {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                }}
+                                            """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetNormal)
         else:
-            self.popupDialog.show()
+            self.popup_dialog.show()
+            buttonStyleSheetClicked = f"""
+                        QPushButton {{
+                            border: none;
+                            border-radius: 20px;  /* Half of width and height to make it circular */
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color for the normal state */
+                        }}
+                        QPushButton:hover {{
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                        }}
+                        QPushButton:pressed {{
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                        }}
+                    """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetClicked)
 
         # Show the pop-up dialog
-        self.popupDialog.exec_()
+        self.popup_dialog.exec_()
 
-    def submitTicket(self):
+    def submit_ticket(self):
         try:
             current_time = datetime.now()
             formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
             print(formatted_time)
-            empName = f"{self.employee.first_name} {self.employee.last_name}"
-            empID = self.employee.employeeID
+
+            if self.employee:
+                empName = f"{self.employee.first_name} {self.employee.last_name}"
+                empID = self.employee.employeeID
+            else:
+                empName = "Unknown"
+                empID = "Unknown"
+
             subjectHeader = "Subject: "
             subject = self.subject_line_edit.text()
             descriptionHeader = "Description: "
@@ -549,14 +616,12 @@ class Ui_navigationWidget(object):
 
 class Ui_userHeaderWidget(object):
     def setupUi(self, userHeaderWidget):
-        if not userHeaderWidget.objectName():
-            userHeaderWidget.setObjectName(u"userHeaderWidget")
-
         userHeaderWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.userHeaderLayout = QHBoxLayout(userHeaderWidget)
-        self.userHeaderLayout.setSpacing(20)
-        self.userHeaderLayout.setObjectName(u"userHeaderLayout")
-        self.userHeaderLayout.setContentsMargins(10, 10, 10, 10)
+
+        self.user_header_layout = QHBoxLayout(userHeaderWidget)
+        self.user_header_layout.setSpacing(20)
+        self.user_header_layout.setObjectName(u"userHeaderLayout")
+        self.user_header_layout.setContentsMargins(10, 10, 10, 10)
 
         buttonStyleSheet = f"""
             QPushButton {{
@@ -572,83 +637,101 @@ class Ui_userHeaderWidget(object):
             }}
         """
 
-        self.searchIcon = QPushButton(userHeaderWidget)
-        self.searchIcon.setObjectName(u"searchIcon")
-        self.searchIcon.setIcon(QIcon("buttonIcons/search.png"))
-        self.searchIcon.setIconSize(QSize(18, 18))
-        self.searchIcon.setStyleSheet(buttonStyleSheet)
-        self.searchIcon.setFixedSize(40, 40)
-        self.userHeaderLayout.addWidget(self.searchIcon)
+        def setup_search_icon():
+            self.search_icon = QPushButton(userHeaderWidget)
+            self.search_icon.setIcon(QIcon("buttonIcons/search.png"))
+            self.search_icon.setIconSize(QSize(18, 18))
+            self.search_icon.setStyleSheet(buttonStyleSheet)
+            self.search_icon.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.search_icon)
 
-        self.searchBar = QLineEdit(userHeaderWidget)
-        self.searchBar.setObjectName(u"searchBar")
-        self.searchBar.setFixedHeight(24)
-        search_bar_style = f"""
-            QLineEdit {{
-                border: 1px solid {BORDERS_LINES_COLOR}; /* Light grey border */
-                border-radius: 12px; /* Rounded corners */
-                padding: 0 8px; /* Text padding */
-                background: {FIELD_BACKGROUND_COLOR}; /* White background */
-                selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Color when text is selected */
-                font-size: {BODY_SECONDARY_FONT_SIZE}; /* Adjust the font size as needed */
-                opacity: 0.5;
-            }}
-            QLineEdit::placeholder {{
-                color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
-                font-style: italic;
-                opacity: 0.5;
-            }}
-            QLineEdit:focus {{
-                border: 2px solid {BORDERS_LINES_COLOR}; /* Highlighted border color when focused */
+        setup_search_icon()
 
-            }}
-        """
-        palette = self.searchBar.palette()
-        palette.setColor(QPalette.PlaceholderText, QColor(PLACEHOLDER_COLOR))
-        self.searchBar.setPalette(palette)
-        self.searchBar.setStyleSheet(search_bar_style)
-        self.searchBar.setFocusPolicy(Qt.NoFocus)
-        self.searchBar.setPlaceholderText("Search...")
+        def setup_search_bar():
+            search_bar_style = f"""
+                            QLineEdit {{
+                                border: 1px solid {BORDERS_LINES_COLOR}; /* Light grey border */
+                                border-radius: 12px; /* Rounded corners */
+                                padding: 0 8px; /* Text padding */
+                                background: {FIELD_BACKGROUND_COLOR}; /* White background */
+                                selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Color when text is selected */
+                                font-size: {BODY_SECONDARY_FONT_SIZE}; /* Adjust the font size as needed */
+                                opacity: 0.5;
+                            }}
+                            QLineEdit::placeholder {{
+                                color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
+                                font-style: italic;
+                                opacity: 0.5;
+                            }}
+                            QLineEdit:focus {{
+                                border: 2px solid {BORDERS_LINES_COLOR}; /* Highlighted border color when focused */
 
-        self.userHeaderLayout.addWidget(self.searchBar)
+                            }}
+                        """
+            self.search_bar = QLineEdit(userHeaderWidget)
+            self.search_bar.setFixedHeight(24)
+            palette = self.search_bar.palette()
+            palette.setColor(QPalette.PlaceholderText, QColor(PLACEHOLDER_COLOR))
+            self.search_bar.setPalette(palette)
+            self.search_bar.setStyleSheet(search_bar_style)
+            self.search_bar.setFocusPolicy(Qt.NoFocus)
+            self.search_bar.setPlaceholderText("Search...")
+            self.user_header_layout.addWidget(self.search_bar)
 
-        self.settingsButton = QPushButton(userHeaderWidget)
-        self.settingsButton.setObjectName("settingsButton")
-        self.settingsButton.setIcon(QIcon("buttonIcons/settings.png"))
-        self.settingsButton.setIconSize(QSize(18, 18))
-        self.settingsButton.setStyleSheet(buttonStyleSheet)
-        self.settingsButton.setFixedSize(40, 40)
-        self.userHeaderLayout.addWidget(self.settingsButton)
+        setup_search_bar()
 
-        self.notificationButton = QPushButton(userHeaderWidget)
-        self.notificationButton.setObjectName("notificationButton")
-        self.notificationButton.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
-        self.notificationButton.setIconSize(QSize(18, 18))  # Icon size
-        self.notificationButton.setStyleSheet(buttonStyleSheet)
-        self.notificationButton.setFixedSize(40, 40)  # Adjust size as needed
-        self.userHeaderLayout.addWidget(self.notificationButton)
+        def setup_settings_button():
+            self.settings_button = QPushButton(userHeaderWidget)
+            self.settings_button.setIcon(QIcon("buttonIcons/settings.png"))
+            self.settings_button.setIconSize(QSize(18, 18))
+            self.settings_button.setStyleSheet(buttonStyleSheet)
+            self.settings_button.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.settings_button)
 
-        self.employeeProfile = QPushButton(userHeaderWidget)
-        self.employeeProfile.setObjectName("employeeProfile")
-        self.employeeProfile.setIcon(QIcon("buttonIcons/user.png"))  # Replace with your icon's path
-        self.employeeProfile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
-        self.employeeProfile.setStyleSheet(buttonStyleSheet)
-        self.employeeProfile.setFixedSize(40, 40)
+        setup_settings_button()
 
-        self.userHeaderLayout.addWidget(self.employeeProfile)
+        def setup_notification_button():
+            self.notification_button = QPushButton(userHeaderWidget)
+            self.notification_button.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
+            self.notification_button.setIconSize(QSize(18, 18))  # Icon size
+            self.notification_button.setStyleSheet(buttonStyleSheet)
+            self.notification_button.setFixedSize(40, 40)  # Adjust size as needed
+            self.user_header_layout.addWidget(self.notification_button)
 
-        self.employeeName = QLabel(userHeaderWidget)
-        self.employeeName.setObjectName(u"employeeName")
-        self.employeeName.setText("None")
-        self.employeeName.setStyleSheet(f"font: 75 {BODY_FONT_SIZE} '{FONT}'; color:{SECONDARY_FONT_COLOR};")
-        self.userHeaderLayout.addWidget(self.employeeName)
+        setup_notification_button()
 
-        opacity_effect = QGraphicsOpacityEffect()
-        opacity_effect.setOpacity(0.5)
-        self.employeeName.setGraphicsEffect(opacity_effect)
+        def setup_employee_profile():
+            self.employee_profile = QPushButton(userHeaderWidget)
+            self.employee_profile.setIcon(QIcon("buttonIcons/user.png"))
+            self.employee_profile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
+            self.employee_profile.setStyleSheet(buttonStyleSheet)
+            self.employee_profile.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.employee_profile)
+
+        setup_employee_profile()
+
+        def setup_employee_name():
+            self.employee_name = QLabel(userHeaderWidget)
+            self.employee_name.setText("None")
+            self.employee_name.setStyleSheet(f"font: 75 {BODY_FONT_SIZE} '{FONT}'; color:{SECONDARY_FONT_COLOR};")
+            self.user_header_layout.addWidget(self.employee_name)
+
+            opacity_effect = QGraphicsOpacityEffect()
+            opacity_effect.setOpacity(0.5)
+            self.employee_name.setGraphicsEffect(opacity_effect)
+
+        setup_employee_name()
 
 
 class Ui_dashboardWidget(object):
+    def __init__(self):
+        self.left_frame = None
+        self.right_frame = None
+        self.scanned_today_number_label = None
+        self.current_num_of_tickets = None
+        self.users_scheduled_today_number_label = None
+        self.user_number_label = None
+
     def setupUi(self, dashboardWidget):
         self.containerStylesheet = f"""
             QFrame {{
@@ -675,241 +758,259 @@ class Ui_dashboardWidget(object):
         }}"""
         self.noneStyle = "background-color: transparent; border: none; border-radius: 20px;"
 
-        # Dashboard widget
-        dashboardWidget.setObjectName(u"dashboardWidget")
         dashboardWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.dashboardLayout = QHBoxLayout(dashboardWidget)
-        self.dashboardLayout.setSpacing(10)
-        self.dashboardLayout.setContentsMargins(10, 10, 10, 10)
+        self.dashboard_layout = QHBoxLayout(dashboardWidget)
+        self.dashboard_layout.setSpacing(10)
+        self.dashboard_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Left Frame
-        self.leftFrame = QFrame(dashboardWidget)
-        self.leftFrame.setObjectName(u"leftFrame")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(10)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.leftFrame.sizePolicy().hasHeightForWidth())
-        self.leftFrame.setSizePolicy(sizePolicy)
-        self.leftLayout = QVBoxLayout(self.leftFrame)
-        self.leftLayout.setSpacing(10)
-        self.leftLayout.setContentsMargins(0, 0, 0, 0)
+        def setup_left_frame():
+            self.left_frame = QFrame(dashboardWidget)
+            size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+            size_policy.setHorizontalStretch(10)
+            size_policy.setVerticalStretch(0)
+            size_policy.setHeightForWidth(self.left_frame.sizePolicy().hasHeightForWidth())
+            self.left_frame.setSizePolicy(size_policy)
+            self.left_layout = QVBoxLayout(self.left_frame)
+            self.left_layout.setSpacing(10)
+            self.left_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Row 1 Container
-        self.row1Container = QFrame(self.leftFrame)
-        self.row1Layout = QHBoxLayout(self.row1Container)
+            def setup_row_one():
+                self.row_one_container = QFrame(self.left_frame)
+                self.row_one_layout = QHBoxLayout(self.row_one_container)
 
-        # Date Time widget
-        self.dateTimeWidget = QFrame()
-        self.dateTimeWidget.setObjectName(u"dateTimeWidget")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.dateTimeWidget.sizePolicy().hasHeightForWidth())
-        self.dateTimeWidget.setSizePolicy(sizePolicy4)
-        self.dateTimeWidget.setStyleSheet(self.containerStylesheet)
-        self.dateTimeWidget.setFrameShape(QFrame.StyledPanel)
-        self.dateTimeWidget.setFrameShadow(QFrame.Raised)
-        self.dateTimeLayout = QVBoxLayout(self.dateTimeWidget)
-        self.dateTimeLayout.setSpacing(0)
-        self.dateTimeLayout.setContentsMargins(10, 10, 10, 10)
+                def setup_date_time():
+                    self.date_time_widget = QFrame()
 
-        # Date Label
-        self.dateLabel = QLabel(self.dateTimeWidget)
-        self.dateLabel.setObjectName(u"dateLabel")
-        self.dateLabel.setStyleSheet(self.font2)
-        self.dateLabel.setTextFormat(Qt.PlainText)
-        self.update_date_label()
-        self.dateTimeLayout.addWidget(self.dateLabel)
+                    size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+                    size_policy.setHorizontalStretch(0)
+                    size_policy.setVerticalStretch(0)
+                    size_policy.setHeightForWidth(self.date_time_widget.sizePolicy().hasHeightForWidth())
+                    self.date_time_widget.setSizePolicy(size_policy)
 
-        # Time Label
-        self.timeLabel = QLabel(self.dateTimeWidget)
-        self.timeLabel.setObjectName(u"timeLabel")
-        self.timeLabel.setStyleSheet(self.font1)
-        self.timeLabel.setTextFormat(Qt.PlainText)
-        self.update_time_label()
-        self.dateTimeLayout.addWidget(self.timeLabel)
+                    self.date_time_widget.setStyleSheet(self.containerStylesheet)
 
-        # Ticket Container
-        self.ticketContainer = QFrame()
-        self.ticketContainer.setObjectName(u"ticketsNumContainer")
-        sizePolicy4.setHeightForWidth(self.ticketContainer.sizePolicy().hasHeightForWidth())
-        self.ticketContainer.setSizePolicy(sizePolicy4)
-        self.ticketContainer.setStyleSheet(self.containerStylesheet)
-        self.ticketContainer.setFrameShape(QFrame.StyledPanel)
-        self.ticketContainer.setFrameShadow(QFrame.Raised)
-        self.ticketLayout = QVBoxLayout(self.ticketContainer)
-        self.ticketLayout.setSpacing(10)
-        self.ticketLayout.setContentsMargins(10, 10, 10, 10)
+                    self.date_time_layout = QVBoxLayout(self.date_time_widget)
+                    self.date_time_layout.setSpacing(0)
+                    self.date_time_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Ticket Label
-        self.currentTicketLabel = QLabel(self.ticketContainer)
-        self.currentTicketLabel.setObjectName(u"currentTicketLabel")
-        self.currentTicketLabel.setStyleSheet(self.font1)
-        self.currentTicketLabel.setTextFormat(Qt.PlainText)
-        self.currentTicketLabel.setText("Current Tickets")
-        self.ticketLayout.addWidget(self.currentTicketLabel, 0, Qt.AlignHCenter)
+                    # Date Label
+                    self.date_label = QLabel(self.date_time_widget)
+                    self.date_label.setStyleSheet(self.font2)
+                    self.date_label.setTextFormat(Qt.PlainText)
+                    self.update_date_label()
+                    self.date_time_layout.addWidget(self.date_label)
 
-        # Number of Tickets Label
-        self.currentNumOfTickets = QLabel(self.ticketContainer)
-        self.currentNumOfTickets.setObjectName(u"currentNumOfTickets")
-        self.currentNumOfTickets.setStyleSheet(self.font2)
-        self.currentNumOfTickets.setFrameShadow(QFrame.Raised)
-        self.currentNumOfTickets.setTextFormat(Qt.PlainText)
-        self.currentNumOfTickets.setText("0")
-        self.ticketLayout.addWidget(self.currentNumOfTickets, 0, Qt.AlignHCenter)
+                    # Time Label
+                    self.time_label = QLabel(self.date_time_widget)
+                    self.time_label.setStyleSheet(self.font1)
+                    self.time_label.setTextFormat(Qt.PlainText)
+                    self.update_time_label()
+                    self.date_time_layout.addWidget(self.time_label)
 
-        # Row 1 Add Widgets
-        self.row1Layout.addWidget(self.dateTimeWidget)
-        self.row1Layout.addWidget(self.ticketContainer)
+                    self.row_one_layout.addWidget(self.date_time_widget)
 
-        self.leftLayout.addWidget(self.row1Container)
+                setup_date_time()
 
-        # Scan Info Widget
-        self.scanInfoWidget = QFrame(self.leftFrame)
-        self.scanInfoWidget.setObjectName(u"scanInfoWidget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setHeightForWidth(self.scanInfoWidget.sizePolicy().hasHeightForWidth())
-        self.scanInfoWidget.setSizePolicy(sizePolicy1)
-        self.scanInfoWidget.setFrameShape(QFrame.StyledPanel)
-        self.scanInfoWidget.setFrameShadow(QFrame.Raised)
-        self.scanInfoLayout = QHBoxLayout(self.scanInfoWidget)
+                def setup_ticket_container():
+                    self.ticket_container = QFrame()
 
-        # User Widget
-        self.userContainer = QFrame()
-        self.userContainer.setObjectName(u"iunContainer")
-        self.userContainer.setStyleSheet(self.containerStylesheet)
-        self.userContainer.setFrameShape(QFrame.StyledPanel)
-        self.userContainer.setFrameShadow(QFrame.Raised)
-        self.userLayout = QVBoxLayout(self.userContainer)
-        self.userLayout.setSpacing(10)
-        self.userLayout.setContentsMargins(10, 10, 10, 10)
-        # User Label
-        self.userLabel = QLabel("Users")
-        self.userLabel.setObjectName(u"iULabel")
-        self.userLabel.setStyleSheet(self.font1)
-        self.userLabel.setTextFormat(Qt.PlainText)
-        self.userLayout.addWidget(self.userLabel, 0, Qt.AlignHCenter)
-        # User Number Label
-        self.userNumberLabel = QLabel("0")
-        self.userNumberLabel.setObjectName(u"iUNumber")
-        self.userNumberLabel.setStyleSheet(self.font2)
-        self.userNumberLabel.setTextFormat(Qt.PlainText)
-        self.userLayout.addWidget(self.userNumberLabel, 0, Qt.AlignHCenter)
-        self.scanInfoLayout.addWidget(self.userContainer)
+                    size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+                    size_policy.setHorizontalStretch(0)
+                    size_policy.setVerticalStretch(0)
+                    size_policy.setHeightForWidth(self.ticket_container.sizePolicy().hasHeightForWidth())
+                    self.ticket_container.setSizePolicy(size_policy)
 
-        # User Scheduled For Today Container
-        self.usersScheduledTodayContainer = QFrame(self.scanInfoWidget)
-        self.usersScheduledTodayContainer.setObjectName(u"canScanTodayContainer")
-        self.usersScheduledTodayContainer.setStyleSheet(self.containerStylesheet)
-        self.usersScheduledTodayContainer.setFrameShape(QFrame.StyledPanel)
-        self.usersScheduledTodayContainer.setFrameShadow(QFrame.Raised)
-        self.usersScheduledTodayLayout = QVBoxLayout(self.usersScheduledTodayContainer)
-        self.usersScheduledTodayLayout.setSpacing(10)
-        self.usersScheduledTodayLayout.setObjectName(u"canScanTodayLayout")
-        self.usersScheduledTodayLayout.setContentsMargins(10, 10, 10, 10)
-        # User Scheduled Today Label
-        self.usersScheduledTodayLabel = QLabel("Scheduled For Today")
-        self.usersScheduledTodayLabel.setObjectName(u"userScheduleTodayLabel")
-        self.usersScheduledTodayLabel.setStyleSheet(self.font1)
-        self.usersScheduledTodayLabel.setTextFormat(Qt.PlainText)
-        self.usersScheduledTodayLayout.addWidget(self.usersScheduledTodayLabel, 0, Qt.AlignHCenter)
-        # User Scheduled Today Number Label
-        self.usersScheduledTodayNumberLabel = QLabel("0")
-        self.usersScheduledTodayNumberLabel.setObjectName(u"userScheduleTodayNumber")
-        self.usersScheduledTodayNumberLabel.setStyleSheet(self.font2)
-        self.usersScheduledTodayNumberLabel.setTextFormat(Qt.PlainText)
-        self.usersScheduledTodayLayout.addWidget(self.usersScheduledTodayNumberLabel, 0, Qt.AlignHCenter)
+                    self.ticket_container.setStyleSheet(self.containerStylesheet)
 
-        self.scanInfoLayout.addWidget(self.usersScheduledTodayContainer)
+                    self.ticket_layout = QVBoxLayout(self.ticket_container)
+                    self.ticket_layout.setSpacing(10)
+                    self.ticket_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Scanned Today Container
-        self.scannedTodayContainer = QFrame(self.scanInfoWidget)
-        self.scannedTodayContainer.setObjectName(u"scansTodayWidget")
-        self.scannedTodayContainer.setStyleSheet(self.containerStylesheet)
-        self.scannedTodayContainer.setFrameShape(QFrame.StyledPanel)
-        self.scannedTodayContainer.setFrameShadow(QFrame.Raised)
-        self.scannedTodayLayout = QVBoxLayout(self.scannedTodayContainer)
-        self.scannedTodayLayout.setSpacing(10)
-        self.scannedTodayLayout.setContentsMargins(10, 10, 10, 10)
-        # Scanned Today Label
-        self.scannedTodayLabel = QLabel("Scans Today")
-        self.scannedTodayLabel.setObjectName(u"scansTodayLabel")
-        self.scannedTodayLabel.setStyleSheet(self.font1)
-        self.scannedTodayLabel.setTextFormat(Qt.PlainText)
-        self.scannedTodayLayout.addWidget(self.scannedTodayLabel, 0, Qt.AlignHCenter)
-        # Scanned Today Number Label
-        self.scannedTodayNumberLabel = QLabel("0")
-        self.scannedTodayNumberLabel.setObjectName(u"scansTodayNumber")
-        self.scannedTodayNumberLabel.setStyleSheet(self.font2)
-        self.scannedTodayLayout.addWidget(self.scannedTodayNumberLabel, 0, Qt.AlignHCenter)
+                    # Ticket Label
+                    self.current_ticket_label = QLabel("Current Tickets")
+                    self.current_ticket_label.setStyleSheet(self.font1)
+                    self.current_ticket_label.setTextFormat(Qt.PlainText)
+                    self.ticket_layout.addWidget(self.current_ticket_label, 0, Qt.AlignHCenter)
 
-        self.scanInfoLayout.addWidget(self.scannedTodayContainer)
-        self.leftLayout.addWidget(self.scanInfoWidget)
+                    # Number of Tickets Label
+                    self.current_num_of_tickets = QLabel("0")
+                    self.current_num_of_tickets.setStyleSheet(self.font2)
+                    self.current_num_of_tickets.setFrameShadow(QFrame.Raised)
+                    self.current_num_of_tickets.setTextFormat(Qt.PlainText)
+                    self.ticket_layout.addWidget(self.current_num_of_tickets, 0, Qt.AlignHCenter)
 
-        # Set up Graph Widget
-        self.setupGraphWidget()
-        self.leftLayout.addWidget(self.graphWidget)
-        self.dashboardLayout.addWidget(self.leftFrame)
+                    self.row_one_layout.addWidget(self.ticket_container)
 
-        # Right Frame
-        self.rightFrame = QFrame(dashboardWidget)
-        self.rightFrame.setObjectName(u"rightFrame")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy3.setHorizontalStretch(3)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.rightFrame.sizePolicy().hasHeightForWidth())
-        self.rightFrame.setSizePolicy(sizePolicy3)
-        self.rightFrame.setFrameShape(QFrame.StyledPanel)
-        self.rightFrame.setFrameShadow(QFrame.Raised)
-        self.rightLayout = QVBoxLayout(self.rightFrame)
-        self.rightLayout.setSpacing(10)
-        self.rightLayout.setContentsMargins(0, 0, 0, 0)
+                setup_ticket_container()
 
-        # Recent Scanned Frame
-        self.recentScansframe = QFrame(self.rightFrame)
-        self.recentScansframe.setStyleSheet(self.containerStylesheet)
-        self.recentScansframeLayout = QVBoxLayout(self.recentScansframe)
-        self.rightLayout.addWidget(self.recentScansframe)
+                self.left_layout.addWidget(self.row_one_container)
 
-        self.recentScansHeader = QFrame(self.rightFrame)
-        self.recentScansHeader.setStyleSheet(self.noneStyle)
-        self.recentScansHeader.setObjectName(u"recentScansHeader")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy2.setHeightForWidth(self.recentScansHeader.sizePolicy().hasHeightForWidth())
-        self.recentScansHeader.setSizePolicy(sizePolicy2)
-        self.recentScansHeader.setFrameShape(QFrame.StyledPanel)
-        self.recentScansHeader.setFrameShadow(QFrame.Raised)
-        recentScansHeaderLayout = QVBoxLayout(self.recentScansHeader)
-        recentScansHeaderLayout.setSpacing(10)
-        recentScansHeaderLayout.setObjectName(u"recentScansHeaderLayout")
-        recentScansHeaderLayout.setContentsMargins(0, 0, 0, 0)
+            setup_row_one()
 
-        # Label for the Recent Scans Section
-        self.recentscansLabel = QLabel("Recent Scans")
-        self.recentscansLabel.setObjectName(u"recentscansLabel")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy4.setHeightForWidth(self.recentscansLabel.sizePolicy().hasHeightForWidth())
-        self.recentscansLabel.setSizePolicy(sizePolicy4)
-        self.recentscansLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT}; color:{TEXT_COLOR}")
-        recentScansHeaderLayout.addWidget(self.recentscansLabel)
-        self.recentScansframeLayout.addWidget(self.recentScansHeader)
+            def setup_row_two():
+                self.scan_info_widget = QFrame(self.left_frame)
 
-        for i in self.last5Scanned():
-            user_database = UserDatabase()
-            user = user_database.get_user_by_id(i[0])
+                size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+                size_policy.setHorizontalStretch(0)
+                size_policy.setHeightForWidth(self.scan_info_widget.sizePolicy().hasHeightForWidth())
+                self.scan_info_widget.setSizePolicy(size_policy)
 
+                self.scan_info_layout = QHBoxLayout(self.scan_info_widget)
 
-            photo_path = f"../Database/IndirectUsers/photos/{user.photos}"
-            name = f"{user.first_name} {user.last_name}"
-            id = user.id
-            date_time = i[1]
-            recentScan = self.create_recent_scan_widget(photo_path, name, id, date_time)
-            self.recentScansframeLayout.addWidget(recentScan)
+                def setup_number_of_user_container():
+                    self.user_container = QFrame()
+                    self.user_container.setStyleSheet(self.containerStylesheet)
+                    self.user_layout = QVBoxLayout(self.user_container)
+                    self.user_layout.setSpacing(10)
+                    self.user_layout.setContentsMargins(10, 10, 10, 10)
 
-        self.rightLayout.addStretch()
-        self.dashboardLayout.addWidget(self.rightFrame)
-        self.getData()
+                    # User Label
+                    self.user_label = QLabel("Users")
+                    self.user_label.setStyleSheet(self.font1)
+                    self.user_layout.addWidget(self.user_label, 0, Qt.AlignHCenter)
+
+                    # User Number Label
+                    self.user_number_label = QLabel("0")
+                    self.user_number_label.setStyleSheet(self.font2)
+                    self.user_layout.addWidget(self.user_number_label, 0, Qt.AlignHCenter)
+
+                    self.scan_info_layout.addWidget(self.user_container)
+
+                setup_number_of_user_container()
+
+                def setup_users_scheduled_for_today_container():
+                    self.users_scheduled_today_container = QFrame(self.scan_info_widget)
+                    self.users_scheduled_today_container.setStyleSheet(self.containerStylesheet)
+
+                    self.users_scheduled_today_layout = QVBoxLayout(self.users_scheduled_today_container)
+                    self.users_scheduled_today_layout.setSpacing(10)
+                    self.users_scheduled_today_layout.setContentsMargins(10, 10, 10, 10)
+
+                    # User Scheduled Today Label
+                    self.users_scheduled_today_label = QLabel("Scheduled For Today")
+                    self.users_scheduled_today_label.setStyleSheet(self.font1)
+                    self.users_scheduled_today_layout.addWidget(self.users_scheduled_today_label, 0, Qt.AlignHCenter)
+
+                    # User Scheduled Today Number Label
+                    self.users_scheduled_today_number_label = QLabel("0")
+                    self.users_scheduled_today_number_label.setStyleSheet(self.font2)
+                    self.users_scheduled_today_layout.addWidget(self.users_scheduled_today_number_label, 0,
+                                                                Qt.AlignHCenter)
+
+                    self.scan_info_layout.addWidget(self.users_scheduled_today_container)
+
+                setup_users_scheduled_for_today_container()
+
+                def setup_users_scanned_today_container():
+                    self.scanned_today_container = QFrame(self.scan_info_widget)
+                    self.scanned_today_container.setStyleSheet(self.containerStylesheet)
+
+                    self.scanned_today_layout = QVBoxLayout(self.scanned_today_container)
+                    self.scanned_today_layout.setSpacing(10)
+                    self.scanned_today_layout.setContentsMargins(10, 10, 10, 10)
+
+                    # Scanned Today Label
+                    self.scanned_today_label = QLabel("Scans Today")
+                    self.scanned_today_label.setStyleSheet(self.font1)
+                    self.scanned_today_layout.addWidget(self.scanned_today_label, 0, Qt.AlignHCenter)
+
+                    # Scanned Today Number Label
+                    self.scanned_today_number_label = QLabel("0")
+                    self.scanned_today_number_label.setStyleSheet(self.font2)
+                    self.scanned_today_layout.addWidget(self.scanned_today_number_label, 0, Qt.AlignHCenter)
+
+                    self.scan_info_layout.addWidget(self.scanned_today_container)
+
+                setup_users_scanned_today_container()
+
+                self.left_layout.addWidget(self.scan_info_widget)
+
+            setup_row_two()
+
+            def setup_graph_widget_container():
+                self.setupGraphWidget()
+                self.left_layout.addWidget(self.graphWidget)
+
+            setup_graph_widget_container()
+
+            self.dashboard_layout.addWidget(self.left_frame)
+
+        setup_left_frame()
+
+        def setup_right_frame():
+            self.right_frame = QFrame(dashboardWidget)
+
+            size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+            size_policy.setHorizontalStretch(3)
+            size_policy.setVerticalStretch(0)
+            size_policy.setHeightForWidth(self.right_frame.sizePolicy().hasHeightForWidth())
+            self.right_frame.setSizePolicy(size_policy)
+
+            self.right_layout = QVBoxLayout(self.right_frame)
+            self.right_layout.setSpacing(10)
+            self.right_layout.setContentsMargins(0, 0, 0, 0)
+
+            def setup_recent_scans_frame():
+                self.recent_scans_frame = QFrame(self.right_frame)
+                self.recent_scans_frame.setStyleSheet(self.containerStylesheet)
+                self.recent_scans_frame_layout = QVBoxLayout(self.recent_scans_frame)
+
+                def setup_recent_scans_header():
+                    self.recent_scans_header = QFrame(self.right_frame)
+                    self.recent_scans_header.setStyleSheet(self.noneStyle)
+
+                    size_policy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+                    size_policy2.setHeightForWidth(self.recent_scans_header.sizePolicy().hasHeightForWidth())
+                    self.recent_scans_header.setSizePolicy(size_policy2)
+
+                    recent_scans_header_layout = QVBoxLayout(self.recent_scans_header)
+                    recent_scans_header_layout.setSpacing(10)
+                    recent_scans_header_layout.setContentsMargins(0, 0, 0, 0)
+
+                    self.recent_scans_label = QLabel("Recent Scans")
+                    self.recent_scans_label.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT}; color:{TEXT_COLOR}")
+                    size_policy2.setHeightForWidth(self.recent_scans_label.sizePolicy().hasHeightForWidth())
+                    self.recent_scans_label.setSizePolicy(size_policy2)
+
+                    recent_scans_header_layout.addWidget(self.recent_scans_label)
+                    self.recent_scans_frame_layout.addWidget(self.recent_scans_header)
+
+                setup_recent_scans_header()
+
+                def setup_recent_scans():
+                    # Create a single instance of UserDatabase
+                    user_database = UserDatabase()
+
+                    # Iterate over the last 5 scanned items in reverse order
+                    for scan_id, date_time in reversed(self.last5Scanned()):
+                        user = user_database.get_user_by_id(scan_id)
+
+                        # Check if user is found
+                        if user is not None:
+                            photo_path = f"../Database/IndirectUsers/photos/{user.photos}"
+                            full_name = f"{user.first_name} {user.last_name}"
+                            recent_scan_widget = self.create_recent_scan_widget(photo_path, full_name, user.id,
+                                                                                date_time)
+                            self.recent_scans_frame_layout.addWidget(recent_scan_widget)
+                        else:
+                            # Handle the case where user is not found
+                            print(f"User with ID {scan_id} not found")
+
+                setup_recent_scans()
+
+                self.right_layout.addWidget(self.recent_scans_frame)
+                self.right_layout.addStretch()
+
+            setup_recent_scans_frame()
+
+            self.dashboard_layout.addWidget(self.right_frame)
+
+        setup_right_frame()
+
+        self.get_user_number()
+        self.get_user_scheduled_for_today()
+        self.get_amount_of_tickets()
+        self.how_many_users_scanned_today()
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_date_label)
@@ -919,12 +1020,12 @@ class Ui_dashboardWidget(object):
     def update_date_label(self):
         # Update the QLabel with the current date
         current_date = QDate.currentDate().toString("dddd, MMMM dd, yyyy")
-        self.dateLabel.setText(current_date)
+        self.date_label.setText(current_date)
 
     def update_time_label(self):
         # Update the QLabel with the current time
         current_time = QTime.currentTime().toString("hh:mm AP")
-        self.timeLabel.setText(current_time)
+        self.time_label.setText(current_time)
 
     def create_recent_scan_widget(self, user_image_path, user_name_text, user_id_text, scan_date_time_text):
         recentScansWidget = QFrame()
@@ -1008,7 +1109,7 @@ class Ui_dashboardWidget(object):
         return recentScansWidget
 
     def setupGraphWidget(self):
-        self.graphWidget = QFrame(self.leftFrame)
+        self.graphWidget = QFrame(self.left_frame)
         self.graphWidget.setObjectName("graphWidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setVerticalStretch(12)
@@ -1097,49 +1198,77 @@ class Ui_dashboardWidget(object):
         # Redraw the canvas to reflect the changes
         self.canvas.draw()
 
-    def getData(self):
-        # Indirect User number set text
-        self.userNumberLabel.setText(str(len(entitiesMain.getUsers())))
+    def get_user_number(self):
+        """Updates the label with the current number of users."""
+        try:
+            user_count = len(entitiesMain.getUsers())
+            self.user_number_label.setText(str(user_count))
+        except Exception as e:
+            logging.error(f"Error getting user number: {e}")
+            self.user_number_label.setText("Error")
 
-        now = datetime.now()
-        current_day_of_week = now.strftime("%A")
-        self.usersScheduledTodayNumberLabel.setText(str(len(entitiesMain.getSchedule(current_day_of_week))))
+    def get_user_scheduled_for_today(self):
+        """Updates the label with the number of users scheduled for today."""
+        try:
+            now = datetime.now()
+            current_day_of_week = now.strftime("%A")
+            scheduled_count = len(entitiesMain.getSchedule(current_day_of_week))
+            self.users_scheduled_today_number_label.setText(str(scheduled_count))
+        except Exception as e:
+            logging.error(f"Error getting users scheduled for today: {e}")
+            self.users_scheduled_today_number_label.setText("Error")
 
-        # number of current tickets
+    def get_amount_of_tickets(self):
+        """Updates the label with the current number of tickets."""
         directory = '../Database/Tickets'
-        files = os.listdir(directory)
-        file_count = len([entry for entry in files if os.path.isfile(os.path.join(directory, entry))])
-        self.currentNumOfTickets.setText(str(file_count))
+        try:
+            files = os.listdir(directory)
+            file_count = len([entry for entry in files if os.path.isfile(os.path.join(directory, entry))])
+            self.current_num_of_tickets.setText(str(file_count))
+        except Exception as e:
+            logging.error(f"Error getting amount of tickets: {e}")
+            self.current_num_of_tickets.setText("Error")
 
+    def how_many_users_scanned_today(self):
+        """Updates the label with the number of users scanned today."""
         logsDirectory = "../Database/Logs/log.csv"
-        with open(logsDirectory, mode='r') as file:
-            reader = csv.DictReader(file)
-            logs = list(reader)
+        try:
+            with open(logsDirectory, mode='r') as file:
+                reader = csv.DictReader(file)
+                logs = list(reader)
 
-        # get users scanned today
-        users_scanned_today = \
-            [log for log in logs if datetime.strptime(log['Timestamp'], '%Y-%m-%d %H:%M:%S').date() == now.date()]
-
-        self.scannedTodayNumberLabel.setText(str(len(users_scanned_today)))
-
-        # get users scanned this week
-        start_of_week = now - timedelta(days=now.weekday())
-        users_scanned_this_week = [log for log in logs if start_of_week.date() <= datetime.strptime(log['Timestamp'],
-                                                                                                    '%Y-%m-%d %H:%M:%S').date() <= now.date()]
+            today = datetime.now().date()
+            users_scanned_today = [log for log in logs if
+                                   datetime.strptime(log['Timestamp'], '%Y-%m-%d %H:%M:%S').date() == today]
+            self.scanned_today_number_label.setText(str(len(users_scanned_today)))
+        except Exception as e:
+            logging.error(f"Error in how_many_users_scanned_today: {e}")
+            self.scanned_today_number_label.setText("Error")
 
     def last5Scanned(self):
         logs_directory = "../Database/Logs/log.csv"
-        with open(logs_directory, mode='r') as file:
-            reader = csv.DictReader(file)
-            logs = list(reader)
+        try:
+            with open(logs_directory, mode='r') as file:
+                reader = csv.DictReader(file)
+                logs = list(reader)
 
-            # get last 5 users scanned
-            last_5_users_scanned = logs[-5:] if len(logs) >= 5 else logs
+                # Get the last 5 or fewer user scans
+                last_5_users_scanned = logs[-5:]
 
-            # Extract user IDs and timestamps from the last 5 scanned entries
-            user_ids_and_times = [(log['UserID'], log['Timestamp']) for log in last_5_users_scanned]
+                # Extract user IDs and timestamps
+                user_ids_and_times = [(log['UserID'], log['Timestamp']) for log in last_5_users_scanned]
 
-            return user_ids_and_times
+                return user_ids_and_times
+
+        except FileNotFoundError:
+            print(f"Error: File {logs_directory} not found.")
+            return []
+        except csv.Error as e:
+            print(f"Error reading CSV file: {e}")
+            return []
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return []
 
 
 class Ui_logs(object):
@@ -1168,7 +1297,6 @@ class Ui_logs(object):
 
                     }}
                 """
-
         self.table_stylesheet = f"""
             QTableView {{
                 border: 1px solid {BORDERS_LINES_COLOR};
@@ -1184,14 +1312,18 @@ class Ui_logs(object):
                 padding: 5px;
                 border-color: transparent;
                 gridline-color: #d4d4d4;
+                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
+
             }}
 
             QTableView::item:selected {{
                 background: #e7e7e7;
                 color: black;
+                background-color: {CONTENT_CARD_BACKGROUND_COLOR};
             }}
             QTableView QLineEdit {{
         color: black; /* Color of the text while editing */
+        background-color: {CONTENT_CARD_BACKGROUND_COLOR};
         }}
 
 
@@ -1266,7 +1398,6 @@ class Ui_logs(object):
                 background: {INTERACTIVE_ELEMENT_COLOR_1};
             }}
         """
-
         self.buttonStyleSheet = f"""
                     QPushButton {{
                         background-color: {BUTTON_COLOR};
@@ -1318,7 +1449,6 @@ class Ui_logs(object):
 
     def setupLeftWindow(self, parent):
         self.leftwindow = QFrame(parent)
-        self.leftwindow.setObjectName("leftwindow")
         self.configureSizePolicy(self.leftwindow, horizontal_stretch=10)
 
         self.leftLayout = QVBoxLayout(self.leftwindow)
@@ -1905,89 +2035,103 @@ class Ui_ticketsWidget(object):
                             }}
                         """
 
-        if not ticketsWidget.objectName():
-            ticketsWidget.setObjectName(u"ticketsWidget")
-
-        self.ticketsLayout = QHBoxLayout(ticketsWidget)
-        self.ticketsLayout.setSpacing(10)
-        self.ticketsLayout.setObjectName(u"ticketsLayout")
-        self.ticketsLayout.setContentsMargins(10, 10, 10, 10)
-        self.leftWidget = QFrame(ticketsWidget)
-        self.leftWidget.setObjectName(u"leftWidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(2)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.leftWidget.sizePolicy().hasHeightForWidth())
-        self.leftWidget.setSizePolicy(sizePolicy)
-        self.leftWidget.setStyleSheet(self.containerStylesheet)
-        self.leftWidget.setFrameShape(QFrame.StyledPanel)
-        self.leftWidget.setFrameShadow(QFrame.Raised)
-        self.leftLayout = QVBoxLayout(self.leftWidget)
-        self.leftLayout.setSpacing(10)
-        self.leftLayout.setObjectName(u"leftLayout")
-        self.leftLayout.setContentsMargins(10, 10, 10, 10)
-        self.ticketNameLabel = QLabel(self.leftWidget)
-        self.ticketNameLabel.setObjectName(u"ticketNameLabel")
-        self.ticketNameLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
-                                           "background-color: transparent;"
-                                           "border: none;"
-                                           "border-radius: 20px;"
-                                           f"color:{TEXT_COLOR}")
-        self.leftLayout.addWidget(self.ticketNameLabel, 0, Qt.AlignHCenter)
-        self.ticketTextEdit = QTextEdit(self.leftWidget)
-        self.ticketTextEdit.setObjectName(u"ticketTextEdit")
-        self.ticketTextEdit.setStyleSheet(f"background-color: {CONTENT_CARD_BACKGROUND_COLOR};"
-                                          "border: none;"
-                                          "border-radius: 20px;"
-                                          f"font: 75 {BODY_FONT_SIZE} {FONT};"
-                                          f"color:{TEXT_COLOR}")
-        self.leftLayout.addWidget(self.ticketTextEdit)
-        self.resolvedButton = QPushButton("Resolved")
-        self.resolvedButton.setStyleSheet(self.button_stylesheet)
-        self.resolvedButton.clicked.connect(self.deleteCurrentFile)
-        self.resolvedButton.setObjectName(u"resolvedButton")
-        self.leftLayout.addWidget(self.resolvedButton)
-        self.ticketsLayout.addWidget(self.leftWidget)
-        self.rightWidget = QFrame(ticketsWidget)
-        self.rightWidget.setObjectName(u"rightWidget")
+
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.rightWidget.sizePolicy().hasHeightForWidth())
-        self.rightWidget.setSizePolicy(sizePolicy1)
-        self.rightWidget.setStyleSheet(self.containerStylesheet)
-        self.rightWidget.setFrameShape(QFrame.StyledPanel)
-        self.rightWidget.setFrameShadow(QFrame.Raised)
-        self.rightLayout = QVBoxLayout(self.rightWidget)
-        self.rightLayout.setSpacing(10)
-        self.rightLayout.setObjectName(u"rightLayout")
-        self.rightLayout.setContentsMargins(10, 10, 10, 10)
-        self.ticketLabel = QLabel("Tickets")
-        self.ticketLabel.setObjectName(u"ticketLabel")
-        self.ticketLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
-                                       "background-color: transparent;"
-                                       "border: none;"
-                                       "border-radius: 20px;"
-                                       f"color:{TEXT_COLOR}")
-        self.rightLayout.addWidget(self.ticketLabel)
-        self.ticketFrame = QFrame(self.rightWidget)
-        self.ticketFrame.setObjectName(u"ticketFrame")
-        self.ticketFrame.setStyleSheet(u"background-color: transparent;"
-                                       "border: none;"
-                                       "border-radius: 20px;")
-        self.ticketFrame.setFrameShape(QFrame.StyledPanel)
-        self.ticketFrame.setFrameShadow(QFrame.Raised)
-        self.ticketLayout = QVBoxLayout(self.ticketFrame)
-        self.ticketLayout.setSpacing(10)
-        self.ticketLayout.setObjectName(u"ticketLayout")
-        self.ticketLayout.setContentsMargins(10, 10, 10, 10)
-        self.rightLayout.addWidget(self.ticketFrame)
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.rightLayout.addItem(self.verticalSpacer)
 
-        self.ticketsLayout.addWidget(self.rightWidget)
+        self.ticketsLayout = QHBoxLayout(ticketsWidget)
+        self.ticketsLayout.setSpacing(10)
+        self.ticketsLayout.setContentsMargins(10, 10, 10, 10)
 
-        # Create buttons for each ticket file
+        def setup_left_widget():
+            self.leftWidget = QFrame(ticketsWidget)
+            sizePolicy.setHeightForWidth(self.leftWidget.sizePolicy().hasHeightForWidth())
+            self.leftWidget.setSizePolicy(sizePolicy)
+            self.leftWidget.setStyleSheet(self.containerStylesheet)
+
+            self.leftLayout = QVBoxLayout(self.leftWidget)
+            self.leftLayout.setSpacing(10)
+            self.leftLayout.setContentsMargins(10, 10, 10, 10)
+
+            def setup_ticket_name_label():
+                self.ticketNameLabel = QLabel(self.leftWidget)
+                self.ticketNameLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
+                                                   "background-color: transparent;"
+                                                   "border: none;"
+                                                   "border-radius: 20px;"
+                                                   f"color:{TEXT_COLOR}")
+                self.leftLayout.addWidget(self.ticketNameLabel, 0, Qt.AlignHCenter)
+
+            setup_ticket_name_label()
+
+            def setup_ticket_text_edit():
+                self.ticketTextEdit = QTextEdit(self.leftWidget)
+                self.ticketTextEdit.setStyleSheet(f"background-color: {CONTENT_CARD_BACKGROUND_COLOR};"
+                                                  "border: none;"
+                                                  "border-radius: 20px;"
+                                                  f"font: 75 {BODY_FONT_SIZE} {FONT};"
+                                                  f"color:{TEXT_COLOR}")
+                self.leftLayout.addWidget(self.ticketTextEdit)
+
+            setup_ticket_text_edit()
+
+            def setup_resolved_button():
+                self.resolvedButton = QPushButton("Resolved")
+                self.resolvedButton.setStyleSheet(self.button_stylesheet)
+                self.resolvedButton.clicked.connect(self.deleteCurrentFile)
+                self.resolvedButton.setObjectName(u"resolvedButton")
+                self.leftLayout.addWidget(self.resolvedButton)
+
+            setup_resolved_button()
+
+            self.ticketsLayout.addWidget(self.leftWidget)
+
+        setup_left_widget()
+
+        def setup_right_widget():
+            self.rightWidget = QFrame(ticketsWidget)
+            sizePolicy1.setHeightForWidth(self.rightWidget.sizePolicy().hasHeightForWidth())
+            self.rightWidget.setSizePolicy(sizePolicy1)
+            self.rightWidget.setStyleSheet(self.containerStylesheet)
+
+            self.rightLayout = QVBoxLayout(self.rightWidget)
+            self.rightLayout.setSpacing(10)
+            self.rightLayout.setContentsMargins(10, 10, 10, 10)
+
+            def setup_ticket_label():
+                self.ticketLabel = QLabel("Tickets")
+                self.ticketLabel.setObjectName(u"ticketLabel")
+                self.ticketLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
+                                               "background-color: transparent;"
+                                               "border: none;"
+                                               "border-radius: 20px;"
+                                               f"color:{TEXT_COLOR}")
+                self.rightLayout.addWidget(self.ticketLabel)
+
+            setup_ticket_label()
+
+            def setup_ticket_frame():
+                self.ticketFrame = QFrame(self.rightWidget)
+                self.ticketFrame.setStyleSheet(u"background-color: transparent;"
+                                               "border: none;"
+                                               "border-radius: 20px;")
+
+                self.ticketLayout = QVBoxLayout(self.ticketFrame)
+                self.ticketLayout.setSpacing(10)
+                self.ticketLayout.setContentsMargins(10, 10, 10, 10)
+                self.rightLayout.addWidget(self.ticketFrame)
+                self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+                self.rightLayout.addItem(self.verticalSpacer)
+
+            setup_ticket_frame()
+            self.ticketsLayout.addWidget(self.rightWidget)
+
+        setup_right_widget()
+
         self.create_ticket_buttons()
 
     def create_ticket_button(self, text, font_family=f"{FONT}", font_size=16, font_weight=75):
@@ -1999,13 +2143,47 @@ class Ui_ticketsWidget(object):
 
     def create_ticket_buttons(self):
         directory = "../Database/Tickets"
-        for filename in os.listdir(directory):
-            if filename.endswith(".txt"):
+        file_datetimes = []
+
+        try:
+            # Step 1 & 2: Extract date and time and convert to datetime objects
+            for filename in os.listdir(directory):
+                if filename.endswith(".txt"):
+                    try:
+                        # Assuming filename format is 'Title_YYYY-MM-DD_HH-MM-SS.txt'
+                        match = re.search(r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', filename)
+                        if match:
+                            file_date_str = match.group(1)
+                            file_date = datetime.strptime(file_date_str, '%Y-%m-%d_%H-%M-%S')
+                            file_datetimes.append((filename, file_date))
+                        else:
+                            print(f"Filename format not recognized: {filename}")
+                    except ValueError:
+                        print(f"Error parsing date from filename: {filename}")
+
+            # Step 3: Sort files based on datetime
+            sorted_files = sorted(file_datetimes, key=lambda x: x[1])
+
+            # Step 4: Create buttons for sorted files
+            for filename, _ in sorted_files:
                 button = self.create_ticket_button(filename)
                 button.clicked.connect(lambda checked, name=filename,
                                               filepath=os.path.join(directory, filename): self.display_file_content(
                     filepath, name))
                 self.ticketLayout.addWidget(button)
+
+            # Step 5: Display the content of the first file as a placeholder
+            if sorted_files:
+                first_filename, _ = sorted_files[0]
+                first_file_path = os.path.join(directory, first_filename)
+                self.display_file_content(first_file_path, first_filename)
+
+        except FileNotFoundError:
+            print(f"Directory not found: {directory}")
+        except PermissionError:
+            print(f"Permission denied: Unable to access {directory}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
     def loadTextFile(self, filepath):
         try:
@@ -2056,7 +2234,6 @@ class Ui_addUserWidget(object):
     def setupUi(self, addUserWidget):
         # self.fieldLabelStyle = f"font: 75 {bodyFontSize} {font}; color:{textColor};"
         # self.subHeaderLabelStyle = f"font: 75 {subheaderFontSize} {font}; color:{textColor};"
-
         self.containerStylesheet = f"""
                     QFrame {{
                         background-color: {CONTENT_CARD_BACKGROUND_COLOR};
@@ -2242,321 +2419,434 @@ class Ui_addUserWidget(object):
 
 """
 
-        addUserWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.addUserLayout = QVBoxLayout(addUserWidget)
-        self.addUserLayout.setSpacing(10)
-        self.addUserLayout.setContentsMargins(0, 0, 0, 0)
-
-        self.accountOrganizationFrame = QFrame(addUserWidget)
-        self.accountOrganizationFrame.setStyleSheet(self.containerStylesheet)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(2)
-        sizePolicy.setHeightForWidth(self.accountOrganizationFrame.sizePolicy().hasHeightForWidth())
-        self.accountOrganizationFrame.setSizePolicy(sizePolicy)
-        self.accountOrganizationLayout = QHBoxLayout(self.accountOrganizationFrame)
-        self.accountOrganizationLayout.setAlignment(Qt.AlignLeft)
-        self.accountOrganizationLayout.setSpacing(5)
-        self.accountOrganizationLayout.setContentsMargins(5, 5, 5, 5)
 
-        self.accountFrame = QFrame(self.accountOrganizationFrame)
-        self.accountFrame.setStyleSheet(self.noneStyle)
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.accountFrame.sizePolicy().hasHeightForWidth())
-        self.accountFrame.setSizePolicy(sizePolicy1)
-        self.accountLayout = QVBoxLayout(self.accountFrame)
-        self.accountLayout.setAlignment(Qt.AlignLeft)
-        self.accountLayout.setSpacing(0)
-        self.accountLayout.setContentsMargins(0, 0, 0, 0)
-        self.accountLabel = QLabel("Account")
-        self.accountLabel.setStyleSheet(self.subHeaderLabelStyle)
-        self.accountLayout.addWidget(self.accountLabel)
-
-        self.accountForm = QFrame(self.accountFrame)
-        self.accountForm.setStyleSheet(self.fieldLabelStyle + self.textFieldStyle + self.comboBoxStyle)
-        self.accountFormLayout = QFormLayout(self.accountForm)
-        self.accountFormLayout.setHorizontalSpacing(5)
-        self.accountFormLayout.setVerticalSpacing(5)
-        self.accountFormLayout.setContentsMargins(0, 0, 0, 0)
-        self.userIDLabel = QLabel("User ID: ")
-        self.accountFormLayout.setWidget(0, QFormLayout.LabelRole, self.userIDLabel)
-        self.userIDLineEdit = QLineEdit(self.accountForm)
-
-        self.accountFormLayout.setWidget(0, QFormLayout.FieldRole, self.userIDLineEdit)
-        self.firstNameLabel = QLabel("First Name: ")
-        self.accountFormLayout.setWidget(1, QFormLayout.LabelRole, self.firstNameLabel)
-        self.firstNameLineEdit = QLineEdit(self.accountForm)
-        self.accountFormLayout.setWidget(1, QFormLayout.FieldRole, self.firstNameLineEdit)
-        self.lastNameLabel = QLabel("Last Name: ")
-        self.accountFormLayout.setWidget(2, QFormLayout.LabelRole, self.lastNameLabel)
-        self.lastNameLineEdit = QLineEdit(self.accountForm)
-        self.accountFormLayout.setWidget(2, QFormLayout.FieldRole, self.lastNameLineEdit)
-        self.genderLabel = QLabel("Gender: ")
-        self.accountFormLayout.setWidget(3, QFormLayout.LabelRole, self.genderLabel)
-        self.genderComboBox = QComboBox(self.accountForm)
-        self.genderComboBox.addItem("Male")
-        self.genderComboBox.addItem("Female")
-        self.accountFormLayout.setWidget(3, QFormLayout.FieldRole, self.genderComboBox)
-        self.accountVerticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.accountFormLayout.setItem(4, QFormLayout.LabelRole, self.accountVerticalSpacer)
-        self.accountLayout.addWidget(self.accountForm)
-        self.accountOrganizationLayout.addWidget(self.accountFrame)
-
-        self.organizationFrame = QFrame(self.accountOrganizationFrame)
-        self.organizationFrame.setStyleSheet(self.noneStyle)
-        sizePolicy1.setHeightForWidth(self.organizationFrame.sizePolicy().hasHeightForWidth())
-        self.organizationFrame.setSizePolicy(sizePolicy1)
-        self.organizationLayout = QVBoxLayout(self.organizationFrame)
-        self.organizationLayout.setSpacing(0)
-        self.organizationLayout.setContentsMargins(0, 0, 0, 0)
-        self.organizationLabel = QLabel("Organization")
-        self.organizationLabel.setStyleSheet(self.subHeaderLabelStyle)
-        self.organizationLayout.addWidget(self.organizationLabel)
-
-        self.organizationForm = QFrame(self.organizationFrame)
-        self.organizationForm.setStyleSheet(self.textFieldStyle + self.fieldLabelStyle)
-        self.organizationFormLayout = QFormLayout(self.organizationForm)
-        self.organizationFormLayout.setHorizontalSpacing(10)
-        self.organizationFormLayout.setVerticalSpacing(10)
-        self.organizationFormLayout.setContentsMargins(0, 0, 0, 0)
-        self.companyNameLabel = QLabel("Company: ")
-        self.organizationFormLayout.setWidget(0, QFormLayout.LabelRole, self.companyNameLabel)
-        self.companyNameLineEdit = QLineEdit(self.organizationForm)
-        self.organizationFormLayout.setWidget(0, QFormLayout.FieldRole, self.companyNameLineEdit)
-        self.titleLabel = QLabel("Title: ")
-        self.organizationFormLayout.setWidget(1, QFormLayout.LabelRole, self.titleLabel)
-        self.titleLineEdit = QLineEdit(self.organizationForm)
-        self.organizationFormLayout.setWidget(1, QFormLayout.FieldRole, self.titleLineEdit)
-        self.organizationVerticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.organizationFormLayout.setItem(2, QFormLayout.LabelRole, self.organizationVerticalSpacer)
-        self.organizationLayout.addWidget(self.organizationForm)
-        self.accountOrganizationLayout.addWidget(self.organizationFrame)
-        self.addUserLayout.addWidget(self.accountOrganizationFrame)
-
-        self.scheduleFrame = QFrame(addUserWidget)
-        self.scheduleFrame.setStyleSheet(self.containerStylesheet)
-        sizePolicy.setHeightForWidth(self.scheduleFrame.sizePolicy().hasHeightForWidth())
-        self.scheduleFrame.setSizePolicy(sizePolicy)
-        self.scheduleLayout = QVBoxLayout(self.scheduleFrame)
-        self.scheduleLayout.setSpacing(5)
-        self.scheduleLayout.setContentsMargins(5, 5, 5, 5)
-        self.scheduleLabel = QLabel("Schedule")
-        self.scheduleLabel.setStyleSheet(self.subHeaderLabelStyle + self.noneStyle)
-        self.scheduleLayout.addWidget(self.scheduleLabel)
-
-        self.scheduleForm = QFrame(self.scheduleFrame)
-        self.scheduleForm.setStyleSheet(
-            self.noneStyle + self.fieldLabelStyle + self.time_edit_style + self.checkbox_style)
-        self.scheduleFormLayout = QGridLayout(self.scheduleForm)
-        self.scheduleFormLayout.setSpacing(5)
-        self.scheduleFormLayout.setContentsMargins(0, 0, 0, 0)
-        self.timeEditStartMonday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartMonday.setReadOnly(False)
 
         sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(4)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.timeEditStartMonday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartMonday.setSizePolicy(sizePolicy2)
-        self.timeEditStartMonday.setCurrentSection(QDateTimeEdit.HourSection)
-        self.timeEditStartMonday.setCalendarPopup(False)
-        self.timeEditStartMonday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartMonday, 2, 1, 1, 1)
-        self.timeEditStartThursday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartThursday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditStartThursday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartThursday.setSizePolicy(sizePolicy2)
-        self.timeEditStartThursday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartThursday, 5, 1, 1, 1)
-        self.timeEditEndThursday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndThursday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndThursday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndThursday.setSizePolicy(sizePolicy2)
-        self.timeEditEndThursday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndThursday, 5, 3, 1, 1)
-        self.timeEditStartWednesday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartWednesday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditStartWednesday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartWednesday.setSizePolicy(sizePolicy2)
-        self.timeEditStartWednesday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartWednesday, 4, 1, 1, 1)
-        self.timeEditEndSaturday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndSaturday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndSaturday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndSaturday.setSizePolicy(sizePolicy2)
-        self.timeEditEndSaturday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndSaturday, 7, 3, 1, 1)
-        self.dayLabel = QLabel("Day")
-        self.dayLabel.setStyleSheet(self.fieldLabelStyle)
-        sizePolicy1.setHeightForWidth(self.dayLabel.sizePolicy().hasHeightForWidth())
-        self.dayLabel.setSizePolicy(sizePolicy1)
-        self.scheduleFormLayout.addWidget(self.dayLabel, 0, 0, 1, 1)
-        self.checkBoxSunday = QCheckBox("Sunday: ")
+
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(1)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.checkBoxSunday.sizePolicy().hasHeightForWidth())
-        self.checkBoxSunday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxSunday, 1, 0, 1, 1)
-        self.checkBoxFriday = QCheckBox("Friday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxFriday.sizePolicy().hasHeightForWidth())
-        self.checkBoxFriday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxFriday, 6, 0, 1, 1)
-        self.timeEditEndWednesday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndWednesday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndWednesday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndWednesday.setSizePolicy(sizePolicy2)
-        self.timeEditEndWednesday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndWednesday, 4, 3, 1, 1)
-        self.timeEditEndSunday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndSunday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndSunday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndSunday.setSizePolicy(sizePolicy2)
-        self.timeEditEndSunday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndSunday, 1, 3, 1, 1)
-        self.timeEditStartSunday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartSunday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditStartSunday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartSunday.setSizePolicy(sizePolicy2)
-        self.timeEditStartSunday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartSunday, 1, 1, 1, 1)
-        self.checkBoxWednesday = QCheckBox("Wednesday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxWednesday.sizePolicy().hasHeightForWidth())
-        self.checkBoxWednesday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxWednesday, 4, 0, 1, 1)
-        self.timeEditEndTuesday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndTuesday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndTuesday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndTuesday.setSizePolicy(sizePolicy2)
-        self.timeEditEndTuesday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndTuesday, 3, 3, 1, 1)
-        self.checkBoxThursday = QCheckBox("Thursday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxThursday.sizePolicy().hasHeightForWidth())
-        self.checkBoxThursday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxThursday, 5, 0, 1, 1)
-        self.checkBoxSaturday = QCheckBox("Saturday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxSaturday.sizePolicy().hasHeightForWidth())
-        self.checkBoxSaturday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxSaturday, 7, 0, 1, 1)
-        self.timeEditEndMonday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndMonday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndMonday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndMonday.setSizePolicy(sizePolicy2)
-        self.timeEditEndMonday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndMonday, 2, 3, 1, 1)
-        self.checkBoxTuesday = QCheckBox("Thursday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxTuesday.sizePolicy().hasHeightForWidth())
-        self.checkBoxTuesday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxTuesday, 3, 0, 1, 1)
-        self.endTimeLabel = QLabel("End Time")
+
         sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy4.setHorizontalStretch(4)
         sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.endTimeLabel.sizePolicy().hasHeightForWidth())
-        self.endTimeLabel.setSizePolicy(sizePolicy4)
-        self.scheduleFormLayout.addWidget(self.endTimeLabel, 0, 3, 1, 1)
-        self.timeEditStartTuesday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartTuesday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditStartTuesday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartTuesday.setSizePolicy(sizePolicy2)
-        self.timeEditStartTuesday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartTuesday, 3, 1, 1, 1)
-        self.startTimeLabel = QLabel("Start Time")
-        sizePolicy4.setHeightForWidth(self.startTimeLabel.sizePolicy().hasHeightForWidth())
-        self.startTimeLabel.setSizePolicy(sizePolicy4)
-        self.scheduleFormLayout.addWidget(self.startTimeLabel, 0, 1, 1, 1)
-        self.checkBoxMonday = QCheckBox("Monday: ")
-        sizePolicy3.setHeightForWidth(self.checkBoxMonday.sizePolicy().hasHeightForWidth())
-        self.checkBoxMonday.setSizePolicy(sizePolicy3)
-        self.scheduleFormLayout.addWidget(self.checkBoxMonday, 2, 0, 1, 1)
-        self.timeEditEndFriday = QTimeEdit(self.scheduleForm)
-        self.timeEditEndFriday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditEndFriday.sizePolicy().hasHeightForWidth())
-        self.timeEditEndFriday.setSizePolicy(sizePolicy2)
-        self.timeEditEndFriday.setTime(QTime(17, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditEndFriday, 6, 3, 1, 1)
-        self.timeEditStartFriday = QTimeEdit(self.scheduleForm)
-        sizePolicy2.setHeightForWidth(self.timeEditStartFriday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartFriday.setSizePolicy(sizePolicy2)
-        self.timeEditStartFriday.setReadOnly(False)
-        self.timeEditStartFriday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartFriday, 6, 1, 1, 1)
-        self.timeEditStartSaturday = QTimeEdit(self.scheduleForm)
-        self.timeEditStartSaturday.setReadOnly(False)
-        sizePolicy2.setHeightForWidth(self.timeEditStartSaturday.sizePolicy().hasHeightForWidth())
-        self.timeEditStartSaturday.setSizePolicy(sizePolicy2)
-        self.timeEditStartSaturday.setTime(QTime(8, 0, 0))
-        self.scheduleFormLayout.addWidget(self.timeEditStartSaturday, 7, 1, 1, 1)
-        self.scheduleLayout.addWidget(self.scheduleForm)
-        self.addUserLayout.addWidget(self.scheduleFrame)
 
-        self.faceEncFrame = QFrame(addUserWidget)
-        self.faceEncFrame.setStyleSheet(self.noneStyle)
         sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(1)
-        sizePolicy5.setHeightForWidth(self.faceEncFrame.sizePolicy().hasHeightForWidth())
-        self.faceEncFrame.setSizePolicy(sizePolicy5)
-        self.faceEncLayout = QHBoxLayout(self.faceEncFrame)
-        self.faceEncLayout.setSpacing(5)
-        self.faceEncLayout.setContentsMargins(5, 5, 5, 5)
 
-        self.pictureframe = QFrame(self.faceEncFrame)
-        self.pictureframe.setStyleSheet(self.noneStyle)
-        sizePolicy1.setHeightForWidth(self.pictureframe.sizePolicy().hasHeightForWidth())
-        self.pictureframe.setSizePolicy(sizePolicy1)
-        self.pictureLayout = QHBoxLayout(self.pictureframe)
-        self.picture = QLabel(self.pictureframe)
-        self.picture.setScaledContents(True)
-        self.picture.setMaximumSize(40, 40)
-        pixmap = QPixmap("buttonIcons/user.png")
-        self.picture.setPixmap(pixmap)
-        self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
-        self.faceEncLayout.addWidget(self.pictureframe, 0, Qt.AlignVCenter)
+        addUserWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
 
-        self.photoFaceEncFrame = QFrame(self.faceEncFrame)
-        self.photoFaceEncFrame.setStyleSheet(self.noneStyle)
-        sizePolicy4.setHeightForWidth(self.photoFaceEncFrame.sizePolicy().hasHeightForWidth())
-        self.photoFaceEncFrame.setSizePolicy(sizePolicy4)
-        self.photoFaceEncLayout = QVBoxLayout(self.photoFaceEncFrame)
-        self.photoFaceEncLayout.setContentsMargins(0, 0, 0, 0)
-        self.faceEncFrameLabel = QLabel("Face Encoding: ")
-        self.faceEncFrameLabel.setStyleSheet(self.noneStyle + self.subHeaderLabelStyle)
-        self.photoFaceEncLayout.addWidget(self.faceEncFrameLabel)
+        self.addUserLayout = QVBoxLayout(addUserWidget)
+        self.addUserLayout.setSpacing(10)
+        self.addUserLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.photoFaceEncForm = QFrame(self.photoFaceEncFrame)
-        self.photoFaceEncForm.setStyleSheet(self.noneStyle + self.fieldLabelStyle + self.textFieldStyle)
-        self.photoFaceEncFormLayout = QFormLayout(self.photoFaceEncForm)
-        self.photoFaceEncFormLayout.setAlignment(Qt.AlignLeft)
-        self.photoFaceEncFormLayout.setHorizontalSpacing(5)
-        self.photoFaceEncFormLayout.setVerticalSpacing(5)
-        self.photoFaceEncFormLayout.setContentsMargins(0, 0, 0, 0)
-        self.photoLabel = QLabel("Photo: ")
-        self.photoFaceEncFormLayout.setWidget(0, QFormLayout.LabelRole, self.photoLabel)
-        self.photoLineEdit = QLineEdit(self.photoFaceEncForm)
-        self.photoFaceEncFormLayout.setWidget(0, QFormLayout.FieldRole, self.photoLineEdit)
-        self.faceEncLabel = QLabel("Face Encoding: ")
-        self.photoFaceEncFormLayout.setWidget(1, QFormLayout.LabelRole, self.faceEncLabel)
-        self.faceEncLineEdit = QLineEdit(self.photoFaceEncForm)
-        self.photoFaceEncFormLayout.setWidget(1, QFormLayout.FieldRole, self.faceEncLineEdit)
-        self.photoFaceEncLayout.addWidget(self.photoFaceEncForm)
+        def setup_account_organization_frame():
+            self.accountOrganizationFrame = QFrame(addUserWidget)
+            self.accountOrganizationFrame.setStyleSheet(self.containerStylesheet)
 
-        self.buttonFrame = QFrame(self.photoFaceEncFrame)
-        self.buttonFrame.setStyleSheet(self.noneStyle + self.button_stylesheet)
-        self.buttonLayout = QHBoxLayout(self.buttonFrame)
-        self.openCameraButton = self.createButton("Open Camera", self.openCameraButtonHandle)
-        # self.openCameraButton.hide()
-        self.takePhotoButton = self.createButton("Take Photo", self.takePhotoButtonHandle)
-        self.takePhotoButton.hide()
-        self.acceptButton = self.createButton("Accept", self.buttonAcceptHandle)
-        self.acceptButton.hide()
-        self.cancelButton = self.createButton("Cancel", self.cancelButtonHandle)
+            sizePolicy.setHeightForWidth(self.accountOrganizationFrame.sizePolicy().hasHeightForWidth())
+            self.accountOrganizationFrame.setSizePolicy(sizePolicy)
 
-        self.photoFaceEncLayout.addWidget(self.buttonFrame)
-        self.faceEncLayout.addWidget(self.photoFaceEncFrame)
-        self.addUserLayout.addWidget(self.faceEncFrame)
+            self.accountOrganizationLayout = QHBoxLayout(self.accountOrganizationFrame)
+            self.accountOrganizationLayout.setAlignment(Qt.AlignLeft)
+            self.accountOrganizationLayout.setSpacing(5)
+            self.accountOrganizationLayout.setContentsMargins(5, 5, 5, 5)
+
+            def setup_account_frame():
+                self.accountFrame = QFrame(self.accountOrganizationFrame)
+                self.accountFrame.setStyleSheet(self.noneStyle)
+                sizePolicy1.setHeightForWidth(self.accountFrame.sizePolicy().hasHeightForWidth())
+                self.accountFrame.setSizePolicy(sizePolicy1)
+
+                self.accountLayout = QVBoxLayout(self.accountFrame)
+                self.accountLayout.setAlignment(Qt.AlignLeft)
+                self.accountLayout.setSpacing(0)
+                self.accountLayout.setContentsMargins(0, 0, 0, 0)
+
+                def setup_account_label():
+                    self.accountLabel = QLabel("Account")
+                    self.accountLabel.setStyleSheet(self.subHeaderLabelStyle)
+                    self.accountLayout.addWidget(self.accountLabel)
+
+                setup_account_label()
+
+                def setup_account_fields():
+                    self.accountForm = QFrame(self.accountFrame)
+                    self.accountForm.setStyleSheet(self.fieldLabelStyle + self.textFieldStyle + self.comboBoxStyle)
+
+                    self.accountFormLayout = QFormLayout(self.accountForm)
+                    self.accountFormLayout.setHorizontalSpacing(5)
+                    self.accountFormLayout.setVerticalSpacing(5)
+                    self.accountFormLayout.setContentsMargins(0, 0, 0, 0)
+
+                    self.userIDLabel = QLabel("User ID: ")
+                    self.accountFormLayout.setWidget(0, QFormLayout.LabelRole, self.userIDLabel)
+                    self.userIDLineEdit = QLineEdit(self.accountForm)
+                    self.accountFormLayout.setWidget(0, QFormLayout.FieldRole, self.userIDLineEdit)
+
+                    self.firstNameLabel = QLabel("First Name: ")
+                    self.accountFormLayout.setWidget(1, QFormLayout.LabelRole, self.firstNameLabel)
+                    self.firstNameLineEdit = QLineEdit(self.accountForm)
+                    self.accountFormLayout.setWidget(1, QFormLayout.FieldRole, self.firstNameLineEdit)
+
+                    self.lastNameLabel = QLabel("Last Name: ")
+                    self.accountFormLayout.setWidget(2, QFormLayout.LabelRole, self.lastNameLabel)
+                    self.lastNameLineEdit = QLineEdit(self.accountForm)
+                    self.accountFormLayout.setWidget(2, QFormLayout.FieldRole, self.lastNameLineEdit)
+
+                    self.genderLabel = QLabel("Gender: ")
+                    self.accountFormLayout.setWidget(3, QFormLayout.LabelRole, self.genderLabel)
+                    self.genderComboBox = QComboBox(self.accountForm)
+                    self.genderComboBox.addItem("Male")
+                    self.genderComboBox.addItem("Female")
+                    self.accountFormLayout.setWidget(3, QFormLayout.FieldRole, self.genderComboBox)
+                    self.accountVerticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+                    self.accountFormLayout.setItem(4, QFormLayout.LabelRole, self.accountVerticalSpacer)
+                    self.accountLayout.addWidget(self.accountForm)
+
+                    self.accountOrganizationLayout.addWidget(self.accountFrame)
+
+                setup_account_fields()
+
+            setup_account_frame()
+
+            def setup_organization_frame():
+                self.organizationFrame = QFrame(self.accountOrganizationFrame)
+                self.organizationFrame.setStyleSheet(self.noneStyle)
+                sizePolicy1.setHeightForWidth(self.organizationFrame.sizePolicy().hasHeightForWidth())
+                self.organizationFrame.setSizePolicy(sizePolicy1)
+
+                self.organizationLayout = QVBoxLayout(self.organizationFrame)
+                self.organizationLayout.setSpacing(0)
+                self.organizationLayout.setContentsMargins(0, 0, 0, 0)
+
+                def setup_organization_label():
+                    self.organizationLabel = QLabel("Organization")
+                    self.organizationLabel.setStyleSheet(self.subHeaderLabelStyle)
+                    self.organizationLayout.addWidget(self.organizationLabel)
+
+                setup_organization_label()
+
+                self.organizationForm = QFrame(self.organizationFrame)
+                self.organizationForm.setStyleSheet(self.textFieldStyle + self.fieldLabelStyle)
+
+                self.organizationFormLayout = QFormLayout(self.organizationForm)
+                self.organizationFormLayout.setHorizontalSpacing(10)
+                self.organizationFormLayout.setVerticalSpacing(10)
+                self.organizationFormLayout.setContentsMargins(0, 0, 0, 0)
+
+                def setup_organization_fields():
+                    self.companyNameLabel = QLabel("Company: ")
+                    self.organizationFormLayout.setWidget(0, QFormLayout.LabelRole, self.companyNameLabel)
+                    self.companyNameLineEdit = QLineEdit(self.organizationForm)
+                    self.organizationFormLayout.setWidget(0, QFormLayout.FieldRole, self.companyNameLineEdit)
+
+                    self.titleLabel = QLabel("Title: ")
+                    self.organizationFormLayout.setWidget(1, QFormLayout.LabelRole, self.titleLabel)
+                    self.titleLineEdit = QLineEdit(self.organizationForm)
+                    self.organizationFormLayout.setWidget(1, QFormLayout.FieldRole, self.titleLineEdit)
+                    self.organizationVerticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+                    self.organizationFormLayout.setItem(2, QFormLayout.LabelRole, self.organizationVerticalSpacer)
+                    self.organizationLayout.addWidget(self.organizationForm)
+                    self.accountOrganizationLayout.addWidget(self.organizationFrame)
+
+                setup_organization_fields()
+
+            setup_organization_frame()
+
+            self.addUserLayout.addWidget(self.accountOrganizationFrame)
+
+        setup_account_organization_frame()
+
+        def setup_schedule_frame():
+            self.scheduleFrame = QFrame(addUserWidget)
+            self.scheduleFrame.setStyleSheet(self.containerStylesheet)
+            sizePolicy.setHeightForWidth(self.scheduleFrame.sizePolicy().hasHeightForWidth())
+            self.scheduleFrame.setSizePolicy(sizePolicy)
+            self.scheduleLayout = QVBoxLayout(self.scheduleFrame)
+            self.scheduleLayout.setSpacing(5)
+            self.scheduleLayout.setContentsMargins(5, 5, 5, 5)
+
+            def setup_schedule_label():
+                self.scheduleLabel = QLabel("Schedule")
+                self.scheduleLabel.setStyleSheet(self.subHeaderLabelStyle + self.noneStyle)
+                self.scheduleLayout.addWidget(self.scheduleLabel)
+
+            setup_schedule_label()
+
+            def setup_schedule_form():
+                self.scheduleForm = QFrame(self.scheduleFrame)
+                self.scheduleForm.setStyleSheet(
+                    self.noneStyle + self.fieldLabelStyle + self.time_edit_style + self.checkbox_style)
+
+                self.scheduleFormLayout = QGridLayout(self.scheduleForm)
+                self.scheduleFormLayout.setSpacing(5)
+                self.scheduleFormLayout.setContentsMargins(0, 0, 0, 0)
+
+                def setup_checkbox():
+                    self.dayLabel = QLabel("Day")
+                    self.dayLabel.setStyleSheet(self.fieldLabelStyle)
+                    sizePolicy1.setHeightForWidth(self.dayLabel.sizePolicy().hasHeightForWidth())
+                    self.dayLabel.setSizePolicy(sizePolicy1)
+                    self.scheduleFormLayout.addWidget(self.dayLabel, 0, 0, 1, 1)
+
+                    self.checkBoxMonday = QCheckBox("Monday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxMonday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxMonday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxMonday, 2, 0, 1, 1)
+
+                    self.checkBoxTuesday = QCheckBox("Tuesday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxTuesday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxTuesday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxTuesday, 3, 0, 1, 1)
+
+                    self.checkBoxWednesday = QCheckBox("Wednesday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxWednesday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxWednesday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxWednesday, 4, 0, 1, 1)
+
+                    self.checkBoxThursday = QCheckBox("Thursday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxThursday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxThursday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxThursday, 5, 0, 1, 1)
+
+                    self.checkBoxFriday = QCheckBox("Friday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxFriday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxFriday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxFriday, 6, 0, 1, 1)
+
+                    self.checkBoxSaturday = QCheckBox("Saturday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxSaturday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxSaturday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxSaturday, 7, 0, 1, 1)
+
+                    self.checkBoxSunday = QCheckBox("Sunday: ")
+                    sizePolicy3.setHeightForWidth(self.checkBoxSunday.sizePolicy().hasHeightForWidth())
+                    self.checkBoxSunday.setSizePolicy(sizePolicy3)
+                    self.scheduleFormLayout.addWidget(self.checkBoxSunday, 1, 0, 1, 1)
+
+                setup_checkbox()
+
+                def setup_start_time():
+                    self.startTimeLabel = QLabel("Start Time")
+                    sizePolicy4.setHeightForWidth(self.startTimeLabel.sizePolicy().hasHeightForWidth())
+                    self.startTimeLabel.setSizePolicy(sizePolicy4)
+                    self.scheduleFormLayout.addWidget(self.startTimeLabel, 0, 1, 1, 1)
+
+                    self.timeEditStartMonday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartMonday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartMonday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartMonday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartMonday.setCurrentSection(QDateTimeEdit.HourSection)
+                    self.timeEditStartMonday.setCalendarPopup(False)
+                    self.timeEditStartMonday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartMonday, 2, 1, 1, 1)
+
+                    self.timeEditStartTuesday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartTuesday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartTuesday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartTuesday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartTuesday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartTuesday, 3, 1, 1, 1)
+
+                    self.timeEditStartWednesday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartWednesday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartWednesday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartWednesday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartWednesday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartWednesday, 4, 1, 1, 1)
+
+                    self.timeEditStartThursday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartThursday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartThursday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartThursday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartThursday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartThursday, 5, 1, 1, 1)
+
+                    self.timeEditStartFriday = QTimeEdit(self.scheduleForm)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartFriday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartFriday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartFriday.setReadOnly(False)
+                    self.timeEditStartFriday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartFriday, 6, 1, 1, 1)
+
+                    self.timeEditStartSaturday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartSaturday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartSaturday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartSaturday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartSaturday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartSaturday, 7, 1, 1, 1)
+
+                    self.timeEditStartSunday = QTimeEdit(self.scheduleForm)
+                    self.timeEditStartSunday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditStartSunday.sizePolicy().hasHeightForWidth())
+                    self.timeEditStartSunday.setSizePolicy(sizePolicy2)
+                    self.timeEditStartSunday.setTime(QTime(8, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditStartSunday, 1, 1, 1, 1)
+
+                setup_start_time()
+
+                def setup_end_time():
+                    self.endTimeLabel = QLabel("End Time")
+                    sizePolicy4.setHeightForWidth(self.endTimeLabel.sizePolicy().hasHeightForWidth())
+                    self.endTimeLabel.setSizePolicy(sizePolicy4)
+                    self.scheduleFormLayout.addWidget(self.endTimeLabel, 0, 3, 1, 1)
+
+                    self.timeEditEndMonday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndMonday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndMonday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndMonday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndMonday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndMonday, 2, 3, 1, 1)
+
+                    self.timeEditEndTuesday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndTuesday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndTuesday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndTuesday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndTuesday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndTuesday, 3, 3, 1, 1)
+
+                    self.timeEditEndWednesday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndWednesday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndWednesday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndWednesday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndWednesday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndWednesday, 4, 3, 1, 1)
+
+                    self.timeEditEndThursday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndThursday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndThursday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndThursday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndThursday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndThursday, 5, 3, 1, 1)
+
+                    self.timeEditEndFriday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndFriday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndFriday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndFriday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndFriday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndFriday, 6, 3, 1, 1)
+
+                    self.timeEditEndSaturday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndSaturday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndSaturday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndSaturday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndSaturday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndSaturday, 7, 3, 1, 1)
+
+                    self.timeEditEndSunday = QTimeEdit(self.scheduleForm)
+                    self.timeEditEndSunday.setReadOnly(False)
+                    sizePolicy2.setHeightForWidth(self.timeEditEndSunday.sizePolicy().hasHeightForWidth())
+                    self.timeEditEndSunday.setSizePolicy(sizePolicy2)
+                    self.timeEditEndSunday.setTime(QTime(17, 0, 0))
+                    self.scheduleFormLayout.addWidget(self.timeEditEndSunday, 1, 3, 1, 1)
+
+                setup_end_time()
+
+                self.scheduleLayout.addWidget(self.scheduleForm)
+
+            setup_schedule_form()
+
+            self.addUserLayout.addWidget(self.scheduleFrame)
+
+        setup_schedule_frame()
+
+        def setup_face_encoding_frame():
+            self.faceEncFrame = QFrame(addUserWidget)
+            self.faceEncFrame.setStyleSheet(self.noneStyle)
+
+            sizePolicy5.setHeightForWidth(self.faceEncFrame.sizePolicy().hasHeightForWidth())
+            self.faceEncFrame.setSizePolicy(sizePolicy5)
+            self.faceEncLayout = QHBoxLayout(self.faceEncFrame)
+            self.faceEncLayout.setSpacing(5)
+            self.faceEncLayout.setContentsMargins(5, 5, 5, 5)
+
+            def setup_picture_frame():
+                self.pictureframe = QFrame(self.faceEncFrame)
+                self.pictureframe.setStyleSheet(self.noneStyle)
+                sizePolicy1.setHeightForWidth(self.pictureframe.sizePolicy().hasHeightForWidth())
+                self.pictureframe.setSizePolicy(sizePolicy1)
+
+                self.pictureLayout = QHBoxLayout(self.pictureframe)
+
+                self.picture = QLabel(self.pictureframe)
+                self.picture.setScaledContents(True)
+                self.picture.setMaximumSize(40, 40)
+                pixmap = QPixmap("buttonIcons/user.png")
+                self.picture.setPixmap(pixmap)
+                self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
+                self.faceEncLayout.addWidget(self.pictureframe, 0, Qt.AlignVCenter)
+
+            setup_picture_frame()
+
+            def setup_photo_face_encoding_frame():
+                self.photoFaceEncFrame = QFrame(self.faceEncFrame)
+                self.photoFaceEncFrame.setStyleSheet(self.noneStyle)
+                sizePolicy4.setHeightForWidth(self.photoFaceEncFrame.sizePolicy().hasHeightForWidth())
+                self.photoFaceEncFrame.setSizePolicy(sizePolicy4)
+                self.photoFaceEncLayout = QVBoxLayout(self.photoFaceEncFrame)
+                self.photoFaceEncLayout.setContentsMargins(0, 0, 0, 0)
+
+                def setup_face_encoding_label():
+                    self.faceEncFrameLabel = QLabel("Face Encoding: ")
+                    self.faceEncFrameLabel.setStyleSheet(self.noneStyle + self.subHeaderLabelStyle)
+                    self.photoFaceEncLayout.addWidget(self.faceEncFrameLabel)
+
+                setup_face_encoding_label()
+
+                def setup_photo_face_encoding_form():
+                    self.photoFaceEncForm = QFrame(self.photoFaceEncFrame)
+                    self.photoFaceEncForm.setStyleSheet(self.noneStyle + self.fieldLabelStyle + self.textFieldStyle)
+                    self.photoFaceEncFormLayout = QFormLayout(self.photoFaceEncForm)
+                    self.photoFaceEncFormLayout.setAlignment(Qt.AlignLeft)
+                    self.photoFaceEncFormLayout.setHorizontalSpacing(5)
+                    self.photoFaceEncFormLayout.setVerticalSpacing(5)
+                    self.photoFaceEncFormLayout.setContentsMargins(0, 0, 0, 0)
+
+                    self.photoLabel = QLabel("Photo: ")
+                    self.photoFaceEncFormLayout.setWidget(0, QFormLayout.LabelRole, self.photoLabel)
+                    self.photoLineEdit = QLineEdit(self.photoFaceEncForm)
+                    self.photoFaceEncFormLayout.setWidget(0, QFormLayout.FieldRole, self.photoLineEdit)
+
+                    self.faceEncLabel = QLabel("Face Encoding: ")
+                    self.photoFaceEncFormLayout.setWidget(1, QFormLayout.LabelRole, self.faceEncLabel)
+                    self.faceEncLineEdit = QLineEdit(self.photoFaceEncForm)
+                    self.photoFaceEncFormLayout.setWidget(1, QFormLayout.FieldRole, self.faceEncLineEdit)
+                    self.photoFaceEncLayout.addWidget(self.photoFaceEncForm)
+
+                setup_photo_face_encoding_form()
+
+                def setup_button_frame():
+                    self.buttonFrame = QFrame(self.photoFaceEncFrame)
+                    self.buttonFrame.setStyleSheet(self.noneStyle + self.button_stylesheet)
+                    self.buttonLayout = QHBoxLayout(self.buttonFrame)
+                    self.openCameraButton = self.createButton("Open Camera", self.openCameraButtonHandle)
+                    # self.openCameraButton.hide()
+                    self.takePhotoButton = self.createButton("Take Photo", self.takePhotoButtonHandle)
+                    self.takePhotoButton.hide()
+                    self.acceptButton = self.createButton("Accept", self.buttonAcceptHandle)
+                    self.acceptButton.hide()
+                    self.cancelButton = self.createButton("Cancel", self.cancelButtonHandle)
+                    self.photoFaceEncLayout.addWidget(self.buttonFrame)
+
+                setup_button_frame()
+
+                self.faceEncLayout.addWidget(self.photoFaceEncFrame)
+
+            setup_photo_face_encoding_frame()
+
+            self.addUserLayout.addWidget(self.faceEncFrame)
+
+        setup_face_encoding_frame()
 
     def clear(self):
         if hasattr(self, 'image_label'):
@@ -2791,9 +3081,6 @@ class Ui_addUserWidget(object):
         # Write the updated data back to the file
         with open(json_path, 'w') as file:
             json.dump(schedule_data, file, indent=4)
-
-
-
 
 
 if __name__ == "__main__":

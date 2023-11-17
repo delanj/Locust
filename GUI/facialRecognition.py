@@ -254,7 +254,7 @@ class Ui_centralWindow(object):
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
             if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popupDialog'):
-                dialog = self.userHeaderWidget.popupDialog
+                dialog = self.userHeaderWidget.popup_dialog
                 if dialog and dialog.isVisible():
                     # Check if the click is outside the dialog
                     if not dialog.geometry().contains(event.globalPos()):

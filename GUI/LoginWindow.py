@@ -1,13 +1,16 @@
 import sys
 import logging
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QGraphicsDropShadowEffect
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
+    QHBoxLayout, QGraphicsDropShadowEffect, QSizePolicy, QStyle
+from PyQt5.QtGui import QPixmap, QIcon, QColor, QPainter, QFontDatabase, QFont
+from PyQt5.QtCore import Qt, QSize
 
 from Entities import entitiesMain as db
 import dashboard
 
+
 class LoginWindow(QMainWindow):
+
     # Constants
     FONT_FAMILY = "Copperplate"
     FONT_COLOR = "#E0E0E0"
@@ -18,12 +21,17 @@ class LoginWindow(QMainWindow):
     BORDER_COLOR = "#E0E0E0"
     BUTTON_HOVER_COLOR = "rgb(190, 190, 190)"
     BUTTON_PRESSED_COLOR = "rgb(220, 220, 220)"
+    ICON_COLOR = "white"
 
     def __init__(self):
+
+
         """ Initialize the main login window. """
         super().__init__()
         logging.basicConfig(level=logging.INFO)
+        #self.loadCustomFont()
         self.initUI()
+
 
     def initUI(self):
         """ Initialize the main user interface. """
@@ -34,6 +42,26 @@ class LoginWindow(QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.layout = QVBoxLayout(self.centralWidget)
         self.layout.addWidget(self.createLoginWidget(), alignment=Qt.AlignCenter)
+
+
+
+    def loadCustomFont(self):
+        # Try to load the custom font
+        font_id = QFontDatabase.addApplicationFont("../GUI/font/Aquire-BW0ox.otf")
+
+        if font_id != -1:
+            # Get the font family name from the loaded font
+            font_info = QFontDatabase.applicationFontFamilies(font_id)
+            print(font_info)
+
+            if font_info:
+                custom_font_family = font_info[0]  # Use the first font family name
+            else:
+                custom_font_family = "Copperplate"  # Use a fallback font name in case of failure
+        else:
+            custom_font_family = "Copperplate"  # Use a fallback font name if loading failed
+
+        self.FONT_FAMILY = custom_font_family
 
     def createLoginWidget(self):
         """ Creates and returns the main login widget. """
@@ -49,16 +77,93 @@ class LoginWindow(QMainWindow):
         self.invalidLabel = self.createInvalidLoginLabel()
         loginLayout.addWidget(self.invalidLabel)
         loginLayout.addSpacing(15)
-        self.usernameEdit = self.createLineEdit("Username")
-        self.passwordEdit = self.createLineEdit("Password", True)
-        loginLayout.addWidget(self.usernameEdit)
-        loginLayout.addWidget(self.passwordEdit)
-        loginLayout.addSpacing(30)
-        loginLayout.addLayout(self.createButtonLayout())
-        loginLayout.addSpacing(30)
-        loginLayout.addWidget(self.createCopyrightLabel())
+
+        def setup_username_line():
+            self.usernameEdit = self.createLineEdit("Username")
+            loginLayout.addWidget(self.usernameEdit)
+            loginLayout.addSpacing(30)
+
+        setup_username_line()
+
+        def setup_password_line():
+            self.passwordLayout = QHBoxLayout()
+
+            self.passwordEdit = self.createLineEdit("Password", True)
+
+            self.togglePasswordButton = self.create_button("buttonIcons/show.png")
+            self.togglePasswordButton.setCursor(Qt.PointingHandCursor)
+            self.togglePasswordButton.setFixedSize(20, 20)
+            self.togglePasswordButton.clicked.connect(self.toggle_password_visibility)
+
+            self.passwordLayout.addWidget(self.passwordEdit)
+            self.passwordLayout.addWidget(self.togglePasswordButton)
+
+            loginLayout.addLayout(self.passwordLayout)
+
+            self.togglePasswordButton.setParent(self.passwordEdit)
+            buttonSize = self.togglePasswordButton.size()
+            editWidth = self.passwordEdit.width()
+            self.togglePasswordButton.move(editWidth - buttonSize.width(), 0)
+        setup_password_line()
+
+        def setup_buttons():
+            loginLayout.addSpacing(15)
+            loginLayout.addLayout(self.createButtonLayout())
+            loginLayout.addSpacing(15)
+        setup_buttons()
+
+        def setup_copy_right():
+            loginLayout.addWidget(self.createCopyrightLabel())
+        setup_copy_right()
 
         return loginWidget
+
+    def toggle_password_visibility(self):
+        if self.togglePasswordButton.isChecked():
+            self.passwordEdit.setEchoMode(QLineEdit.Normal)
+            self.setButtonIcon(self.togglePasswordButton, "buttonIcons/hide.png")
+        else:
+            self.passwordEdit.setEchoMode(QLineEdit.Password)
+            self.setButtonIcon(self.togglePasswordButton, "buttonIcons/show.png")
+
+    def setButtonIcon(self, button, iconPath):
+        pixmap = QPixmap(iconPath)
+        white_pixmap = QPixmap(pixmap.size())
+        white_pixmap.fill(QColor('transparent'))
+
+        painter = QPainter(white_pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter.drawPixmap(0, 0, pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(white_pixmap.rect(), QColor(self.ICON_COLOR))
+        painter.end()
+
+        button.setIcon(QIcon(white_pixmap))
+
+    def create_button(self, iconPath):
+        button = QPushButton()
+        button.setCheckable(True)
+        button.setObjectName("togglePasswordVisibility")
+
+        # Load and process the icon
+        pixmap = QPixmap(iconPath)
+        white_pixmap = QPixmap(pixmap.size())
+        white_pixmap.fill(QColor('transparent'))
+
+        painter = QPainter(white_pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter.drawPixmap(0, 0, pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(white_pixmap.rect(), QColor(self.ICON_COLOR))
+        painter.end()
+
+        button.setIcon(QIcon(white_pixmap))
+        button.setIconSize(QSize(20, 20))
+        button.setStyleSheet("QPushButton { border: none; }")
+        button.setMinimumHeight(40)
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        return button
+
 
     def createShadowEffect(self):
         """ Creates and returns a shadow effect."""
@@ -70,7 +175,7 @@ class LoginWindow(QMainWindow):
     def createLogoLabel(self):
         """ Creates and returns the logo label. """
         label = QLabel("LocUST")
-        label.setStyleSheet('font-size: 56pt; font-family: "Garamond"; color: #E0E0E0; padding: 6px; min-width: 10;')
+        label.setStyleSheet(f'font-size: 56pt; font-family: "{self.FONT_FAMILY}"; color: {self.FONT_COLOR}; padding: 6px; min-width: 10;')
         label.setFixedHeight(75)
         label.setAlignment(Qt.AlignCenter)
         return label
@@ -88,7 +193,7 @@ class LoginWindow(QMainWindow):
         """ Creates and returns the invalid login label."""
         invalidLabel = QLabel("")
         invalidLabel.setAlignment(Qt.AlignCenter)
-        invalidLabel.setStyleSheet('color: #E0E0E0; font: 75 12px "Garamond";')
+        invalidLabel.setStyleSheet(f'color: {self.FONT_COLOR}; font: 75 12px "{self.FONT_FAMILY}";')
         return invalidLabel
 
     def createLineEdit(self, placeholder, isPassword=False):
@@ -122,7 +227,7 @@ class LoginWindow(QMainWindow):
     def createCopyrightLabel(self):
         """Create and return copy right label."""
         copyrightLabel = QLabel("©2023 LocUST.inc")
-        copyrightLabel.setStyleSheet('color: #E0E0E0; font: 75 12px "Garamond";')
+        copyrightLabel.setStyleSheet(f'color: {self.FONT_COLOR}; font: 75 12px "{self.FONT_FAMILY}";')
         copyrightLabel.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
         return copyrightLabel
 

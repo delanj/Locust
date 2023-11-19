@@ -31,6 +31,7 @@ from Entities import entitiesMain
 from Entities.IndirectUser import User
 from Entities.IndirectUser.User import UserDatabase
 
+
 # Fonts
 FONT = "Copperplate"
 
@@ -294,9 +295,15 @@ class DashboardWindow(QMainWindow):
     def faceRec(self):
 
         self.close()
-        # Open the dashboard main window
-        self.dashboard_main = facialRecognition.MainWindow(emp=self.employee)
-        self.dashboard_main.show()
+
+        if self.employee:
+            # Open the dashboard main window
+            self.dashboard_main = facialRecognition.FacialRecognitionWindow(employee=self.employee)
+            self.dashboard_main.show()
+        else:
+            self.dashboard_main = facialRecognition.FacialRecognitionWindow(employee=None)
+            self.dashboard_main.show()
+
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:

@@ -90,103 +90,93 @@ class FacialRecognitionWindow(QMainWindow):
 
     def setupUi(self):
 
-
         self.webcam_handler = WebcamHandler()
 
 
         self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
         self.centralLayout = QHBoxLayout(self.central_widget)
         self.centralLayout.setSpacing(0)
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
+        self.setCentralWidget(self.central_widget)
 
-        # Set up the sidebar frame
-        self.sideBar = QFrame(self.central_widget)
-        self.sideBar.setObjectName("sideBar")
-        self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
-        self.sideBar.setFrameShape(QFrame.StyledPanel)
-        self.sideBar.setFrameShadow(QFrame.Raised)
-        self.sidebarLayout = QVBoxLayout(self.sideBar)
-        self.sidebarLayout.setSpacing(0)
-        self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
+        def setup_sidebar():
+            self.sideBar = QFrame(self.central_widget)
+            self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
+            self.sidebarLayout = QVBoxLayout(self.sideBar)
+            self.sidebarLayout.setSpacing(0)
+            self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
 
-        # Add logo and navigation widgets to the sidebar
-        self.logoWidgetContainer = QWidget(self.sideBar)
-        self.logoWidgetContainer.setObjectName("logoWidgetContainer")
-        self.logoWidgetUi = Ui_logoWidget()
-        self.logoWidgetUi.setupUi(self.logoWidgetContainer)
-        self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+            def setup_logo_widget():
+                self.logoWidgetContainer = QWidget(self.sideBar)
+                self.logoWidgetContainer.setObjectName("logoWidgetContainer")
+                self.logoWidgetUi = Ui_logoWidget()
+                self.logoWidgetUi.setupUi(self.logoWidgetContainer)
+                self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+            setup_logo_widget()
 
-        self.scanInfoContainer = QWidget(self.sideBar)
-        self.scanInfoContainer.setObjectName("navigationWidgetContainer")
-        self.scanInfoWidgetUi = Ui_scanInfo()
-        self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
-        self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
-        self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
-        self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
-        self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
+            def setup_scan_info_container():
+                self.scanInfoContainer = QWidget(self.sideBar)
+                self.scanInfoContainer.setObjectName("navigationWidgetContainer")
+                self.scanInfoWidgetUi = Ui_scanInfo()
+                self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
+                self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
+            setup_scan_info_container()
 
+            def setup_buttons():
+                self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
+                self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
+                self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
+            setup_buttons()
 
+            self.centralLayout.addWidget(self.sideBar, stretch=2)
+        setup_sidebar()
 
-        # Set up the main window frame
-        self.mainWindow = QFrame(self.central_widget)
-        self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
-        self.mainWindow.setFrameShape(QFrame.StyledPanel)
-        self.mainWindow.setFrameShadow(QFrame.Raised)
+        def setup_main_window():
+            self.mainWindow = QFrame(self.central_widget)
+            self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
 
+            self.mainLayout = QVBoxLayout(self.mainWindow)
 
+            def setup_header_widget():
+                self.userHeaderContainer = QWidget(self.mainWindow)
+                self.userHeaderUi = Ui_userHeaderWidget()
+                self.userHeaderUi.setupUi(self.userHeaderContainer)
+                if self.employee:
+                    self.userHeaderUi.employee_name.setText(f"{self.employee.first_name} {self.employee.last_name}")
 
-        # Add user header and display container to the main window
-        self.userHeaderContainer = QWidget(self.mainWindow)
-        self.userHeaderUi = Ui_userHeaderWidget()
-        self.userHeaderUi.setupUi(self.userHeaderContainer)
-        if self.employee:
-            self.userHeaderUi.employee_name.setText(f"{self.employee.first_name} {self.employee.last_name}")
+                self.userHeaderUi.employee_profile.clicked.connect(self.show_popup_window)
+                QApplication.instance().installEventFilter(self.central_widget)
 
+                self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
+            setup_header_widget()
+            self.mainLayout.addSpacing(20)
 
-        self.displayContainer = QWidget(self.mainWindow)
-        self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
-        self.displayLayout = QVBoxLayout(self.displayContainer)
+            def setup_display_container():
+                self.displayContainer = QWidget(self.mainWindow)
+                self.displayContainer.setObjectName("displayContainer")
+                self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
+                self.displayLayout = QVBoxLayout(self.displayContainer)
+                self.mainLayout.addWidget(self.displayContainer, stretch=10)
 
+                def setup_face_recognition_webcam_display():
+                    self.webcam_handler.setUser.connect(self.setUser)
+                    self.webcam_handler.user_updated.connect(self.updateUser)
 
+                    self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.webcam_handler.webcam_label.setMinimumWidth(640)
 
-        # Arrange the main layout with header and display container
-        self.mainLayout = QVBoxLayout(self.mainWindow)
-        self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
-        self.mainLayout.addSpacing(20)
-        self.mainLayout.addWidget(self.displayContainer, stretch=10)
+                    self.spacer1 = QLabel()
+                    self.displayLayout.addWidget(self.spacer1, stretch=2)
 
-        # Connecting the signals and slots
-        self.webcam_handler.setUser.connect(self.setUser)
-        self.webcam_handler.user_updated.connect(self.updateUser)
+                    self.displayLayout.addWidget(self.webcam_handler, stretch=20)  # 2/3 of the height
 
-        # Adjusting the size policy of the webcam_label
-        self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.spacer2 = QLabel()
+                    self.displayLayout.addWidget(self.spacer2, stretch=3)
+                setup_face_recognition_webcam_display()
+            setup_display_container()
 
-        # Ensuring minimum width for webcam_label (optional but recommended)
-        self.webcam_handler.webcam_label.setMinimumWidth(640)
-
-        self.spacer1 = QLabel()
-        self.displayLayout.addWidget(self.spacer1, stretch=2)
-
-        # Adding the webcam_handler widget with a stretch factor
-        self.displayLayout.addWidget(self.webcam_handler, stretch=20)  # 2/3 of the height
-
-        self.spacer2 = QLabel()
-        self.displayLayout.addWidget(self.spacer2, stretch=3)
-
-        # Add sidebar and main window to the central layout
-        self.centralLayout.addWidget(self.sideBar, stretch=2)
-        self.centralLayout.addWidget(self.mainWindow, stretch=10)
-
-
-
-
-        self.userHeaderUi.employee_profile.clicked.connect(self.show_popup_window)
-        QApplication.instance().installEventFilter(self.central_widget)
+            self.centralLayout.addWidget(self.mainWindow, stretch=10)
+        setup_main_window()
 
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
@@ -396,9 +386,6 @@ class FacialRecognitionWindow(QMainWindow):
 
         except Exception as e:
             print(f"Error: {e}")
-
-
-
 
     def updateUser(self, user):
         picture = self.scanInfoWidgetUi.picture

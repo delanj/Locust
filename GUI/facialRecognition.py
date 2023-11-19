@@ -37,195 +37,146 @@ from Entities.Employee import Employee
 # Link to data base
 
 
-employee = Employee.Employee
 
-font = "Copperplate"
-#font = "Copperplate"
-tittleFontSize = "36px"
-subheaderFontSize = "24px"
-bodyFontSize = "18px"
-bodySecondaryFontSize = "16px"
-buttonFontSize = "16px"
-buttonLabelSize = "14px"
-captionsFontSize = "12px"
-dataTablesFontSize = "14px"
-toolTipsFontSize = "16px"
+FONT = "Copperplate"
 
-backgroundColorTransparent = "background-color: transparent;"
-sidebarColor = "#333940"
-iconColor = "white"
-sideBarTextColor = "#E0E0E0"
+# Font Sizes
+TITLE_FONT_SIZE = "36px"
+SUBHEADER_FONT_SIZE = "24px"
+BODY_FONT_SIZE = "18px"
+BODY_SECONDARY_FONT_SIZE = "16px"
+BUTTON_FONT_SIZE = "16px"
+BUTTON_LABEL_SIZE = "14px"
+CAPTIONS_FONT_SIZE = "12px"
+DATA_TABLES_FONT_SIZE = "14px"
+TOOLTIPS_FONT_SIZE = "16px"
 
-mainBackgroundColor = "#FAFAFA"
-contentCardBackgroundColor = "#FEFEFE"
+# Colors
+BACKGROUND_COLOR_TRANSPARENT = "background-color: transparent;"
+SIDEBAR_COLOR = "#333940"
+ICON_COLOR = "white"
+SIDEBAR_TEXT_COLOR = "#E0E0E0"
+MAIN_BACKGROUND_COLOR = "#FAFAFA"
+CONTENT_CARD_BACKGROUND_COLOR = "#FEFEFE"
+SECONDARY_FONT_COLOR = "#4A4A4A"
+BUTTON_COLOR = "#B0BEC5"
+TEXT_COLOR = "#4A4A4A"
+BORDERS_LINES_COLOR = "#E0E0E0"
+TEXT_COLOR_SECONDARY = "rgb(100, 100, 100)"
+INTERACTIVE_ELEMENT_COLOR_1 = "rgb(220, 220, 220)"
+INTERACTIVE_ELEMENT_COLOR_2 = "rgb(190, 190, 190)"
+FIELD_BACKGROUND_COLOR = "rgb(255, 255, 255)"
+PLACEHOLDER_COLOR = "rgb(200, 200, 200)"
 
-secondaryFontColor = "#4A4A4A"
-opacity_effect = QGraphicsOpacityEffect()
-opacity_effect.setOpacity(0.5)
+# Graph Colors
+GRAPH_BACKGROUND_COLOR = (250, 245, 232)
+GRAPH_FONT_COLOR = (74, 74, 74)
+GRAPH_BAR_COLOR = (176, 190, 197)
 
-buttonColor = "#B0BEC5"
-
-textColor = "#4A4A4A"
-
-bordersLines = "#E0E0E0"
-
-
-primaryColor = "#333940"
-secondaryColor = "rgb(250, 250, 232)"
-
-backgroundColor = "#F5F5F5"
-backgroundColor2 = "#ECECEC"
-
-textColorSecondary = "rgb(100, 100, 100)"
-accentColor1 = "rgb(200, 200, 200)"
-accentColor2 = "rgb(100, 100, 100)"
-interactiveElements1 = "rgb(220, 220, 220)"
-interactiveElements2 = "rgb(190, 190, 190)"
-
-dataVisualizations = ""
-
-shadowsHighlights = "rgba(0, 0, 0, 0.5)"
-fieldBackgroundColor = "rgb(255, 255, 255)"
-placeholderColor = "rgb(200, 200, 200)"
-buttonBackgroundColor = "rgb(255, 255, 255)"
+# Other UI Elements
+OPACITY_EFFECT = QGraphicsOpacityEffect()
+OPACITY_EFFECT.setOpacity(0.5)
 
 
 
-graph_background_color = (250, 245, 232)
-graph_font_color = (74, 74, 74)
-graph_bar_color = (176, 190, 197)
+class FacialRecognitionWindow(QMainWindow):
+    """ Initialize the main Facial recognition window. """
 
-search_bar_style = f"""
-            QLineEdit {{
-                border: 1px solid {bordersLines}; /* Light grey border */
-                border-radius: 20px; /* Rounded corners */
-                padding: 0 8px; /* Text padding */
-                background: {fieldBackgroundColor}; /* White background */
-                selection-background-color: {interactiveElements1}; /* Color when text is selected */
-                font-size: {bodySecondaryFontSize}; /* Adjust the font size as needed */
-                opacity: 0.5;
-                color:{textColor}
-            }}
-            QLineEdit::placeholder {{
-                color: {placeholderColor}; /* Replace with your placeholder text color */
-                font-style: italic;
-                opacity: 0.5;
-            }}
-            QLineEdit:focus {{
-                border: 2px solid {bordersLines}; /* Highlighted border color when focused */
+    def __init__(self, employee=None):
+        super().__init__()
+        self.employee = employee
+        self.setupUi()
+        self.showFullScreen()
 
-            }}
-        """
-
-class Ui_centralWindow(object):
-    def setupUi(self, centralWindow, employee=None):
-
-        if employee:
-            self.employee = employee
+    def setupUi(self):
 
         self.webcam_handler = WebcamHandler()
-        # Ensure the central window has an object name
-        if not centralWindow.objectName():
-            centralWindow.setObjectName("centralWindow")
 
-        # Set the window title and display it in full screen
-        centralWindow.setWindowTitle(QCoreApplication.translate("centralWindow", "MainWindow", None))
-        centralWindow.showFullScreen()
 
-        # Create the central widget and set its layout
-        self.centralwidget = QWidget(centralWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.centralLayout = QHBoxLayout(self.centralwidget)
+        self.central_widget = QWidget()
+        self.centralLayout = QHBoxLayout(self.central_widget)
         self.centralLayout.setSpacing(0)
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
+        self.setCentralWidget(self.central_widget)
 
-        # Set up the sidebar frame
-        self.sideBar = QFrame(self.centralwidget)
-        self.sideBar.setObjectName("sideBar")
-        self.sideBar.setStyleSheet(f"background-color: {sidebarColor};")
-        self.sideBar.setFrameShape(QFrame.StyledPanel)
-        self.sideBar.setFrameShadow(QFrame.Raised)
-        self.sidebarLayout = QVBoxLayout(self.sideBar)
-        self.sidebarLayout.setSpacing(0)
-        self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
+        def setup_sidebar():
+            self.sideBar = QFrame(self.central_widget)
+            self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
+            self.sidebarLayout = QVBoxLayout(self.sideBar)
+            self.sidebarLayout.setSpacing(0)
+            self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
 
-        # Add logo and navigation widgets to the sidebar
-        self.logoWidgetContainer = QWidget(self.sideBar)
-        self.logoWidgetContainer.setObjectName("logoWidgetContainer")
-        self.logoWidgetUi = Ui_logoWidget()
-        self.logoWidgetUi.setupUi(self.logoWidgetContainer)
-        self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+            def setup_logo_widget():
+                self.logoWidgetContainer = QWidget(self.sideBar)
+                self.logoWidgetContainer.setObjectName("logoWidgetContainer")
+                self.logoWidgetUi = Ui_logoWidget()
+                self.logoWidgetUi.setupUi(self.logoWidgetContainer)
+                self.sidebarLayout.addWidget(self.logoWidgetContainer, stretch=2)
+            setup_logo_widget()
 
-        self.scanInfoContainer = QWidget(self.sideBar)
-        self.scanInfoContainer.setObjectName("navigationWidgetContainer")
-        self.scanInfoWidgetUi = Ui_scanInfo()
-        self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
-        self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
-        self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
-        self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
-        self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
+            def setup_scan_info_container():
+                self.scanInfoContainer = QWidget(self.sideBar)
+                self.scanInfoContainer.setObjectName("navigationWidgetContainer")
+                self.scanInfoWidgetUi = Ui_scanInfo()
+                self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
+                self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
+            setup_scan_info_container()
 
+            def setup_buttons():
+                self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
+                self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
+                self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
+            setup_buttons()
 
+            self.centralLayout.addWidget(self.sideBar, stretch=2)
+        setup_sidebar()
 
-        # Set up the main window frame
-        self.mainWindow = QFrame(self.centralwidget)
-        self.mainWindow.setObjectName("mainWindow")
-        self.mainWindow.setStyleSheet(f"background-color: {mainBackgroundColor};")
-        self.mainWindow.setFrameShape(QFrame.StyledPanel)
-        self.mainWindow.setFrameShadow(QFrame.Raised)
+        def setup_main_window():
+            self.mainWindow = QFrame(self.central_widget)
+            self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
 
-        # Add user header and display container to the main window
-        self.userHeaderContainer = QWidget(self.mainWindow)
-        self.userHeaderContainer.setObjectName("userHeaderContainer")
-        self.userHeaderUi = Ui_userHeaderWidget()
-        self.userHeaderUi.setupUi(self.userHeaderContainer)
-        if employee:
-            self.userHeaderUi.employeeName.setText(f"{self.employee.first_name} {self.employee.last_name}")
-        else:
-            pass
+            self.mainLayout = QVBoxLayout(self.mainWindow)
 
-        self.displayContainer = QWidget(self.mainWindow)
-        self.displayContainer.setObjectName("displayContainer")
-        self.displayContainer.setStyleSheet(backgroundColorTransparent)
-        self.displayLayout = QVBoxLayout(self.displayContainer)
+            def setup_header_widget():
+                self.userHeaderContainer = QWidget(self.mainWindow)
+                self.userHeaderUi = Ui_userHeaderWidget()
+                self.userHeaderUi.setupUi(self.userHeaderContainer)
+                if self.employee:
+                    self.userHeaderUi.employee_name.setText(f"{self.employee.first_name} {self.employee.last_name}")
 
+                self.userHeaderUi.employee_profile.clicked.connect(self.show_popup_window)
+                QApplication.instance().installEventFilter(self.central_widget)
 
+                self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
+            setup_header_widget()
+            self.mainLayout.addSpacing(20)
 
-        # Arrange the main layout with header and display container
-        self.mainLayout = QVBoxLayout(self.mainWindow)
-        self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
-        self.mainLayout.addSpacing(20)
-        self.mainLayout.addWidget(self.displayContainer, stretch=10)
+            def setup_display_container():
+                self.displayContainer = QWidget(self.mainWindow)
+                self.displayContainer.setObjectName("displayContainer")
+                self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
+                self.displayLayout = QVBoxLayout(self.displayContainer)
+                self.mainLayout.addWidget(self.displayContainer, stretch=10)
 
-        # Connecting the signals and slots
-        self.webcam_handler.setUser.connect(self.setUser)
-        self.webcam_handler.user_updated.connect(self.updateUser)
+                def setup_face_recognition_webcam_display():
+                    self.webcam_handler.setUser.connect(self.setUser)
+                    self.webcam_handler.user_updated.connect(self.updateUser)
 
-        # Adjusting the size policy of the webcam_label
-        self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.webcam_handler.webcam_label.setMinimumWidth(640)
 
-        # Ensuring minimum width for webcam_label (optional but recommended)
-        self.webcam_handler.webcam_label.setMinimumWidth(640)
+                    self.spacer1 = QLabel()
+                    self.displayLayout.addWidget(self.spacer1, stretch=2)
 
-        self.spacer1 = QLabel()
-        self.displayLayout.addWidget(self.spacer1, stretch=2)
+                    self.displayLayout.addWidget(self.webcam_handler, stretch=20)  # 2/3 of the height
 
-        # Adding the webcam_handler widget with a stretch factor
-        self.displayLayout.addWidget(self.webcam_handler, stretch=20)  # 2/3 of the height
+                    self.spacer2 = QLabel()
+                    self.displayLayout.addWidget(self.spacer2, stretch=3)
+                setup_face_recognition_webcam_display()
+            setup_display_container()
 
-        self.spacer2 = QLabel()
-        self.displayLayout.addWidget(self.spacer2, stretch=3)
-
-        # Add sidebar and main window to the central layout
-        self.centralLayout.addWidget(self.sideBar, stretch=2)
-        self.centralLayout.addWidget(self.mainWindow, stretch=10)
-
-
-        # Set the central widget of the main window
-        centralWindow.setCentralWidget(self.centralwidget)
-
-        self.userHeaderUi.employeeProfile.clicked.connect(self.showPopupWindow)
-        QApplication.instance().installEventFilter(self.centralwidget)
+            self.centralLayout.addWidget(self.mainWindow, stretch=10)
+        setup_main_window()
 
     def clearDisplayContainer(self):
         # This will remove all widgets from displayLayout
@@ -244,16 +195,16 @@ class Ui_centralWindow(object):
             self.webcam_handler.close_webcam()
 
         self.close()
-        if employee:
-            self.dashboard_main = dashboard.MainWindow(emp=self.employee)
+        if self.employee:
+            self.dashboard_main = dashboard.DashboardWindow(employee=self.employee)
             self.dashboard_main.show()
         else:
-            self.dashboard_main = dashboard.MainWindow()
+            self.dashboard_main = dashboard.DashboardWindow(employee=None)
             self.dashboard_main.show()
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
-            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popupDialog'):
+            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popup_dialog'):
                 dialog = self.userHeaderWidget.popup_dialog
                 if dialog and dialog.isVisible():
                     # Check if the click is outside the dialog
@@ -262,105 +213,156 @@ class Ui_centralWindow(object):
                         return True
         return super(self).eventFilter(obj, event)
 
-    def showPopupWindow(self):
-        if hasattr(self, 'popupDialog') and self.popupDialog.isVisible():
-            self.popupDialog.hide()
+    def show_popup_window(self):
+        if hasattr(self, 'popup_dialog') and self.popup_dialog.isVisible():
+            self.popup_dialog.hide()
+            buttonStyleSheetNormal = f"""
+                QPushButton {{
+                    border: none;
+                    border-radius: 20px;  /* Half of width and height to make it circular */
+                    background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
+                }}
+                QPushButton:hover {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                }}
+                QPushButton:pressed {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                }}
+            """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetNormal)
             return
 
-        self.popupDialog = QDialog()
-        self.popupDialog.setWindowFlags(Qt.FramelessWindowHint)
+        self.popup_dialog = QDialog()
+        self.popup_dialog.setWindowFlags(Qt.FramelessWindowHint)
 
-        self.popupDialog.setWindowTitle("Create a Ticket")
+        self.popup_dialog.setStyleSheet(f"""
+            QDialog {{
+                background-color: {MAIN_BACKGROUND_COLOR};
+                border: 2px solid {BORDERS_LINES_COLOR};
+            }}
 
+            QLabel {{
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+            }}
 
+            QLineEdit {{
+                background-color: {FIELD_BACKGROUND_COLOR};
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+                border: 1px solid {BORDERS_LINES_COLOR};
+            }}
 
-        self.popupDialog.setStyleSheet("""
-            QDialog {
-                background-color: #fafafa;
-                border: 2px solid #fafafa;
-            }
+            QTextEdit {{
+                background-color: {FIELD_BACKGROUND_COLOR};
+                color: {TEXT_COLOR};
+                font-family: {FONT};
+                font-size: {BODY_FONT_SIZE};
+                border: 1px solid {BORDERS_LINES_COLOR};
+            }}
 
-            QLabel {
-                color: #4a4a4a;
-                font-family: Copperplate;
-                font-size: 14px;
-            }
-
-            QLineEdit {
-                background-color: #FFFFFF;
-                border: 1px solid #adbec6;
-            }
-
-            QTextEdit {
-                background-color: #FFFFFF;
-                border: 1px solid #adbec6;
-            }
-
-            QPushButton {
-                background-color: #adbec6;
-                border: 1px solid #adbec6;
+            QPushButton {{
+                background-color: {BUTTON_COLOR};
+                border: 1px solid {BORDERS_LINES_COLOR};
                 padding: 5px;
-                font-size: 14px;
-            }
+                font-family: {FONT};
+                font-size: {BUTTON_FONT_SIZE};
+                font-size: {BODY_FONT_SIZE};
+            }}
         """)
 
-        # Create layout for the pop-up window
-        layout = QVBoxLayout()
+        def dialog_layout():
+            # Create layout for the pop-up window
+            self.popup_dialog_layout = QVBoxLayout()
 
-        # Add widgets to the layout (customize this based on your needs)
-        # label_fonts = QFont()
+            subject_label = QLabel("Subject")
+            self.subject_line_edit = QLineEdit()
 
-        subject_label = QLabel("Subject")
+            description_label = QLabel("Description")
+            self.description_line_edit = QTextEdit()
+            self.description_line_edit.setFixedHeight(100)
+            self.description_line_edit.setAlignment(Qt.AlignTop)
+            self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
 
-        self.subject_line_edit = QLineEdit()
+            submit_button = QPushButton("Submit")
+            submit_button.clicked.connect(self.submit_ticket)
 
-        description_label = QLabel("Description")
-        self.description_line_edit = QTextEdit()
-        self.description_line_edit.setFixedHeight(100)
-        self.description_line_edit.setAlignment(Qt.AlignTop)
-        self.description_line_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+            self.popup_dialog_layout.addWidget(subject_label)
+            self.popup_dialog_layout.addWidget(self.subject_line_edit)
+            self.popup_dialog_layout.addWidget(description_label)
+            self.popup_dialog_layout.addWidget(self.description_line_edit)
+            self.popup_dialog_layout.addWidget(submit_button)
 
-        submit_button = QPushButton("Submit")
-        submit_button.clicked.connect(self.submitTicket)
+            self.popup_dialog.setLayout(self.popup_dialog_layout)
 
-        layout.addWidget(subject_label)
-        layout.addWidget(self.subject_line_edit)
-        layout.addWidget(description_label)
-        layout.addWidget(self.description_line_edit)
-        layout.addWidget(submit_button)
+        dialog_layout()
 
+        main_window = self.userHeaderUi.employee_profile.window()
 
-        # Set the layout for the pop-up dialog
-        self.popupDialog.setLayout(layout)
+        def set_position():
+            # Get the global position of the button
+            global_button_position = main_window.mapToGlobal(self.userHeaderUi.employee_profile.pos())
 
-        # Find the main window this widget is part of
-        main_window = self.userHeaderUi.employeeProfile.window()
+            # Calculate new X and Y position
+            x_position = global_button_position.x()
+            y_position = global_button_position.y() + self.userHeaderUi.employee_profile.height()
 
-        # Get the global position of the bottom-left corner of the button
-        global_button_position = main_window.mapToGlobal(self.userHeaderUi.employeeProfile.pos())
+            # Move the dialog to appear directly below the button
+            self.popup_dialog.move(x_position, y_position + 30)
 
-        # Calculate new X and Y position
-        x_position = global_button_position.x()
-        y_position = global_button_position.y() + self.userHeaderUi.employeeProfile.height()
+        set_position()
 
-        # Move the dialog to appear directly below the button
-        self.popupDialog.move(x_position, y_position)
-
-        if self.popupDialog.isVisible():
-            self.popupDialog.hide()
+        if self.popup_dialog.isVisible():
+            self.popup_dialog.hide()
+            buttonStyleSheetNormal = f"""
+                QPushButton {{
+                    border: none;
+                    border-radius: 20px;  /* Half of width and height to make it circular */
+                    background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
+                }}
+                QPushButton:hover {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                }}
+                QPushButton:pressed {{
+                    background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                }}
+                                            """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetNormal)
         else:
-            self.popupDialog.show()
+            self.popup_dialog.show()
+            buttonStyleSheetClicked = f"""
+                        QPushButton {{
+                            border: none;
+                            border-radius: 20px;  /* Half of width and height to make it circular */
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color for the normal state */
+                        }}
+                        QPushButton:hover {{
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
+                        }}
+                        QPushButton:pressed {{
+                            background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
+                        }}
+                    """
+            self.userHeaderUi.employee_profile.setStyleSheet(buttonStyleSheetClicked)
 
         # Show the pop-up dialog
-        self.popupDialog.exec_()
+        self.popup_dialog.exec_()
 
-    def submitTicket(self):
+    def submit_ticket(self):
         try:
             current_time = datetime.now()
             formatted_time = current_time.strftime('%Y-%m-%d_%H-%M-%S')
             print(formatted_time)
-            empName = f"{self.employee.first_name} {self.employee.last_name}"
-            empID = self.employee.employeeID
+
+            if self.employee:
+                empName = f"{self.employee.first_name} {self.employee.last_name}"
+                empID = self.employee.employeeID
+            else:
+                empName = "Unknown"
+                empID = "Unknown"
+
             subjectHeader = "Subject: "
             subject = self.subject_line_edit.text()
             descriptionHeader = "Description: "
@@ -384,9 +386,6 @@ class Ui_centralWindow(object):
 
         except Exception as e:
             print(f"Error: {e}")
-
-
-
 
     def updateUser(self, user):
         picture = self.scanInfoWidgetUi.picture
@@ -451,7 +450,7 @@ class Ui_scanInfo(object):
     def setupUi(self, scanInfo):
         if not scanInfo.objectName():
             scanInfo.setObjectName(u"sidebar")
-        self.labelStyle = f"color: {sideBarTextColor}; font: 75 {buttonLabelSize} '{font}'; padding-left: 10px;"
+        self.labelStyle = f"color: {SIDEBAR_TEXT_COLOR}; font: 75 {BUTTON_LABEL_SIZE} '{FONT}'; padding-left: 10px;"
         self.fieldStyle = f'background-color: white; padding: 5px; border: 1px solid black; color:black'
         scanInfo.setStyleSheet(u"background-color:transparent;")
         self.mainLayout = QVBoxLayout(scanInfo)
@@ -630,7 +629,7 @@ class Ui_scanInfo(object):
     def button_style(self, textColor, buttonFontSize, font, interactiveElements1, interactiveElements2):
         return (f"""
             QPushButton {{
-                color: {sideBarTextColor}; 
+                color: {SIDEBAR_TEXT_COLOR}; 
                 font: 75 {buttonFontSize} '{font}';
                 padding-left: 30px;
                 text-align: left;
@@ -656,7 +655,7 @@ class Ui_logoWidget(object):
             logoWidget.setObjectName("logoWidget")
 
         # Set the style of the logo widget
-        logoWidget.setStyleSheet(backgroundColorTransparent)
+        logoWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
 
         # Create a horizontal layout for the logo
         self.logoLayout = QHBoxLayout(logoWidget)
@@ -678,107 +677,116 @@ class Ui_logoWidget(object):
         # Initialize the label for the logo text
         self.logoLabel = QLabel("LocUST")
         self.logoLabel.setObjectName("logoLabel")
-        self.logoLabel.setStyleSheet(f"font: 75 {tittleFontSize} '{font}'; color:{sideBarTextColor};")
+        self.logoLabel.setStyleSheet(f"font: 75 {TITLE_FONT_SIZE} '{FONT}'; color:{SIDEBAR_TEXT_COLOR};")
         self.logoLayout.addWidget(self.logoLabel)  # Add the logo text to the layout
 
 class Ui_userHeaderWidget(object):
     def setupUi(self, userHeaderWidget):
-        if not userHeaderWidget.objectName():
-            userHeaderWidget.setObjectName(u"userHeaderWidget")
+        userHeaderWidget.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
 
-        userHeaderWidget.setStyleSheet(backgroundColorTransparent)
-        self.userHeaderLayout = QHBoxLayout(userHeaderWidget)
-        self.userHeaderLayout.setSpacing(20)
-        self.userHeaderLayout.setObjectName(u"userHeaderLayout")
-        self.userHeaderLayout.setContentsMargins(10, 10, 10, 10)
+        self.user_header_layout = QHBoxLayout(userHeaderWidget)
+        self.user_header_layout.setSpacing(20)
+        self.user_header_layout.setObjectName(u"userHeaderLayout")
+        self.user_header_layout.setContentsMargins(10, 10, 10, 10)
 
         buttonStyleSheet = f"""
             QPushButton {{
                 border: none;
                 border-radius: 20px;  /* Half of width and height to make it circular */
-                background-color: {buttonColor};  /* Your desired background color for the normal state */
+                background-color: {BUTTON_COLOR};  /* Your desired background color for the normal state */
             }}
             QPushButton:hover {{
-                background-color: {interactiveElements1};  /* Your desired background color when hovered */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_1};  /* Your desired background color when hovered */
             }}
             QPushButton:pressed {{
-                background-color: {interactiveElements2};  /* Your desired background color when pressed */
+                background-color: {INTERACTIVE_ELEMENT_COLOR_2};  /* Your desired background color when pressed */
             }}
         """
 
-        self.searchIcon = QPushButton(userHeaderWidget)
-        self.searchIcon.setObjectName(u"searchIcon")
-        self.searchIcon.setIcon(QIcon("buttonIcons/search.png"))
-        self.searchIcon.setIconSize(QSize(18, 18))
-        self.searchIcon.setStyleSheet(buttonStyleSheet)
-        self.searchIcon.setFixedSize(40, 40)
-        self.userHeaderLayout.addWidget(self.searchIcon)
+        def setup_search_icon():
+            self.search_icon = QPushButton(userHeaderWidget)
+            self.search_icon.setIcon(QIcon("buttonIcons/search.png"))
+            self.search_icon.setIconSize(QSize(18, 18))
+            self.search_icon.setStyleSheet(buttonStyleSheet)
+            self.search_icon.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.search_icon)
 
-        self.searchBar = QLineEdit(userHeaderWidget)
-        self.searchBar.setObjectName(u"searchBar")
-        self.searchBar.setFixedHeight(24)
-        search_bar_style = f"""
-            QLineEdit {{
-                border: 1px solid {bordersLines}; /* Light grey border */
-                border-radius: 12px; /* Rounded corners */
-                padding: 0 8px; /* Text padding */
-                background: {fieldBackgroundColor}; /* White background */
-                selection-background-color: {interactiveElements1}; /* Color when text is selected */
-                font-size: {bodySecondaryFontSize}; /* Adjust the font size as needed */
-                opacity: 0.5;
-            }}
-            QLineEdit::placeholder {{
-                color: {placeholderColor}; /* Replace with your placeholder text color */
-                font-style: italic;
-                opacity: 0.5;
-            }}
-            QLineEdit:focus {{
-                border: 2px solid {bordersLines}; /* Highlighted border color when focused */
+        setup_search_icon()
 
-            }}
-        """
-        palette = self.searchBar.palette()
-        palette.setColor(QPalette.PlaceholderText, QColor(placeholderColor))
-        self.searchBar.setPalette(palette)
-        self.searchBar.setStyleSheet(search_bar_style)
-        self.searchBar.setFocusPolicy(Qt.NoFocus)
-        self.searchBar.setPlaceholderText("Search...")
+        def setup_search_bar():
+            search_bar_style = f"""
+                            QLineEdit {{
+                                border: 1px solid {BORDERS_LINES_COLOR}; /* Light grey border */
+                                border-radius: 12px; /* Rounded corners */
+                                padding: 0 8px; /* Text padding */
+                                background: {FIELD_BACKGROUND_COLOR}; /* White background */
+                                selection-background-color: {INTERACTIVE_ELEMENT_COLOR_1}; /* Color when text is selected */
+                                font-size: {BODY_SECONDARY_FONT_SIZE}; /* Adjust the font size as needed */
+                                opacity: 0.5;
+                            }}
+                            QLineEdit::placeholder {{
+                                color: {PLACEHOLDER_COLOR}; /* Replace with your placeholder text color */
+                                font-style: italic;
+                                opacity: 0.5;
+                            }}
+                            QLineEdit:focus {{
+                                border: 2px solid {BORDERS_LINES_COLOR}; /* Highlighted border color when focused */
 
-        self.userHeaderLayout.addWidget(self.searchBar)
+                            }}
+                        """
+            self.search_bar = QLineEdit(userHeaderWidget)
+            self.search_bar.setFixedHeight(24)
+            palette = self.search_bar.palette()
+            palette.setColor(QPalette.PlaceholderText, QColor(PLACEHOLDER_COLOR))
+            self.search_bar.setPalette(palette)
+            self.search_bar.setStyleSheet(search_bar_style)
+            self.search_bar.setFocusPolicy(Qt.NoFocus)
+            self.search_bar.setPlaceholderText("Search...")
+            self.user_header_layout.addWidget(self.search_bar)
 
-        self.settingsButton = QPushButton(userHeaderWidget)
-        self.settingsButton.setObjectName("settingsButton")
-        self.settingsButton.setIcon(QIcon("buttonIcons/settings.png"))
-        self.settingsButton.setIconSize(QSize(18, 18))
-        self.settingsButton.setStyleSheet(buttonStyleSheet)
-        self.settingsButton.setFixedSize(40, 40)
-        self.userHeaderLayout.addWidget(self.settingsButton)
+        setup_search_bar()
 
-        self.notificationButton = QPushButton(userHeaderWidget)
-        self.notificationButton.setObjectName("notificationButton")
-        self.notificationButton.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
-        self.notificationButton.setIconSize(QSize(18, 18))  # Icon size
-        self.notificationButton.setStyleSheet(buttonStyleSheet)
-        self.notificationButton.setFixedSize(40, 40)  # Adjust size as needed
-        self.userHeaderLayout.addWidget(self.notificationButton)
+        def setup_settings_button():
+            self.settings_button = QPushButton(userHeaderWidget)
+            self.settings_button.setIcon(QIcon("buttonIcons/settings.png"))
+            self.settings_button.setIconSize(QSize(18, 18))
+            self.settings_button.setStyleSheet(buttonStyleSheet)
+            self.settings_button.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.settings_button)
 
-        self.employeeProfile = QPushButton(userHeaderWidget)
-        self.employeeProfile.setObjectName("employeeProfile")
-        self.employeeProfile.setIcon(QIcon("buttonIcons/user.png"))  # Replace with your icon's path
-        self.employeeProfile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
-        self.employeeProfile.setStyleSheet(buttonStyleSheet)
-        self.employeeProfile.setFixedSize(40, 40)
-        self.userHeaderLayout.addWidget(self.employeeProfile)
+        setup_settings_button()
 
-        self.employeeName = QLabel(userHeaderWidget)
-        self.employeeName.setObjectName(u"employeeName")
-        self.employeeName.setText("None")
-        self.employeeName.setStyleSheet(f"font: 75 {bodyFontSize} '{font}'; color:{secondaryFontColor};")
-        self.userHeaderLayout.addWidget(self.employeeName)
+        def setup_notification_button():
+            self.notification_button = QPushButton(userHeaderWidget)
+            self.notification_button.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
+            self.notification_button.setIconSize(QSize(18, 18))  # Icon size
+            self.notification_button.setStyleSheet(buttonStyleSheet)
+            self.notification_button.setFixedSize(40, 40)  # Adjust size as needed
+            self.user_header_layout.addWidget(self.notification_button)
 
-        opacity_effect = QGraphicsOpacityEffect()
-        opacity_effect.setOpacity(0.5)
-        self.employeeName.setGraphicsEffect(opacity_effect)
+        setup_notification_button()
+
+        def setup_employee_profile():
+            self.employee_profile = QPushButton(userHeaderWidget)
+            self.employee_profile.setIcon(QIcon("buttonIcons/user.png"))
+            self.employee_profile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
+            self.employee_profile.setStyleSheet(buttonStyleSheet)
+            self.employee_profile.setFixedSize(40, 40)
+            self.user_header_layout.addWidget(self.employee_profile)
+
+        setup_employee_profile()
+
+        def setup_employee_name():
+            self.employee_name = QLabel(userHeaderWidget)
+            self.employee_name.setText("None")
+            self.employee_name.setStyleSheet(f"font: 75 {BODY_FONT_SIZE} '{FONT}'; color:{SECONDARY_FONT_COLOR};")
+            self.user_header_layout.addWidget(self.employee_name)
+
+            opacity_effect = QGraphicsOpacityEffect()
+            opacity_effect.setOpacity(0.5)
+            self.employee_name.setGraphicsEffect(opacity_effect)
+
+        setup_employee_name()
 
 class WebcamHandler(QWidget):
     user_updated = pyqtSignal(object)
@@ -899,21 +907,11 @@ class WebcamHandler(QWidget):
         self.webcam_label.clear()
         self.webcam_label.setText("Webcam closed")
 
-class MainWindow(QMainWindow, Ui_centralWindow):
-    def __init__(self, emp=None, parent=None):
-        super(MainWindow, self).__init__(parent)
-        self.employee = emp
 
-        if self.employee:
-            print(f"Employee logged in: {self.employee.first_name} {self.employee.last_name}")
-            print("face rec window")
-            self.setupUi(self, self.employee)
-        else:
-            self.setupUi(self)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    mainWin = MainWindow()
+    mainWin = FacialRecognitionWindow()
     mainWin.show()
     sys.exit(app.exec_())

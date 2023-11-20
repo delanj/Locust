@@ -303,6 +303,7 @@ class DashboardWindow(QMainWindow):
             print(f"An error occurred: {e}")
             traceback.print_exc()  # This will print the stack trace.
 
+
     def logout(self):
         self.close()
         # Open the dashboard main window

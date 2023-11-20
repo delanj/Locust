@@ -292,6 +292,7 @@ class LoginWindow(QMainWindow):
             self.invalidLabel.setText("Please enter both username and password.")
             return
 
+
         try:
             username = self.usernameEdit.text()
             password = self.passwordEdit.text()

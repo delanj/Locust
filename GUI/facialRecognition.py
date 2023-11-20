@@ -571,6 +571,7 @@ class Ui_scanInfo(object):
         self.buttonLayout.setObjectName(u"buttonLayout")
         self.buttonLayout.setContentsMargins(5, 5, 5, 5)
 
+
         self.acceptButton = QPushButton("Accept")
         self.acceptButton = self.create_button("Accept", "acceptButton", "accept-circular-button-outline.png", "green")
         self.buttonLayout.addWidget(self.acceptButton)

@@ -1,4 +1,5 @@
 import json
+import os
 from typing import List, Optional, Dict, Union
 
 class Employee:
@@ -54,7 +55,11 @@ class SecurityManager(Employee):
 class EmployeeDatabase:
     def __init__(self):
         """Initialize the employee database."""
-        self.json_file_path = '../Database/Employees/jsonFile/employee.json'
+        current_file_directory = os.path.dirname(os.path.abspath(__file__))
+        locust_directory = os.path.abspath(os.path.join(current_file_directory, '..', '..'))
+
+        json_file_path = os.path.join(locust_directory, "Database", "DatabaseEmployees", "jsonFile", "employee.json")
+        self.json_file_path = json_file_path
         self.employees = self.load_employees()
 
     def create_employee(self, data: Dict[str, str]) -> Employee:

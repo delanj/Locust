@@ -1,4 +1,6 @@
 import json
+import os
+
 
 class User:
     """Represents a user of the system"""
@@ -25,7 +27,11 @@ class UserDatabase:
     """Represents a database of users"""
     def __init__(self):
         """Represents a database of users"""
-        self.json_file_path = "../Database/IndirectUsers/jsonFile/users.json"
+        current_file_directory = os.path.dirname(os.path.abspath(__file__))
+        locust_directory = os.path.abspath(os.path.join(current_file_directory, '..', '..'))
+        json_file_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile", "users.json")
+
+        self.json_file_path = json_file_path
         self.users = self.load_users()
 
     def load_users(self):

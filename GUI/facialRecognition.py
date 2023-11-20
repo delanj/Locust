@@ -32,8 +32,10 @@ import Entities.entitiesMain
 from Entities import entitiesMain
 
 
-import dashboard
+
 from Entities.Employee import Employee
+from GUI import dashboard
+
 # Link to data base
 
 
@@ -77,13 +79,16 @@ GRAPH_BAR_COLOR = (176, 190, 197)
 OPACITY_EFFECT = QGraphicsOpacityEffect()
 OPACITY_EFFECT.setOpacity(0.5)
 
+current_file_directory = os.path.dirname(os.path.abspath(__file__))
+locust_directory = os.path.abspath(os.path.join(current_file_directory, '..'))
 
 
 class FacialRecognitionWindow(QMainWindow):
     """ Initialize the main Facial recognition window. """
 
-    def __init__(self, employee=None):
+    def __init__(self, window_manager, employee=None):
         super().__init__()
+        self.window_manager = window_manager
         self.employee = employee
         self.setupUi()
         self.showFullScreen()
@@ -196,11 +201,9 @@ class FacialRecognitionWindow(QMainWindow):
 
         self.close()
         if self.employee:
-            self.dashboard_main = dashboard.DashboardWindow(employee=self.employee)
-            self.dashboard_main.show()
+            self.window_manager.open_dashboard(employee=self.employee)
         else:
-            self.dashboard_main = dashboard.DashboardWindow(employee=None)
-            self.dashboard_main.show()
+            self.window_manager.open_dashboard(employee=None)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
@@ -397,7 +400,7 @@ class FacialRecognitionWindow(QMainWindow):
 
 
         if user:
-            new_pixmap = QPixmap("../Database/IndirectUsers/photos/" + user.photos)  # Load the new image
+            new_pixmap = QPixmap("../Database/DatabaseIndirectUsers/photos/" + user.photos)  # Load the new image
             picture.setPixmap(new_pixmap.scaled(150, 150))
             name.setText(f"{user.first_name} {user.last_name}")
             gender.setText(user.gender)
@@ -435,8 +438,9 @@ class FacialRecognitionWindow(QMainWindow):
                               user.last_name,
                               user.company,
                               user.title]
+            log_csv_path = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
 
-            with open('../Database/Logs/log.csv', 'a', newline='') as file:
+            with open(log_csv_path, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
@@ -603,8 +607,9 @@ class Ui_scanInfo(object):
         button.setObjectName(objectName)
         button.setText(f"{text}")
 
+        path = os.path.join(locust_directory, "GUI", "buttonIcons")
         # Load the icon
-        pixmap = QPixmap(f"buttonIcons/{iconPath}")
+        pixmap = QPixmap(f"{path}/{iconPath}")
         # Create a new pixmap with the same size to apply the color change
         white_pixmap = QPixmap(pixmap.size())
         white_pixmap.fill(QColor('transparent'))  # Start with a transparent pixmap
@@ -799,9 +804,19 @@ class WebcamHandler(QWidget):
         layout.addWidget(self.webcam_label)
         self.setLayout(layout)
         self.face_detector = dlib.get_frontal_face_detector()
-        self.shape_predictor = dlib.shape_predictor("../Database/datFiles/shape_predictor_68_face_landmarks.dat")
-        self.face_recognizer = dlib.face_recognition_model_v1(
-            "../Database/datFiles/dlib_face_recognition_resnet_model_v1.dat")
+
+        shape_predictor_path = os.path.join(locust_directory, "Database", "DatabaseDatFiles",
+                                            "shape_predictor_68_face_landmarks.dat")
+
+        #self.shape_predictor = dlib.shape_predictor("../Database/DatabaseDatFiles/shape_predictor_68_face_landmarks.dat")
+        self.shape_predictor = dlib.shape_predictor(shape_predictor_path)
+        #self.face_recognizer = dlib.face_recognition_model_v1("../Database/DatabaseDatFiles/dlib_face_recognition_resnet_model_v1.dat")
+        face_recognition_path = os.path.join(locust_directory, "Database", "DatabaseDatFiles",
+                                            "dlib_face_recognition_resnet_model_v1.dat")
+
+        self.face_recognizer = dlib.face_recognition_model_v1(face_recognition_path)
+
+
         self.known_face_descriptors = self.load_known_face_descriptors()
 
     def init_webcam(self):
@@ -815,7 +830,7 @@ class WebcamHandler(QWidget):
         self.webcam_timer.start(250)  # Update every 50 milliseconds
 
     def load_known_face_descriptors(self):
-        pickle_directory = "../Database/IndirectUsers/face_encodings"
+        pickle_directory = "../Database/DatabaseIndirectUsers/face_encodings"
         known_face_descriptors = {}
         for filename in os.listdir(pickle_directory):
             if filename.endswith(".pkl"):

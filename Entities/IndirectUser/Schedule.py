@@ -11,7 +11,12 @@ class Schedule:
 
 class ScheduleDatabase:
     def __init__(self):
-        self.json_file_path = '../Database/IndirectUsers/jsonFile/schedule.json'
+        current_file_directory = os.path.dirname(os.path.abspath(__file__))
+        locust_directory = os.path.abspath(os.path.join(current_file_directory, '..', '..'))
+        json_file_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile",
+                                      "schedule.json")
+
+        self.json_file_path = json_file_path
         self.schedules = self.load_schedules()
 
     def load_schedules(self):

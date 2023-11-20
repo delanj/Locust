@@ -32,6 +32,7 @@ def getSchedule(workDay):
     return s
 
 def getEmployees():
+    print("here")
     employees_sorted = sorted(employees, key=lambda x: x.employee_id)
     return employees_sorted
 

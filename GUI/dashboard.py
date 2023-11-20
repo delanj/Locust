@@ -25,15 +25,29 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 import Entities.entitiesMain
-import LoginWindow
-import facialRecognition
+
+
 from Entities import entitiesMain
 from Entities.IndirectUser import User
 from Entities.IndirectUser.User import UserDatabase
+from GUI import facialRecognition
+from GUI.login import LoginWindow
+import platform
 
+operating_system = platform.system()
+
+if operating_system == "Darwin":
+    # macOS-specific code
+    FONT = "Copperplate"
+elif operating_system == "Windows":
+    # Windows-specific code
+    FONT = "Garamond "
+else:
+    # Code for other operating systems (like Linux)
+    FONT = "Copperplate"
 
 # Fonts
-FONT = "Copperplate"
+
 
 # Font Sizes
 TITLE_FONT_SIZE = "36px"
@@ -72,12 +86,15 @@ GRAPH_BAR_COLOR = (176, 190, 197)
 OPACITY_EFFECT = QGraphicsOpacityEffect()
 OPACITY_EFFECT.setOpacity(0.5)
 
+current_file_directory = os.path.dirname(os.path.abspath(__file__))
+locust_directory = os.path.abspath(os.path.join(current_file_directory, '..'))
 
 class DashboardWindow(QMainWindow):
     """ Initialize the main login window. """
 
-    def __init__(self, employee=None):
+    def __init__(self, window_manager, employee=None):
         super().__init__()
+        self.window_manager = window_manager
         self.employee = employee
         self.setup_ui()
         self.showFullScreen()
@@ -289,8 +306,7 @@ class DashboardWindow(QMainWindow):
     def logout(self):
         self.close()
         # Open the dashboard main window
-        self.login_main = LoginWindow.LoginWindow()
-        self.login_main.show()
+        self.window_manager.open_login()
 
     def faceRec(self):
 
@@ -298,12 +314,10 @@ class DashboardWindow(QMainWindow):
 
         if self.employee:
             # Open the dashboard main window
-            self.dashboard_main = facialRecognition.FacialRecognitionWindow(employee=self.employee)
-            self.dashboard_main.show()
+            print("here")
+            self.window_manager.open_facial_recognition(employee=self.employee)
         else:
-            self.dashboard_main = facialRecognition.FacialRecognitionWindow(employee=None)
-            self.dashboard_main.show()
-
+            self.window_manager.open_facial_recognition(employee=None)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
@@ -472,8 +486,9 @@ class DashboardWindow(QMainWindow):
             descriptionHeader = "Description: "
             description = self.description_line_edit.toPlainText()
             print(description)
+            database_tickets_directory = os.path.join(locust_directory, "Database", "DatabaseTickets")
 
-            fileName = f"../Database/Tickets/{subject}_{str(formatted_time)}.txt"
+            fileName = f"{database_tickets_directory}/{subject}_{str(formatted_time)}.txt"
 
             with open(fileName,
                       'w') as file:  # 'a' mode is for appending to the file, use 'w' to overwrite the file
@@ -513,8 +528,9 @@ class Ui_logoWidget(object):
         self.logoImg.setScaledContents(True)
         self.logoImg.setMaximumSize(80, 80)  # Set the maximum size of the logo
 
+        icon_path = os.path.join(locust_directory, "GUI", "Icons", "7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
         # Load the logo image and set it to the label
-        pixmap = QPixmap("../GUI/Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+        pixmap = QPixmap(icon_path)
         self.logoImg.setPixmap(pixmap)
         self.logoLayout.addWidget(self.logoImg)  # Add the logo image to the layout
 
@@ -541,9 +557,9 @@ class Ui_navigationWidget(object):
         self.dashboardButton = self.create_button("Dashboard", "dashboardButton", "home.png")
         self.inboxButton = self.create_button("Inbox", "inboxButton", "paper-plane.png")
         self.workspaceLabel = self.create_label("Workspace", "workspaceLabel")
-        self.ticketsButton = self.create_button("Tickets", "ticketsButton", "receipt.png")
+        self.ticketsButton = self.create_button("DatabaseTickets", "ticketsButton", "receipt.png")
         self.scheduleButton = self.create_button("Schedule", "scheduleButton", "calendar.png")
-        self.logsButton = self.create_button("Logs", "logsButton", "document.png")
+        self.logsButton = self.create_button("DatabaseLogs", "logsButton", "document.png")
         self.addUserButton = self.create_button("Add User", "addUserButton", "user-add.png")
         self.generalLabel = self.create_label("General", "generalLabel")
         self.faceRecButton = self.create_button("Facial Recognition", "faceRecButton", "face-viewfinder.png")
@@ -566,8 +582,9 @@ class Ui_navigationWidget(object):
         button.setObjectName(objectName)
         button.setText(f"{text}")
 
+        icon_path = os.path.join(locust_directory, "GUI", "buttonIcons")
         # Load the icon
-        pixmap = QPixmap(f"buttonIcons/{iconPath}")
+        pixmap = QPixmap(f"{icon_path}/{iconPath}")
         # Create a new pixmap with the same size to apply the color change
         white_pixmap = QPixmap(pixmap.size())
         white_pixmap.fill(QColor('transparent'))  # Start with a transparent pixmap
@@ -646,7 +663,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_search_icon():
             self.search_icon = QPushButton(userHeaderWidget)
-            self.search_icon.setIcon(QIcon("buttonIcons/search.png"))
+            search_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "search.png")
+            self.search_icon.setIcon(QIcon(search_icon_path))
             self.search_icon.setIconSize(QSize(18, 18))
             self.search_icon.setStyleSheet(buttonStyleSheet)
             self.search_icon.setFixedSize(40, 40)
@@ -689,7 +707,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_settings_button():
             self.settings_button = QPushButton(userHeaderWidget)
-            self.settings_button.setIcon(QIcon("buttonIcons/settings.png"))
+            settings_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "settings.png")
+            self.settings_button.setIcon(QIcon(settings_icon_path))
             self.settings_button.setIconSize(QSize(18, 18))
             self.settings_button.setStyleSheet(buttonStyleSheet)
             self.settings_button.setFixedSize(40, 40)
@@ -699,7 +718,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_notification_button():
             self.notification_button = QPushButton(userHeaderWidget)
-            self.notification_button.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
+            bell_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "bell.png")
+            self.notification_button.setIcon(QIcon(bell_icon_path))  # Replace with your icon's path
             self.notification_button.setIconSize(QSize(18, 18))  # Icon size
             self.notification_button.setStyleSheet(buttonStyleSheet)
             self.notification_button.setFixedSize(40, 40)  # Adjust size as needed
@@ -709,7 +729,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_employee_profile():
             self.employee_profile = QPushButton(userHeaderWidget)
-            self.employee_profile.setIcon(QIcon("buttonIcons/user.png"))
+            user_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "user.png")
+            self.employee_profile.setIcon(QIcon(user_icon_path))
             self.employee_profile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
             self.employee_profile.setStyleSheet(buttonStyleSheet)
             self.employee_profile.setFixedSize(40, 40)
@@ -834,12 +855,12 @@ class Ui_dashboardWidget(object):
                     self.ticket_layout.setContentsMargins(10, 10, 10, 10)
 
                     # Ticket Label
-                    self.current_ticket_label = QLabel("Current Tickets")
+                    self.current_ticket_label = QLabel("Current DatabaseTickets")
                     self.current_ticket_label.setStyleSheet(self.font1)
                     self.current_ticket_label.setTextFormat(Qt.PlainText)
                     self.ticket_layout.addWidget(self.current_ticket_label, 0, Qt.AlignHCenter)
 
-                    # Number of Tickets Label
+                    # Number of DatabaseTickets Label
                     self.current_num_of_tickets = QLabel("0")
                     self.current_num_of_tickets.setStyleSheet(self.font2)
                     self.current_num_of_tickets.setFrameShadow(QFrame.Raised)
@@ -994,7 +1015,10 @@ class Ui_dashboardWidget(object):
 
                         # Check if user is found
                         if user is not None:
-                            photo_path = f"../Database/IndirectUsers/photos/{user.photos}"
+                            photos_directory = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers",
+                                                            "photos")
+
+                            photo_path = f"{photos_directory}/{user.photos}"
                             full_name = f"{user.first_name} {user.last_name}"
                             recent_scan_widget = self.create_recent_scan_widget(photo_path, full_name, user.id,
                                                                                 date_time)
@@ -1148,8 +1172,9 @@ class Ui_dashboardWidget(object):
         sCount = 0
         uCount = 0
 
-        logsDirectory = "../Database/Logs/log.csv"
-        with open(logsDirectory, mode='r') as file:
+        logs_directory = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
+
+        with open(logs_directory, mode='r') as file:
             reader = csv.DictReader(file)
             logs = list(reader)
 
@@ -1227,7 +1252,9 @@ class Ui_dashboardWidget(object):
 
     def get_amount_of_tickets(self):
         """Updates the label with the current number of tickets."""
-        directory = '../Database/Tickets'
+        directory = os.path.join(locust_directory, "Database", "DatabaseTickets")
+
+
         try:
             files = os.listdir(directory)
             file_count = len([entry for entry in files if os.path.isfile(os.path.join(directory, entry))])
@@ -1238,9 +1265,9 @@ class Ui_dashboardWidget(object):
 
     def how_many_users_scanned_today(self):
         """Updates the label with the number of users scanned today."""
-        logsDirectory = "../Database/Logs/log.csv"
+        logs_directory = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
         try:
-            with open(logsDirectory, mode='r') as file:
+            with open(logs_directory, mode='r') as file:
                 reader = csv.DictReader(file)
                 logs = list(reader)
 
@@ -1253,7 +1280,8 @@ class Ui_dashboardWidget(object):
             self.scanned_today_number_label.setText("Error")
 
     def last5Scanned(self):
-        logs_directory = "../Database/Logs/log.csv"
+        logs_directory = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
+
         try:
             with open(logs_directory, mode='r') as file:
                 reader = csv.DictReader(file)
@@ -1467,9 +1495,9 @@ class Ui_logs(object):
         self.logsTabWidget.setStyleSheet(self.tabStyleSheet)
         self.logsTabWidget.setObjectName("logsTabWidget")
 
-        self.setupTab("faceRecLogs", "Face Recognition Logs", self.leftwindow)
-        self.setupTab("employeesLogs", "Employee Logs", self.leftwindow)
-        self.setupTab("indirectUserLogs", "Indirect User Logs", self.leftwindow)
+        self.setupTab("faceRecLogs", "Face Recognition DatabaseLogs", self.leftwindow)
+        self.setupTab("employeesLogs", "Employee DatabaseLogs", self.leftwindow)
+        self.setupTab("indirectUserLogs", "Indirect User DatabaseLogs", self.leftwindow)
 
         self.leftLayout.addWidget(self.logsTabWidget)
         self.logLayout.addWidget(self.leftwindow)
@@ -1493,13 +1521,20 @@ class Ui_logs(object):
         self.logsTabWidget.addTab(tab, label)
 
         if object_name == "faceRecLogs":
-            self.fileMap[object_name + "TableView"] = '../Database/Logs/log.csv'
+            log_csv_path = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
+            self.fileMap[object_name + "TableView"] = log_csv_path
             self.loadCsvData(self.fileMap[object_name + "TableView"], tab_table_view)
         elif object_name == "indirectUserLogs":
-            self.fileMap[object_name + "TableView"] = '../Database/IndirectUsers/jsonFile/users.json'
+            users_json_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile",
+                                           "users.json")
+
+            self.fileMap[object_name + "TableView"] = users_json_path
             self.loadJsonData(self.fileMap[object_name + "TableView"], tab_table_view)
         elif object_name == "employeesLogs":
-            self.fileMap[object_name + "TableView"] = '../Database/Employees/jsonFile/employee.json'
+            employee_json_path = os.path.join(locust_directory, "Database", "DatabaseEmployees", "jsonFile",
+                                              "employee.json")
+
+            self.fileMap[object_name + "TableView"] = employee_json_path
             self.loadJsonData(self.fileMap[object_name + "TableView"], tab_table_view)
 
     def setupSearchWidget(self, object_name, parent, layout):
@@ -1518,8 +1553,9 @@ class Ui_logs(object):
         label.setObjectName(object_name + "Label")
         label.setFixedSize(24, 24)
 
-        # Set the constant pixmap here
-        pixmap = QPixmap('buttonIcons/search.png')
+
+        search_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "search.png")
+        pixmap = QPixmap(search_icon_path)
         label.setPixmap(pixmap)
 
         # Maintain aspect ratio and scale pixmap to fit label size
@@ -2110,7 +2146,7 @@ class Ui_ticketsWidget(object):
             self.rightLayout.setContentsMargins(10, 10, 10, 10)
 
             def setup_ticket_label():
-                self.ticketLabel = QLabel("Tickets")
+                self.ticketLabel = QLabel("DatabaseTickets")
                 self.ticketLabel.setObjectName(u"ticketLabel")
                 self.ticketLabel.setStyleSheet(f"font: 75 {SUBHEADER_FONT_SIZE} {FONT};"
                                                "background-color: transparent;"
@@ -2149,7 +2185,7 @@ class Ui_ticketsWidget(object):
         return ticket_button
 
     def create_ticket_buttons(self):
-        directory = "../Database/Tickets"
+        directory = os.path.join(locust_directory, "Database", "DatabaseTickets")
         file_datetimes = []
 
         try:
@@ -2983,9 +3019,9 @@ class Ui_addUserWidget(object):
         file_path = f"../Database/AddLocal/{self.userIDLineEdit.text()}_0.jpg"
         # Save plk
         face_detector = dlib.get_frontal_face_detector()
-        shape_predictor = dlib.shape_predictor("../Database/datFiles/shape_predictor_68_face_landmarks.dat")
+        shape_predictor = dlib.shape_predictor("../Database/DatabaseDatFiles/shape_predictor_68_face_landmarks.dat")
         face_recognizer = dlib.face_recognition_model_v1(
-            "../Database/datFiles/dlib_face_recognition_resnet_model_v1.dat")
+            "../Database/DatabaseDatFiles/dlib_face_recognition_resnet_model_v1.dat")
         # Load the image
         image = dlib.load_rgb_image(file_path)
         faces = face_detector(image)  # Detect faces in the image
@@ -3023,11 +3059,19 @@ class Ui_addUserWidget(object):
 
         User.UserDatabase.add_user(newUser)
 
-        shutil.move(f"../Database/AddLocal/{self.photoLineEdit.text()}",
-                    f"../Database/IndirectUsers/photos/{self.photoLineEdit.text()}")
+        database_add_local_directory = os.path.join(locust_directory, "Database", "DatabaseAddLocal")
 
-        shutil.move(f"../Database/AddLocal/{self.faceEncLineEdit.text()}",
-                    f"../Database/IndirectUsers/face_encodings/{self.faceEncLineEdit.text()}")
+        database_indirect_users_photos_directory = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers",
+                                                                "photos")
+
+        database_indirect_users_face_encodings_directory = os.path.join(locust_directory, "Database",
+                                                                        "DatabaseIndirectUsers", "face_encodings")
+
+        shutil.move(f"{database_add_local_directory}/{self.photoLineEdit.text()}",
+                    f"{database_indirect_users_photos_directory}/{self.photoLineEdit.text()}")
+
+        shutil.move(f"{database_add_local_directory}/{self.faceEncLineEdit.text()}",
+                    f"{database_indirect_users_face_encodings_directory}/{self.faceEncLineEdit.text()}")
 
         # db_conn = database.db
         # coll_ref = db_conn.collection("indirectUser")
@@ -3062,8 +3106,8 @@ class Ui_addUserWidget(object):
         # Get the current schedule information
         new_schedule = self.get_schedule_info()
 
-        # Define the path to the JSON file
-        json_path = '../Database/IndirectUsers/jsonFile/schedule.json'
+        json_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile",
+                                               "schedule.json")
 
         # Read the existing data
         try:

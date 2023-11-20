@@ -1,12 +1,13 @@
+import os
 import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
     QHBoxLayout, QGraphicsDropShadowEffect, QSizePolicy, QStyle
-from PyQt5.QtGui import QPixmap, QIcon, QColor, QPainter, QFontDatabase, QFont
+from PyQt5.QtGui import QPixmap, QIcon, QColor, QPainter, QFontDatabase, QFont, QTextCursor
 from PyQt5.QtCore import Qt, QSize
 
 from Entities import entitiesMain as db
-import dashboard
+from GUI import dashboard
 
 
 class LoginWindow(QMainWindow):
@@ -23,15 +24,13 @@ class LoginWindow(QMainWindow):
     BUTTON_PRESSED_COLOR = "rgb(220, 220, 220)"
     ICON_COLOR = "white"
 
-    def __init__(self):
-
-
+    def __init__(self, window_manager):
         """ Initialize the main login window. """
         super().__init__()
+        self.window_manager = window_manager
         logging.basicConfig(level=logging.INFO)
         #self.loadCustomFont()
         self.initUI()
-
 
     def initUI(self):
         """ Initialize the main user interface. """
@@ -42,8 +41,6 @@ class LoginWindow(QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.layout = QVBoxLayout(self.centralWidget)
         self.layout.addWidget(self.createLoginWidget(), alignment=Qt.AlignCenter)
-
-
 
     def loadCustomFont(self):
         # Try to load the custom font
@@ -76,9 +73,10 @@ class LoginWindow(QMainWindow):
         loginLayout.addWidget(self.createImageLabel())
         self.invalidLabel = self.createInvalidLoginLabel()
         loginLayout.addWidget(self.invalidLabel)
-        loginLayout.addSpacing(15)
+        loginLayout.addSpacing(0)
 
         def setup_username_line():
+            """ Setup the username line."""
             self.usernameEdit = self.createLineEdit("Username")
             loginLayout.addWidget(self.usernameEdit)
             loginLayout.addSpacing(30)
@@ -86,11 +84,14 @@ class LoginWindow(QMainWindow):
         setup_username_line()
 
         def setup_password_line():
+            """ Setup the password line."""
             self.passwordLayout = QHBoxLayout()
 
             self.passwordEdit = self.createLineEdit("Password", True)
+            current_file_directory = os.path.dirname(os.path.abspath(__file__))
+            image_path = os.path.join(current_file_directory, "buttonIcons", "show.png")
 
-            self.togglePasswordButton = self.create_button("buttonIcons/show.png")
+            self.togglePasswordButton = self.create_button(image_path)
             self.togglePasswordButton.setCursor(Qt.PointingHandCursor)
             self.togglePasswordButton.setFixedSize(20, 20)
             self.togglePasswordButton.clicked.connect(self.toggle_password_visibility)
@@ -107,26 +108,37 @@ class LoginWindow(QMainWindow):
         setup_password_line()
 
         def setup_buttons():
-            loginLayout.addSpacing(15)
+            """ Setup the buttons."""
+            loginLayout.addSpacing(20)
             loginLayout.addLayout(self.createButtonLayout())
-            loginLayout.addSpacing(15)
+            loginLayout.addSpacing(20)
         setup_buttons()
 
         def setup_copy_right():
+            """ Setup the copy right label."""
             loginLayout.addWidget(self.createCopyrightLabel())
         setup_copy_right()
 
         return loginWidget
 
     def toggle_password_visibility(self):
+        """ Toggle the password visibility."""
+        current_file_directory = os.path.dirname(os.path.abspath(__file__))
         if self.togglePasswordButton.isChecked():
+            image_path = os.path.join(current_file_directory, "buttonIcons", "show.png")
             self.passwordEdit.setEchoMode(QLineEdit.Normal)
-            self.setButtonIcon(self.togglePasswordButton, "buttonIcons/hide.png")
+            self.setButtonIcon(self.togglePasswordButton, image_path)
         else:
+            image_path = os.path.join(current_file_directory, "buttonIcons", "show.png")
             self.passwordEdit.setEchoMode(QLineEdit.Password)
-            self.setButtonIcon(self.togglePasswordButton, "buttonIcons/show.png")
+            self.setButtonIcon(self.togglePasswordButton, image_path)
 
     def setButtonIcon(self, button, iconPath):
+        """
+        Set the button icon.
+        @param button: Button to set icon for.
+        @param iconPath: Path to icon.
+        """
         pixmap = QPixmap(iconPath)
         white_pixmap = QPixmap(pixmap.size())
         white_pixmap.fill(QColor('transparent'))
@@ -141,6 +153,10 @@ class LoginWindow(QMainWindow):
         button.setIcon(QIcon(white_pixmap))
 
     def create_button(self, iconPath):
+        """
+        Create and return a button with an icon.
+        @param iconPath: Path to icon.
+        """
         button = QPushButton()
         button.setCheckable(True)
         button.setObjectName("togglePasswordVisibility")
@@ -183,7 +199,9 @@ class LoginWindow(QMainWindow):
     def createImageLabel(self):
         """ Creates and returns the image label."""
         imageLabel = QLabel(self)
-        pixmap = QPixmap("Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+        current_file_directory = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(current_file_directory, "Icons", "7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+        pixmap = QPixmap(image_path)
         imageLabel.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         imageLabel.setAlignment(Qt.AlignCenter)
         imageLabel.setFixedHeight(225)
@@ -207,7 +225,7 @@ class LoginWindow(QMainWindow):
         lineEdit.setPlaceholderText(placeholder)
         lineEdit.setStyleSheet(self.lineEditStylesheet())
         lineEdit.setFixedWidth(250)
-        lineEdit.setFixedHeight(30)
+        lineEdit.setFixedHeight(20)
         lineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0)
         if isPassword:
             lineEdit.setEchoMode(QLineEdit.Password)
@@ -286,14 +304,14 @@ class LoginWindow(QMainWindow):
                     login_successful = True
                     self.close()
                     try:
-                        self.dashboard_main = dashboard.DashboardWindow(employee=employee)
-                        self.dashboard_main.show()
+                        self.window_manager.open_dashboard(employee=employee)
                     except Exception as e:
                         print("Error opening MainWindow:", e)
                         self.invalidLabel.setText("Error: Problem opening the dashboard.")
                     break
 
             if not login_successful:
+                # Login failed
                 print("Login Failed")
                 self.invalidLabel.setText("Invalid username or password. Please try again.")
 

@@ -34,6 +34,8 @@ from GUI import facialRecognition
 from GUI.login import LoginWindow
 import platform
 
+
+
 operating_system = platform.system()
 
 if operating_system == "Darwin":
@@ -46,7 +48,7 @@ else:
     # Code for other operating systems (like Linux)
     FONT = "Copperplate"
 
-# Fonts
+
 
 
 # Font Sizes

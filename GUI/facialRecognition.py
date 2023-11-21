@@ -1,46 +1,27 @@
 import csv
-import inspect
-import json
 import os
 import pickle
-import shutil
 import sys
-import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import cv2
 import dlib
 import numpy as np
-from IPython.external.qt_for_kernel import QtCore, QtGui
-from PyQt5.QtCore import QCoreApplication, QMetaObject, QSize, Qt, QTimer, QDate, QTime, pyqtSignal, pyqtSlot, QEvent
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QFrame, QSizePolicy, QVBoxLayout, QLabel, \
-    QPushButton, QLineEdit, QGraphicsOpacityEffect, QSpacerItem, QTabWidget, QTableView, QCalendarWidget, QTextEdit, \
-    QFormLayout, QCheckBox, QTimeEdit, QComboBox, QDateTimeEdit, QGridLayout, QHeaderView, QToolButton, QDialog
-from PyQt5.QtCore import QCoreApplication, QMetaObject
-from PyQt5.QtWidgets import QLabel, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem, QImage, QPalette, QColor, QBrush, QPainter, \
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, QEvent
+from PyQt5.QtGui import QPixmap, QIcon, QImage, QPalette, QColor, QPainter, \
     QTextOption
-from PyQt5.uic.properties import QtWidgets
-from holoviews.examples.reference.apps.bokeh.player import layout
-from matplotlib.figure import Figure
-from matplotlib_inline.backend_inline import FigureCanvas
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QSizePolicy, QVBoxLayout, QPushButton, \
+    QLineEdit, QGraphicsOpacityEffect, QSpacerItem, QTextEdit, \
+    QFormLayout, QDialog
+from PyQt5.QtWidgets import QLabel, QHBoxLayout
 
-
-from Database.firebaseDatabase import database
-import Entities.entitiesMain
 from Entities import entitiesMain
-
-
-
-from Entities.Employee import Employee
-from GUI import dashboard
 
 # Link to data base
 
 
 
-FONT = "Copperplate"
+FONT = "Garamond"
 
 # Font Sizes
 TITLE_FONT_SIZE = "36px"
@@ -86,7 +67,12 @@ locust_directory = os.path.abspath(os.path.join(current_file_directory, '..'))
 class FacialRecognitionWindow(QMainWindow):
     """ Initialize the main Facial recognition window. """
 
-    def __init__(self, window_manager, employee=None):
+    def __init__(self, window_manager=None, employee=None):
+        """
+        # Initialize the main Facial recognition window.
+        @param window_manager: The window manager object.
+        @param employee: The employee object.
+        """
         super().__init__()
         self.window_manager = window_manager
         self.employee = employee
@@ -94,17 +80,19 @@ class FacialRecognitionWindow(QMainWindow):
         self.showFullScreen()
 
     def setupUi(self):
-
+        """ Set up the main window."""
         self.webcam_handler = WebcamHandler()
-
-
         self.central_widget = QWidget()
         self.centralLayout = QHBoxLayout(self.central_widget)
         self.centralLayout.setSpacing(0)
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(self.central_widget)
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.updateLabel)
+
         def setup_sidebar():
+            """ Set up the sidebar."""
             self.sideBar = QFrame(self.central_widget)
             self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
             self.sidebarLayout = QVBoxLayout(self.sideBar)
@@ -112,6 +100,7 @@ class FacialRecognitionWindow(QMainWindow):
             self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
 
             def setup_logo_widget():
+                """ Set up the logo widget."""
                 self.logoWidgetContainer = QWidget(self.sideBar)
                 self.logoWidgetContainer.setObjectName("logoWidgetContainer")
                 self.logoWidgetUi = Ui_logoWidget()
@@ -120,14 +109,15 @@ class FacialRecognitionWindow(QMainWindow):
             setup_logo_widget()
 
             def setup_scan_info_container():
+                """ Set up the scan info container."""
                 self.scanInfoContainer = QWidget(self.sideBar)
-                self.scanInfoContainer.setObjectName("navigationWidgetContainer")
                 self.scanInfoWidgetUi = Ui_scanInfo()
                 self.scanInfoWidgetUi.setupUi(self.scanInfoContainer)
                 self.sidebarLayout.addWidget(self.scanInfoContainer, stretch=10)
             setup_scan_info_container()
 
             def setup_buttons():
+                """ Set up the buttons."""
                 self.scanInfoWidgetUi.logoutButton.clicked.connect(self.closeCam)
                 self.scanInfoWidgetUi.acceptButton.clicked.connect(self.acceptHandle)
                 self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
@@ -137,12 +127,13 @@ class FacialRecognitionWindow(QMainWindow):
         setup_sidebar()
 
         def setup_main_window():
+            """ Set up the main window."""
             self.mainWindow = QFrame(self.central_widget)
             self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
-
             self.mainLayout = QVBoxLayout(self.mainWindow)
 
             def setup_header_widget():
+                """ Set up the header widget."""
                 self.userHeaderContainer = QWidget(self.mainWindow)
                 self.userHeaderUi = Ui_userHeaderWidget()
                 self.userHeaderUi.setupUi(self.userHeaderContainer)
@@ -154,9 +145,9 @@ class FacialRecognitionWindow(QMainWindow):
 
                 self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
             setup_header_widget()
-            self.mainLayout.addSpacing(20)
 
             def setup_display_container():
+                """ Set up the display container."""
                 self.displayContainer = QWidget(self.mainWindow)
                 self.displayContainer.setObjectName("displayContainer")
                 self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
@@ -164,19 +155,40 @@ class FacialRecognitionWindow(QMainWindow):
                 self.mainLayout.addWidget(self.displayContainer, stretch=10)
 
                 def setup_face_recognition_webcam_display():
+                    """ Set up the face recognition webcam display."""
                     self.webcam_handler.setUser.connect(self.setUser)
                     self.webcam_handler.user_updated.connect(self.updateUser)
 
                     self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
                     self.webcam_handler.webcam_label.setMinimumWidth(640)
 
-                    self.spacer1 = QLabel()
-                    self.displayLayout.addWidget(self.spacer1, stretch=2)
+                    def setup_spacer_1():
+                        self.spacer1 = QLabel()
+                        self.displayLayout.addWidget(self.spacer1, stretch=1)
+                    setup_spacer_1()
 
-                    self.displayLayout.addWidget(self.webcam_handler, stretch=20)  # 2/3 of the height
+                    def setup_scan_handle_container():
+                        self.scan_handle_frame = QFrame()
+                        self.scan_handle_layout = QVBoxLayout(self.scan_handle_frame)
+                        self.scan_handle_label = QLabel("")
+                        self.scan_handle_label.setStyleSheet(
+                            f"color: {TEXT_COLOR}; font: 75 {SUBHEADER_FONT_SIZE} '{FONT}';")
+                        self.scan_handle_label.setAlignment(Qt.AlignCenter)
+                        self.scan_handle_layout.addWidget(self.scan_handle_label)
 
-                    self.spacer2 = QLabel()
-                    self.displayLayout.addWidget(self.spacer2, stretch=3)
+                        self.displayLayout.addWidget(self.scan_handle_frame, stretch=1)
+                    setup_scan_handle_container()
+
+                    def setup_webcam():
+                        self.displayLayout.addWidget(self.webcam_handler, stretch=20)
+                    setup_webcam()
+
+                    def setup_spacer_2():
+                        self.spacer2 = QLabel()
+                        self.displayLayout.addWidget(self.spacer2, stretch=2)
+                    setup_spacer_2()
+
+
                 setup_face_recognition_webcam_display()
             setup_display_container()
 
@@ -184,7 +196,7 @@ class FacialRecognitionWindow(QMainWindow):
         setup_main_window()
 
     def clearDisplayContainer(self):
-        # This will remove all widgets from displayLayout
+        """ Clear the display container."""
         for i in reversed(range(self.displayLayout.count())):
             widget = self.displayLayout.itemAt(i).widget()
             if widget is not None:
@@ -192,10 +204,14 @@ class FacialRecognitionWindow(QMainWindow):
                 widget.deleteLater()
 
     def setUser(self, user):
+        """
+        Set the current user.
+        @param user: The user object.
+        """
         self.current_user = user
 
     def closeCam(self):
-
+        """ Close the webcam."""
         if hasattr(self, 'webcam_handler'):
             self.webcam_handler.close_webcam()
 
@@ -204,17 +220,6 @@ class FacialRecognitionWindow(QMainWindow):
             self.window_manager.open_dashboard(employee=self.employee)
         else:
             self.window_manager.open_dashboard(employee=None)
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.MouseButtonPress:
-            if hasattr(self, 'userHeaderWidget') and hasattr(self.userHeaderWidget, 'popup_dialog'):
-                dialog = self.userHeaderWidget.popup_dialog
-                if dialog and dialog.isVisible():
-                    # Check if the click is outside the dialog
-                    if not dialog.geometry().contains(event.globalPos()):
-                        dialog.hide()
-                        return True
-        return super(self).eventFilter(obj, event)
 
     def show_popup_window(self):
         if hasattr(self, 'popup_dialog') and self.popup_dialog.isVisible():
@@ -371,8 +376,9 @@ class FacialRecognitionWindow(QMainWindow):
             descriptionHeader = "Description: "
             description = self.description_line_edit.toPlainText()
             print(description)
+            database_tickets_directory = os.path.join(locust_directory, "Database", "DatabaseTickets")
 
-            fileName = f"../Database/Tickets/{subject}_{str(formatted_time)}.txt"
+            fileName = f"{database_tickets_directory}/{subject}_{str(formatted_time)}.txt"
 
             with open(fileName,
                       'w') as file:  # 'a' mode is for appending to the file, use 'w' to overwrite the file
@@ -400,7 +406,9 @@ class FacialRecognitionWindow(QMainWindow):
 
 
         if user:
-            new_pixmap = QPixmap("../Database/DatabaseIndirectUsers/photos/" + user.photos)  # Load the new image
+            pixmap_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "photos")
+            pixmap_path_ = f"{pixmap_path}/{user.photos}"
+            new_pixmap = QPixmap(pixmap_path_)
             picture.setPixmap(new_pixmap.scaled(150, 150))
             name.setText(f"{user.first_name} {user.last_name}")
             gender.setText(user.gender)
@@ -408,7 +416,8 @@ class FacialRecognitionWindow(QMainWindow):
             company.setText(user.company)
             title.setText(user.title)
         if not user:
-            new_pixmap = QPixmap("Picture/file.jpg")  # Load the new image
+            pixmap_path = os.path.join(locust_directory, "GUI", "Picture", "file.jpg")
+            new_pixmap = QPixmap(pixmap_path)
             picture.setPixmap(new_pixmap.scaled(150, 150))
             name.setText("")
             gender.setText("")
@@ -416,7 +425,8 @@ class FacialRecognitionWindow(QMainWindow):
             company.setText("")
             title.setText("")
         if user == None:
-            new_pixmap = QPixmap("Picture/file.jpg")  # Load the new image
+            pixmap_path = os.path.join(locust_directory, "GUI", "Picture", "file.jpg")
+            new_pixmap = QPixmap(pixmap_path)
             picture.setPixmap(new_pixmap.scaled(150, 150))
             name.setText("Unknown")
             gender.setText("Unknown")
@@ -426,182 +436,207 @@ class FacialRecognitionWindow(QMainWindow):
 
     def acceptHandle(self):
         try:
-            user = self.current_user
+            if self.employee:
+                e = self.employee.get_special_id()
+            else:
+                e = "Unknown"
 
+            user = self.current_user
             current_time = datetime.now()
             formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-
             data_to_append = [formatted_time,
-                              self.employee.employeeID,
+                              e,
                               user.id,
                               user.first_name,
                               user.last_name,
                               user.company,
                               user.title]
+
+
             log_csv_path = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
 
             with open(log_csv_path, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
+            self.scan_handle_label.setText("Access Granted")
+            self.timer.start(5000)
+
         except:
             print("error")
 
     def rejectHandle(self):
-        pass
+        self.scan_handle_label.setText("Access Denied")
+        self.timer.start(5000)
+
+    def updateLabel(self):
+        self.scan_handle_label.setText("")
+        self.timer.stop()
 
 class Ui_scanInfo(object):
     def setupUi(self, scanInfo):
-        if not scanInfo.objectName():
-            scanInfo.setObjectName(u"sidebar")
         self.labelStyle = f"color: {SIDEBAR_TEXT_COLOR}; font: 75 {BUTTON_LABEL_SIZE} '{FONT}'; padding-left: 10px;"
         self.fieldStyle = f'background-color: white; padding: 5px; border: 1px solid black; color:black'
         scanInfo.setStyleSheet(u"background-color:transparent;")
-        self.mainLayout = QVBoxLayout(scanInfo)
-        self.mainLayout.setSpacing(5)
-        self.mainLayout.setObjectName(u"mainLayout")
-        self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.pictureContainer = QFrame(scanInfo)
-        self.pictureContainer.setObjectName(u"pictureContainer")
-        self.pictureContainer.setFrameShape(QFrame.StyledPanel)
-        self.pictureContainer.setFrameShadow(QFrame.Raised)
-        self.pictureLayout = QVBoxLayout(self.pictureContainer)
-        self.pictureLayout.setSpacing(5)
-        self.pictureLayout.setObjectName(u"pictureLayout")
-        self.pictureLayout.setContentsMargins(5, 5, 5, 5)
-        self.picture = QLabel()
-        self.picturePixmap = QPixmap("Picture/file.jpg")
-        self.picture.setPixmap(self.picturePixmap.scaled(150, 150))
-        self.picture.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
-        self.picture.setMaximumHeight(150)
+        def setup_main_layout():
+            self.mainLayout = QVBoxLayout(scanInfo)
+            self.mainLayout.setSpacing(5)
+            self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
+            def setup_picture_container():
+                self.pictureContainer = QFrame(scanInfo)
+                self.pictureLayout = QVBoxLayout(self.pictureContainer)
+                self.pictureLayout.setSpacing(5)
+                self.pictureLayout.setContentsMargins(5, 5, 5, 5)
 
+                def setup_picture():
+                    self.picture = QLabel()
+                    pixmap_path = os.path.join(locust_directory, "GUI", "Picture", "file.jpg")
+                    self.picturePixmap = QPixmap(pixmap_path)
+                    self.picture.setPixmap(self.picturePixmap.scaled(150, 150))
+                    self.picture.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+                    self.picture.setMaximumHeight(150)
+                    self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
+                setup_picture()
+                self.mainLayout.addWidget(self.pictureContainer)
+            setup_picture_container()
 
-        self.mainLayout.addWidget(self.pictureContainer, 0, Qt.AlignVCenter)
+            def setup_info_container():
+                self.infoContainer = QFrame(scanInfo)
+                self.infoContainer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.infoContainer = QFrame(scanInfo)
-        self.infoContainer.setObjectName(u"infoContainer")
-        self.infoContainer.setFrameShape(QFrame.StyledPanel)
-        self.infoContainer.setFrameShadow(QFrame.Raised)
+                self.infoLayout = QFormLayout(self.infoContainer)
+                self.infoLayout.setHorizontalSpacing(10)
+                self.infoLayout.setVerticalSpacing(5)
+                self.infoLayout.setContentsMargins(5, 5, 5, 5)
+                self.infoLayout.setLabelAlignment(Qt.AlignLeft)  # Ensure labels are right-aligned
+                self.infoLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        self.infoContainer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.infoLayout = QFormLayout(self.infoContainer)
-        self.infoLayout.setObjectName(u"infoLayout")
-        self.infoLayout.setHorizontalSpacing(10)
-        self.infoLayout.setVerticalSpacing(5)
-        self.infoLayout.setContentsMargins(5, 5, 5, 5)
+                def setup_name_label():
+                        self.nameLabel = QLabel("Name: ")
+                        self.nameLabel.setStyleSheet(self.labelStyle)
+                        self.nameLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                        self.infoLayout.setWidget(0, QFormLayout.LabelRole, self.nameLabel)
 
-        # Set up 'Name' label and field
-        self.nameLabel = QLabel("Name: ")
-        self.nameLabel.setObjectName(u"nameLabel")
-        self.nameLabel.setStyleSheet(self.labelStyle)
-        self.nameLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(0, QFormLayout.LabelRole, self.nameLabel)
+                        self.name = QLabel(self.infoContainer)
+                        self.name.setStyleSheet(self.fieldStyle)
+                        self.name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                        self.infoLayout.setWidget(0, QFormLayout.FieldRole, self.name)
+                setup_name_label()
 
-        self.name = QLabel(self.infoContainer)
-        self.name.setStyleSheet(self.fieldStyle)
-        self.name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(0, QFormLayout.FieldRole, self.name)
+                def setup_gender_label():
+                    self.genderLabel = QLabel("Gender: ")
+                    self.genderLabel.setStyleSheet(self.labelStyle)
+                    self.genderLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(1, QFormLayout.LabelRole, self.genderLabel)
 
-        # Set up 'Gender' label and field
-        self.genderLabel = QLabel("Gender: ")
-        self.genderLabel.setObjectName(u"genderLabel")
-        self.genderLabel.setStyleSheet(self.labelStyle)
-        self.genderLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(1, QFormLayout.LabelRole, self.genderLabel)
+                    self.gender = QLabel(self.infoContainer)
+                    self.gender.setStyleSheet(self.fieldStyle)
+                    self.gender.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(1, QFormLayout.FieldRole, self.gender)
+                setup_gender_label()
 
+                def setup_id_label():
+                    self.idLabel = QLabel("ID: ")
+                    self.idLabel.setStyleSheet(self.labelStyle)
+                    self.idLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(2, QFormLayout.LabelRole, self.idLabel)
 
-        self.gender = QLabel(self.infoContainer)
-        self.gender.setStyleSheet(self.fieldStyle)
-        self.gender.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(1, QFormLayout.FieldRole, self.gender)
+                    self.id = QLabel(self.infoContainer)
+                    self.id.setStyleSheet(self.fieldStyle)
+                    self.id.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(2, QFormLayout.FieldRole, self.id)
+                setup_id_label()
 
-        # Set up 'ID' label and field
-        self.idLabel = QLabel("ID: ")
-        self.idLabel.setObjectName(u"idLabel")
-        self.idLabel.setStyleSheet(self.labelStyle)
-        self.idLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(2, QFormLayout.LabelRole, self.idLabel)
+                def setup_company_label():
+                    self.companyLabel = QLabel("Company: ")
+                    self.companyLabel.setStyleSheet(self.labelStyle)
+                    self.companyLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(3, QFormLayout.LabelRole, self.companyLabel)
 
-        self.id = QLabel(self.infoContainer)
-        self.id.setStyleSheet(self.fieldStyle)
-        self.id.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(2, QFormLayout.FieldRole, self.id)
+                    self.company = QLabel(self.infoContainer)
+                    self.company.setStyleSheet(self.fieldStyle)
+                    self.company.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(3, QFormLayout.FieldRole, self.company)
+                setup_company_label()
 
-        # Set up 'Company' label and field
-        self.companyLabel = QLabel("Company: ")
-        self.companyLabel.setObjectName(u"companyLabel")
-        self.companyLabel.setStyleSheet(self.labelStyle)
-        self.companyLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(3, QFormLayout.LabelRole, self.companyLabel)
+                def setup_title_label():
+                    self.titleLabel = QLabel("Title: ")
+                    self.titleLabel.setStyleSheet(self.labelStyle)
+                    self.titleLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(4, QFormLayout.LabelRole, self.titleLabel)
 
-        self.company = QLabel(self.infoContainer)
-        self.company.setStyleSheet(self.fieldStyle)
-        self.company.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(3, QFormLayout.FieldRole, self.company)
+                    self.title = QLabel(self.infoContainer)
+                    self.title.setStyleSheet(self.fieldStyle)
+                    self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                    self.infoLayout.setWidget(4, QFormLayout.FieldRole, self.title)
+                setup_title_label()
 
-        # Set up 'Title' label and field
-        self.titleLabel = QLabel("Title: ")
-        self.titleLabel.setObjectName(u"titleLabel")
-        self.titleLabel.setStyleSheet(self.labelStyle)
-        self.titleLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(4, QFormLayout.LabelRole, self.titleLabel)
+                for row in range(self.infoLayout.rowCount()):
+                    label_item = self.infoLayout.itemAt(row, QFormLayout.LabelRole)
+                    if label_item:
+                        label_widget = label_item.widget()
+                        label_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
-        self.title = QLabel(self.infoContainer)
-        self.title.setStyleSheet(self.fieldStyle)
-        self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.infoLayout.setWidget(4, QFormLayout.FieldRole, self.title)
+                    # For each field, create a container QWidget with QVBoxLayout
+                for row in range(self.infoLayout.rowCount()):
+                    field_item = self.infoLayout.itemAt(row, QFormLayout.FieldRole)
+                    if field_item:
+                        field_widget = field_item.widget()
+                        # Create the container widget and layout
+                        container_widget = QWidget()
+                        container_layout = QVBoxLayout(container_widget)
+                        container_layout.setContentsMargins(0, 0, 0, 0)  # Remove any additional margins
+                        container_layout.addWidget(field_widget)
+                        container_layout.addStretch(1)
+                        self.infoLayout.setWidget(row, QFormLayout.FieldRole, container_widget)
 
+                self.mainLayout.addWidget(self.infoContainer)
 
+                #self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+                #self.mainLayout.addItem(self.verticalSpacer_2)
+            setup_info_container()
 
+            def setup_button_container():
+                self.buttonContainer = QFrame(scanInfo)
+                self.buttonLayout = QHBoxLayout(self.buttonContainer)
+                self.buttonLayout.setSpacing(5)
+                self.buttonLayout.setObjectName(u"buttonLayout")
+                self.buttonLayout.setContentsMargins(5, 5, 5, 5)
 
+                def setup_accept_button():
+                    self.acceptButton = self.create_button("Accept", "acceptButton",
+                                                           "accept-circular-button-outline.png", "green")
+                    self.buttonLayout.addWidget(self.acceptButton)
+                setup_accept_button()
 
-        self.mainLayout.addWidget(self.infoContainer)
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Minimum)
-        self.mainLayout.addItem(self.verticalSpacer_2)
+                def setup_reject_button():
+                    self.rejectButton = self.create_button("Reject", "rejectButton",
+                                                           "cross-button.png", "red")
+                    self.buttonLayout.addWidget(self.rejectButton)
+                setup_reject_button()
 
-        self.buttonContainer = QFrame(scanInfo)
-        self.buttonContainer.setObjectName(u"buttonContainer")
-        self.buttonContainer.setFrameShape(QFrame.StyledPanel)
-        self.buttonContainer.setFrameShadow(QFrame.Raised)
-        self.buttonLayout = QHBoxLayout(self.buttonContainer)
-        self.buttonLayout.setSpacing(5)
-        self.buttonLayout.setObjectName(u"buttonLayout")
-        self.buttonLayout.setContentsMargins(5, 5, 5, 5)
+                self.mainLayout.addWidget(self.buttonContainer)
+            setup_button_container()
 
+            self.mainLayout.addSpacing(20)
 
-        self.acceptButton = QPushButton("Accept")
-        self.acceptButton = self.create_button("Accept", "acceptButton", "accept-circular-button-outline.png", "green")
-        self.buttonLayout.addWidget(self.acceptButton)
+            def setup_logout_container():
+                self.logout_container = QFrame(scanInfo)
 
+                self.logout_layout = QVBoxLayout(self.logout_container)
+                self.logout_layout.setSpacing(5)
+                self.logout_layout.setObjectName(u"buttonLayout")
+                self.logout_layout.setContentsMargins(5, 5, 5, 5)
 
-        self.rejectButton = self.create_button("Reject", "rejectButton", "cross-button.png", "red")
-        self.buttonLayout.addWidget(self.rejectButton)
-
-        self.mainLayout.addWidget(self.buttonContainer)
-
-        self.mainLayout.addSpacing(20)
-
-        self.frame_3 = QFrame(scanInfo)
-        self.frame_3.setObjectName(u"frame_3")
-        self.frame_3.setFrameShape(QFrame.StyledPanel)
-        self.frame_3.setFrameShadow(QFrame.Raised)
-
-        self.frame_3Layout = QVBoxLayout(self.frame_3)
-        self.frame_3Layout.setSpacing(5)
-        self.frame_3Layout.setObjectName(u"buttonLayout")
-        self.frame_3Layout.setContentsMargins(5, 5, 5, 5)
-
-        self.logoutButton = self.create_button("Exit", "logoutButton", "sign-out-alt.png", "white")
-        #self.logoutButton.clicked.connect(self.exitButtonHandle)
-        self.frame_3Layout.addWidget(self.logoutButton)
-
-        self.mainLayout.addWidget(self.frame_3)
-
-
-
+                def setup_logout_button():
+                    self.logoutButton = self.create_button("Exit", "logoutButton", "sign-out-alt.png", "white")
+                    self.logout_layout.addWidget(self.logoutButton)
+                setup_logout_button()
+                self.mainLayout.addWidget(self.logout_container)
+            setup_logout_container()
+        setup_main_layout()
 
     def create_button(self, text, objectName, iconPath, setColor):
         button = QPushButton()
@@ -609,22 +644,20 @@ class Ui_scanInfo(object):
         button.setText(f"{text}")
 
         path = os.path.join(locust_directory, "GUI", "buttonIcons")
-        # Load the icon
         pixmap = QPixmap(f"{path}/{iconPath}")
-        # Create a new pixmap with the same size to apply the color change
+
         white_pixmap = QPixmap(pixmap.size())
         white_pixmap.fill(QColor('transparent'))  # Start with a transparent pixmap
 
-        # Create a QPainter to draw on the pixmap
         painter = QPainter(white_pixmap)
         painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        painter.drawPixmap(0, 0, pixmap)  # Draw the original pixmap onto the transparent one
+        painter.drawPixmap(0, 0, pixmap)
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
-        # Set the color to white
+
         painter.fillRect(white_pixmap.rect(), QColor(setColor))
         painter.end()
 
-        # Create the icon with the white pixmap and set it on the button
+
         button.setIcon(QIcon(white_pixmap))
         button.setIconSize(QSize(20, 20))
         button.setStyleSheet(
@@ -632,6 +665,7 @@ class Ui_scanInfo(object):
         button.setMinimumHeight(40)
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         return button
+
     def button_style(self, textColor, buttonFontSize, font, interactiveElements1, interactiveElements2):
         return (f"""
             QPushButton {{
@@ -675,8 +709,9 @@ class Ui_logoWidget(object):
         self.logoImg.setScaledContents(True)
         self.logoImg.setMaximumSize(80, 80)  # Set the maximum size of the logo
 
+        icon_path = os.path.join(locust_directory, "GUI", "Icons", "7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
         # Load the logo image and set it to the label
-        pixmap = QPixmap("../GUI/Icons/7d597e2c-2613-464e-bd81-d18f1a50bbe1.png")
+        pixmap = QPixmap(icon_path)
         self.logoImg.setPixmap(pixmap)
         self.logoLayout.addWidget(self.logoImg)  # Add the logo image to the layout
 
@@ -711,7 +746,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_search_icon():
             self.search_icon = QPushButton(userHeaderWidget)
-            self.search_icon.setIcon(QIcon("buttonIcons/search.png"))
+            search_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "search.png")
+            self.search_icon.setIcon(QIcon(search_icon_path))
             self.search_icon.setIconSize(QSize(18, 18))
             self.search_icon.setStyleSheet(buttonStyleSheet)
             self.search_icon.setFixedSize(40, 40)
@@ -754,7 +790,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_settings_button():
             self.settings_button = QPushButton(userHeaderWidget)
-            self.settings_button.setIcon(QIcon("buttonIcons/settings.png"))
+            settings_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "settings.png")
+            self.settings_button.setIcon(QIcon(settings_icon_path))
             self.settings_button.setIconSize(QSize(18, 18))
             self.settings_button.setStyleSheet(buttonStyleSheet)
             self.settings_button.setFixedSize(40, 40)
@@ -764,7 +801,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_notification_button():
             self.notification_button = QPushButton(userHeaderWidget)
-            self.notification_button.setIcon(QIcon("buttonIcons/bell.png"))  # Replace with your icon's path
+            bell_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "bell.png")
+            self.notification_button.setIcon(QIcon(bell_icon_path))  # Replace with your icon's path
             self.notification_button.setIconSize(QSize(18, 18))  # Icon size
             self.notification_button.setStyleSheet(buttonStyleSheet)
             self.notification_button.setFixedSize(40, 40)  # Adjust size as needed
@@ -774,7 +812,8 @@ class Ui_userHeaderWidget(object):
 
         def setup_employee_profile():
             self.employee_profile = QPushButton(userHeaderWidget)
-            self.employee_profile.setIcon(QIcon("buttonIcons/user.png"))
+            user_icon_path = os.path.join(locust_directory, "GUI", "buttonIcons", "user.png")
+            self.employee_profile.setIcon(QIcon(user_icon_path))
             self.employee_profile.setIconSize(QSize(18, 18))  # Icon size, adjust as needed
             self.employee_profile.setStyleSheet(buttonStyleSheet)
             self.employee_profile.setFixedSize(40, 40)
@@ -828,10 +867,10 @@ class WebcamHandler(QWidget):
             return
         self.webcam_timer = QTimer(self)
         self.webcam_timer.timeout.connect(self.update_webcam_feed)
-        self.webcam_timer.start(250)  # Update every 50 milliseconds
+        self.webcam_timer.start(50)
 
     def load_known_face_descriptors(self):
-        pickle_directory = "../Database/DatabaseIndirectUsers/face_encodings"
+        pickle_directory = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "face_encodings")
         known_face_descriptors = {}
         for filename in os.listdir(pickle_directory):
             if filename.endswith(".pkl"):

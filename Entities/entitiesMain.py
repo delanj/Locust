@@ -1,3 +1,7 @@
+from datetime import datetime
+
+import pytz
+
 from Entities.Employee.Employee import DeskTechnician, SecurityManager
 from Entities.IndirectUser import User, Schedule
 from Entities.Employee import Employee
@@ -30,6 +34,37 @@ def getSchedule(workDay):
             day = f"{user.first_name}: {schedule.workdays[workDay]}"
             s.append(day)
     return s
+
+def is_within_user_schedule(user_id):
+    # Define a helper function to check time within interval
+    def is_time_within_interval(current_time, start_time, end_time):
+        current = datetime.strptime(current_time, '%I:%M %p').time()
+        start = datetime.strptime(start_time, '%I:%M %p').time()
+        end = datetime.strptime(end_time, '%I:%M %p').time()
+        return start <= current <= end
+
+    # Get the current date and time
+    now = datetime.now(pytz.timezone('America/New_York'))  # replace 'Your_Timezone' with your timezone
+    current_day = now.strftime("%A")
+    current_time = now.strftime("%I:%M %p")
+
+    # Find the user's schedule
+    for schedule in schedule_database.schedules:
+        if schedule.user_id == user_id:
+            user_schedule = schedule.workdays
+
+            # Check if today's schedule exists for the user
+            if current_day in user_schedule:
+                start_time, end_time = user_schedule[current_day].split(' - ')
+                start_time = start_time.strip()
+                end_time = end_time.strip()
+                return is_time_within_interval(current_time, start_time, end_time)
+
+    return False  # User ID not found or current time is not within working hours
+
+
+is_within_schedule = is_within_user_schedule("0001")
+print("Is within schedule:", is_within_schedule)
 
 def getEmployees():
     print("here")

@@ -176,7 +176,7 @@ class DashboardWindow(QMainWindow):
                     self.navigation_widget_ui.dashboardButton.setEnabled(True)
         adjust_view_for_employee()
 
-        self.central_layout.addWidget(self.sidebar_frame, stretch=2)
+        self.central_layout.addWidget(self.sidebar_frame, stretch=5)
 
     def setup_main_window(self):
         """ Initialize the main window."""
@@ -219,7 +219,7 @@ class DashboardWindow(QMainWindow):
 
         display_widget()
 
-        self.central_layout.addWidget(self.main_window, stretch=10)
+        self.central_layout.addWidget(self.main_window, stretch=20)
 
     def clear_display_container(self):
         # Check if the timer exists and is running, then stop it

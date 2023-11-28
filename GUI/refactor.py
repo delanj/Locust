@@ -16,12 +16,12 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QSizePol
 from PyQt5.QtWidgets import QLabel, QHBoxLayout
 from collections import Counter
 from Entities import entitiesMain
+from Entities.entitiesMain import is_within_user_schedule
 
 # Link to data base
 
 
-
-FONT = "Garamond"
+FONT = "Copperplate"
 
 # Font Sizes
 TITLE_FONT_SIZE = "36px"
@@ -81,6 +81,9 @@ class FacialRecognitionWindow(QMainWindow):
         self.showFullScreen()
 
     def setupUi(self):
+
+        self.noneStyle = "background-color: transparent; border: none; border-radius: 20px;"
+
         """ Set up the main window."""
         self.webcam_handler = WebcamHandler()
         self.central_widget = QWidget()
@@ -89,13 +92,13 @@ class FacialRecognitionWindow(QMainWindow):
         self.centralLayout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(self.central_widget)
 
-        def setup_sidebar():
+        def setup_sidebar(add_to, stretch):
             """ Set up the sidebar."""
             self.sideBar = QFrame(self.central_widget)
             self.sideBar.setStyleSheet(f"background-color: {SIDEBAR_COLOR};")
             self.sidebarLayout = QVBoxLayout(self.sideBar)
             self.sidebarLayout.setSpacing(0)
-            self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
+            self.sidebarLayout.setContentsMargins(10, 0, 10, 0)
 
             def setup_logo_widget():
                 """ Set up the logo widget."""
@@ -121,10 +124,10 @@ class FacialRecognitionWindow(QMainWindow):
                 self.scanInfoWidgetUi.rejectButton.clicked.connect(self.rejectHandle)
             setup_buttons()
 
-            self.centralLayout.addWidget(self.sideBar, stretch=2)
-        setup_sidebar()
+            add_to.addWidget(self.sideBar, stretch=stretch)
+        setup_sidebar(self.centralLayout, 5)
 
-        def setup_main_window():
+        def setup_main_window(add_to, stretch):
             """ Set up the main window."""
             self.mainWindow = QFrame(self.central_widget)
             self.mainWindow.setStyleSheet(f"background-color: {MAIN_BACKGROUND_COLOR};")
@@ -150,7 +153,7 @@ class FacialRecognitionWindow(QMainWindow):
 
                             """
 
-            def setup_header_widget():
+            def setup_header_widget(add_to, stretch):
                 """ Set up the header widget."""
                 self.userHeaderContainer = QWidget(self.mainWindow)
                 self.userHeaderUi = Ui_userHeaderWidget()
@@ -161,86 +164,56 @@ class FacialRecognitionWindow(QMainWindow):
                 self.userHeaderUi.employee_profile.clicked.connect(self.show_popup_window)
                 QApplication.instance().installEventFilter(self.central_widget)
 
-                self.mainLayout.addWidget(self.userHeaderContainer, stretch=1)
-            setup_header_widget()
+                add_to.addWidget(self.userHeaderContainer, stretch=stretch)
+            setup_header_widget(self.mainLayout, 1)
 
-            def setup_display_container():
+            def setup_display_container(add_to, stretch):
                 """ Set up the display container."""
                 self.displayContainer = QWidget(self.mainWindow)
                 self.displayContainer.setObjectName("displayContainer")
                 self.displayContainer.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
                 self.displayLayout = QVBoxLayout(self.displayContainer)
-                self.mainLayout.addWidget(self.displayContainer, stretch=10)
+                add_to.addWidget(self.displayContainer, stretch=stretch)
 
-                def setup_face_recognition_webcam_display():
-                    """ Set up the face recognition webcam display."""
-                    self.webcam_handler.setUser.connect(self.setUser)
-                    self.webcam_handler.user_updated.connect(self.updateUser)
-                    self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+                def setup_scan_container(add_to=None, stretch=None):
+                    self.scan_container = QWidget()
+                    self.scan_container.setStyleSheet(f"background-color:{CONTENT_CARD_BACKGROUND_COLOR}; "
+                                                      f"border: 2px solid {BORDERS_LINES_COLOR};"
+                                                      f"border-radius: 20px;")
+                    self.scan_layout = QVBoxLayout(self.scan_container)
+                    add_to.addWidget(self.scan_container)
 
-
-
-                    self.webcam_handler.webcam_label.setMinimumWidth(640)
-                    self.webcam_handler.webcam_label.setMinimumHeight(480)
-
-
-
-                    def setup_spacer_1():
-                        self.spacer1 = QLabel()
-                        self.displayLayout.addWidget(self.spacer1, stretch=1)
-                    setup_spacer_1()
-
-                    def setup_scan_handle_container():
-                        self.scan_handle_frame = QFrame()
-                        #self.scan_handle_frame.setMaximumWidth(300)
-
-                        self.scan_handle_layout = QHBoxLayout(self.scan_handle_frame)
-
-
-
-
+                    def setup_scan_header_container(add_to=None, stretch=None):
+                        self.scan_handle_widget = QWidget()
+                        self.scan_handle_widget.setStyleSheet(self.noneStyle)
+                        self.scan_handle_layout = QHBoxLayout(self.scan_handle_widget)
                         self.scan_handle_layout.addStretch(1)
-
-
-
-
-
-
-
-
                         self.scan_handle_label = QLabel("Scan Ready")
-
                         self.scan_handle_label.setAlignment(Qt.AlignCenter)
-
                         self.scan_handle_label.setStyleSheet(
-                            f"color: {SIDEBAR_TEXT_COLOR}; font: 75 {SUBHEADER_FONT_SIZE} '{FONT}'; background-color: {SIDEBAR_COLOR};")
-                        self.scan_handle_layout.addWidget(self.scan_handle_label, 4)
-
+                            f"color: {TEXT_COLOR}; font: 75 {SUBHEADER_FONT_SIZE} "
+                            f"'{FONT}';")
+                        self.scan_handle_layout.addWidget(self.scan_handle_label, 10)
                         self.scan_handle_layout.addStretch(1)
+                        add_to.addWidget(self.scan_handle_widget, stretch=stretch)
+                    setup_scan_header_container(self.scan_layout, 1)
 
+                    def setup_face_recognition_webcam_display(add_to=None, stretch=None):
+                        """ Set up the face recognition webcam display."""
+                        self.webcam_handler.setUser.connect(self.setUser)
+                        self.webcam_handler.user_updated.connect(self.updateUser)
+                        self.webcam_handler.webcam_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
-                        self.displayLayout.addWidget(self.scan_handle_frame, stretch=1)
-                    setup_scan_handle_container()
-
-                    def setup_webcam():
-                        self.cam_container = QWidget(self.mainWindow)
-                        #self.cam_container.setStyleSheet(f"background-color:{SIDEBAR_COLOR};")
-                        self.cam_container.setStyleSheet(BACKGROUND_COLOR_TRANSPARENT)
+                        self.cam_container = QWidget()
+                        self.cam_container.setStyleSheet(self.noneStyle)
                         self.cam_layout = QHBoxLayout(self.cam_container)
-
                         self.cam_layout.addStretch(1)
-                        self.cam_layout.addWidget(self.webcam_handler, 4)
+                        self.cam_layout.addWidget(self.webcam_handler, 10)
                         self.cam_layout.addStretch(1)
+                        add_to.addWidget(self.cam_container, stretch=stretch)
+                    setup_face_recognition_webcam_display(self.scan_layout, 10)
 
-
-                        self.displayLayout.addWidget(self.cam_container, stretch=20)
-
-
-
-
-                    setup_webcam()
-
-                    def setup_scan_button():
+                    def setup_scan_button(add_to=None, stretch=None):
                         scan_button = QPushButton()
                         scan_button.setStyleSheet(self.buttonStyleSheet)
                         scan_button.setText("Scan")
@@ -257,21 +230,15 @@ class FacialRecognitionWindow(QMainWindow):
                         button_layout.addWidget(scan_button)  # Add the button
                         button_layout.addStretch()  # Add stretchable space on the right
 
-                        self.displayLayout.addLayout(button_layout, stretch=1)
-
-                    setup_scan_button()
-
-                    def setup_spacer_2():
-                        self.spacer2 = QLabel()
-                        self.displayLayout.addWidget(self.spacer2, stretch=1)
-                    setup_spacer_2()
+                        add_to.addLayout(button_layout, stretch=stretch)
+                    setup_scan_button(self.scan_layout, 1)
 
 
-                setup_face_recognition_webcam_display()
-            setup_display_container()
+                setup_scan_container(self.displayLayout)
+            setup_display_container(self.mainLayout, 10)
 
-            self.centralLayout.addWidget(self.mainWindow, stretch=10)
-        setup_main_window()
+            add_to.addWidget(self.mainWindow, stretch=stretch)
+        setup_main_window(self.centralLayout, 20)
 
     def start_scan(self):
         self.scan_handle_label.setText("Scan in Progress..")
@@ -304,7 +271,7 @@ class FacialRecognitionWindow(QMainWindow):
         """
         self.current_user = user
         if user:
-            print(True)
+            pass
         if not user and not self.webcam_handler.start_scanning:
             self.scan_handle_label.setText("No Match Found")
 
@@ -1311,17 +1278,26 @@ class WebcamHandler(QWidget):
                             best_match = (name, match_percent)
                         match_found = True
 
-            # Draw rectangle and add text
-            left, top, right, bottom = (face_location.left(), face_location.top(),
-                                        face_location.right(), face_location.bottom())
+
             border_color, text = (255, 0, 0), "Unknown"
             if match_found:
+
                 border_color, text = (0, 255, 0), best_match[0]
                 user = next((i for i in entitiesMain.getUsers() if i.id == best_match[0].split('_')[0]), None)
                 if user:
                     text = f"{user.first_name} {user.last_name}"
                     self.user_updated.emit(user)
                     self.setUser.emit(user)
+
+                    is_within_schedule = is_within_user_schedule(user.id)
+                    if not is_within_schedule:
+                        border_color, text = (255, 255, 0), best_match[0]
+                    else:
+                        border_color, text = (0, 255, 0), best_match[0]
+
+
+
+
 
 
             border_thickness = 2

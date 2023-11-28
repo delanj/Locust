@@ -7,6 +7,9 @@ from datetime import datetime
 import cv2
 import dlib
 import numpy as np
+import pyfirmata
+from pyfirmata import Arduino, util
+import time
 from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, QEvent
 from PyQt5.QtGui import QPixmap, QIcon, QImage, QPalette, QColor, QPainter, \
     QTextOption
@@ -459,6 +462,29 @@ class FacialRecognitionWindow(QMainWindow):
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
+            #Connecting to the board
+            board = Arduino("/dev/cu.usbmodem14201")
+            # RBG LED PIN
+            red_pin = 10
+            green_pin = 9
+            blue_pin = 6
+
+            # Set up the RGB LED
+            board.digital[red_pin].mode = pyfirmata.PWM
+            board.digital[green_pin].mode = pyfirmata.PWM
+            board.digital[blue_pin].mode = pyfirmata.PWM
+
+            def set_rgb_color(red, green, blue):
+                board.digital[red_pin].write(red / 255)
+                board.digital[green_pin].write(green / 255)
+                board.digital[blue_pin].write(blue / 255)
+
+            set_rgb_color(0, 255, 0)
+            time.sleep(2)
+            set_rgb_color(0,0,0)
+            print("Test")
+
+
             self.scan_handle_label.setText("Access Granted")
             self.timer.start(5000)
 
@@ -466,6 +492,27 @@ class FacialRecognitionWindow(QMainWindow):
             print("error")
 
     def rejectHandle(self):
+        # Connecting to the board
+        board = Arduino("/dev/cu.usbmodem14201")
+        # RBG LED PIN
+        red_pin = 10
+        green_pin = 9
+        blue_pin = 6
+
+        # Set up the RGB LED
+        board.digital[red_pin].mode = pyfirmata.PWM
+        board.digital[green_pin].mode = pyfirmata.PWM
+        board.digital[blue_pin].mode = pyfirmata.PWM
+
+        def set_rgb_color(red, green, blue):
+            board.digital[red_pin].write(red / 255)
+            board.digital[green_pin].write(green / 255)
+            board.digital[blue_pin].write(blue / 255)
+
+        set_rgb_color(255, 0, 0)
+        time.sleep(2)
+        set_rgb_color(0, 0, 0)
+        print("Test")
         self.scan_handle_label.setText("Access Denied")
         self.timer.start(5000)
 

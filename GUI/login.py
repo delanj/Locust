@@ -7,7 +7,7 @@ from PyQt5.QtGui import QPixmap, QIcon, QColor, QPainter, QFontDatabase, QFont, 
 from PyQt5.QtCore import Qt, QSize
 
 from Entities import entitiesMain as db
-from GUI import dashboard
+
 
 
 class LoginWindow(QMainWindow):
@@ -125,7 +125,7 @@ class LoginWindow(QMainWindow):
         """ Toggle the password visibility."""
         current_file_directory = os.path.dirname(os.path.abspath(__file__))
         if self.togglePasswordButton.isChecked():
-            image_path = os.path.join(current_file_directory, "buttonIcons", "show.png")
+            image_path = os.path.join(current_file_directory, "buttonIcons", "hide.png")
             self.passwordEdit.setEchoMode(QLineEdit.Normal)
             self.setButtonIcon(self.togglePasswordButton, image_path)
         else:

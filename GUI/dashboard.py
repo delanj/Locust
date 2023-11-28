@@ -94,7 +94,7 @@ locust_directory = os.path.abspath(os.path.join(current_file_directory, '..'))
 class DashboardWindow(QMainWindow):
     """ Initialize the main login window. """
 
-    def __init__(self, window_manager, employee=None):
+    def __init__(self, window_manager=None, employee=None):
         super().__init__()
         self.window_manager = window_manager
         self.employee = employee
@@ -2827,7 +2827,8 @@ class Ui_addUserWidget(object):
                 self.picture = QLabel(self.pictureframe)
                 self.picture.setScaledContents(True)
                 self.picture.setMaximumSize(40, 40)
-                pixmap = QPixmap("buttonIcons/user.png")
+                pixmap_ = os.path.join(locust_directory, "buttonIcons", "user.png")
+                pixmap = QPixmap(pixmap_)
                 self.picture.setPixmap(pixmap)
                 self.pictureLayout.addWidget(self.picture, 0, Qt.AlignHCenter)
                 self.faceEncLayout.addWidget(self.pictureframe, 0, Qt.AlignVCenter)
@@ -2843,7 +2844,7 @@ class Ui_addUserWidget(object):
                 self.photoFaceEncLayout.setContentsMargins(0, 0, 0, 0)
 
                 def setup_face_encoding_label():
-                    self.faceEncFrameLabel = QLabel("Face Encoding: ")
+                    self.faceEncFrameLabel = QLabel("Face Encoding")
                     self.faceEncFrameLabel.setStyleSheet(self.noneStyle + self.subHeaderLabelStyle)
                     self.photoFaceEncLayout.addWidget(self.faceEncFrameLabel)
 
@@ -2894,11 +2895,15 @@ class Ui_addUserWidget(object):
 
         setup_face_encoding_frame()
 
+
     def clear(self):
+
         if hasattr(self, 'image_label'):
             self.image_label.hide()
         if hasattr(self, 'capture') and self.capture.isOpened():
             self.capture.release()
+
+
 
         self.accountFrame.show()
         self.organizationFrame.show()
@@ -2943,7 +2948,8 @@ class Ui_addUserWidget(object):
             checkBox.setChecked(False)
 
         def removeFiles():
-            folder_path = '../Database/AddLocal'
+            folder_path = os.path.join(locust_directory, "Database", "DatabaseAddLocal")
+
             if os.path.exists(folder_path):
                 for file in os.listdir(folder_path):
                     file_path = os.path.join(folder_path, file)
@@ -2967,7 +2973,7 @@ class Ui_addUserWidget(object):
         self.accountFrame.hide()
         self.organizationFrame.hide()
         self.scheduleFrame.hide()
-        if not hasattr(self, 'capture'):  # Check if the camera has been initialized already
+        if not hasattr(self, 'capture'):
             self.init_Cam()
 
         self.openCameraButton.hide()
@@ -3011,7 +3017,7 @@ class Ui_addUserWidget(object):
     def capturePhoto(self):
         ret, frame = self.capture.read()
         if ret:
-            save_directory = "../Database/AddLocal"
+            save_directory = os.path.join(locust_directory, "Database", "DatabaseAddLocal")
             os.makedirs(save_directory, exist_ok=True)
             photoDir = f"{self.userIDLineEdit.text()}_0.jpg"
             file_path = os.path.join(save_directory, photoDir)
@@ -3019,12 +3025,18 @@ class Ui_addUserWidget(object):
             self.photoLineEdit.setText(photoDir)
 
     def savePKL(self):
-        file_path = f"../Database/AddLocal/{self.userIDLineEdit.text()}_0.jpg"
+        file_path = os.path.join(locust_directory, "Database", "DatabaseAddLocal", self.userIDLineEdit.text() + "_0.jpg")
+
         # Save plk
         face_detector = dlib.get_frontal_face_detector()
-        shape_predictor = dlib.shape_predictor("../Database/DatabaseDatFiles/shape_predictor_68_face_landmarks.dat")
+
+        shape_predictor_path = os.path.join(locust_directory, "Database", "DatabaseDatFiles",
+                                            "shape_predictor_68_face_landmarks.dat")
+        shape_predictor = dlib.shape_predictor(shape_predictor_path)
+
         face_recognizer = dlib.face_recognition_model_v1(
-            "../Database/DatabaseDatFiles/dlib_face_recognition_resnet_model_v1.dat")
+            os.path.join(locust_directory, "Database", "DatabaseDatFiles",
+                         "dlib_face_recognition_resnet_model_v1.dat"))
         # Load the image
         image = dlib.load_rgb_image(file_path)
         faces = face_detector(image)  # Detect faces in the image
@@ -3040,7 +3052,8 @@ class Ui_addUserWidget(object):
             face_descriptor = face_recognizer.compute_face_descriptor(image, shape)
             known_face_data["face_descriptors"].append(face_descriptor)
         # Save the known_face_data to a pickle file
-        pickle_file_path = f"../Database/AddLocal/{self.userIDLineEdit.text()}_0.pkl"
+
+        pickle_file_path = os.path.join(locust_directory, "Database", "DatabaseAddLocal", self.userIDLineEdit.text() + "_0.pkl")
         with open(pickle_file_path, "wb") as f:
             pickle.dump(known_face_data, f)
         self.faceEncLineEdit.setText(f"{self.userIDLineEdit.text()}_0.pkl")
@@ -3049,32 +3062,53 @@ class Ui_addUserWidget(object):
         self.clear()
 
     def saveNewUser(self):
-        newUser = User.User(
-            id=self.userIDLineEdit.text(),
-            first_name=self.firstNameLineEdit.text(),
-            last_name=self.lastNameLineEdit.text(),
-            gender=self.genderComboBox.currentText(),
-            company=self.companyNameLineEdit.text(),
-            title=self.titleLineEdit.text(),
-            photos=self.photoLineEdit.text(),
-            face_encoding=self.faceEncLineEdit.text()
-        )
 
-        User.UserDatabase.add_user(newUser)
 
-        database_add_local_directory = os.path.join(locust_directory, "Database", "DatabaseAddLocal")
+        try:
+            newUser = User.User(
+                id=self.userIDLineEdit.text(),
+                first_name=self.firstNameLineEdit.text(),
+                last_name=self.lastNameLineEdit.text(),
+                gender=self.genderComboBox.currentText(),
+                company=self.companyNameLineEdit.text(),
+                title=self.titleLineEdit.text(),
+                photos=self.photoLineEdit.text(),
+                face_encoding=self.faceEncLineEdit.text()
+            )
 
-        database_indirect_users_photos_directory = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers",
-                                                                "photos")
 
-        database_indirect_users_face_encodings_directory = os.path.join(locust_directory, "Database",
-                                                                        "DatabaseIndirectUsers", "face_encodings")
+            user_db = User.UserDatabase()
+            user_db.add_user(newUser)
 
-        shutil.move(f"{database_add_local_directory}/{self.photoLineEdit.text()}",
-                    f"{database_indirect_users_photos_directory}/{self.photoLineEdit.text()}")
 
-        shutil.move(f"{database_add_local_directory}/{self.faceEncLineEdit.text()}",
-                    f"{database_indirect_users_face_encodings_directory}/{self.faceEncLineEdit.text()}")
+        # Define directories for database operations
+            database_add_local_dir = os.path.join(locust_directory, "Database", "DatabaseAddLocal")
+
+            photos_dir = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "photos")
+            face_encodings_dir = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "face_encodings")
+
+            photo_path = os.path.join(database_add_local_dir, self.photoLineEdit.text())
+            print(photo_path)
+            face_enc_path = os.path.join(database_add_local_dir, self.faceEncLineEdit.text())
+
+            # Check if the photo file exists before moving
+            if os.path.exists(photo_path):
+                shutil.move(photo_path, os.path.join(photos_dir, self.photoLineEdit.text()))
+            else:
+                print(f"Photo file not found: {photo_path}")
+
+            # Check if the face encoding file exists before moving
+            if os.path.exists(face_enc_path):
+                shutil.move(face_enc_path, os.path.join(face_encodings_dir, self.faceEncLineEdit.text()))
+            else:
+                print(f"Face encoding file not found: {face_enc_path}")
+
+        except Exception as e:
+            print(f"Error in saveNewUser: {e}")
+            traceback.print_exc()  # This will print the stack trace
+
+
+
 
         # db_conn = database.db
         # coll_ref = db_conn.collection("indirectUser")
@@ -3106,35 +3140,42 @@ class Ui_addUserWidget(object):
         return schedule_info
 
     def update_schedule_json(self):
-        # Get the current schedule information
+        # Retrieve new schedule information
         new_schedule = self.get_schedule_info()
 
-        json_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile",
-                                               "schedule.json")
+        # Define path to the schedule JSON file
+        json_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile", "schedule.json")
 
-        # Read the existing data
+        # Initialize the schedule data list
+        schedule_data = []
+
+        # Read existing schedule data from the JSON file
         try:
             with open(json_path, 'r') as file:
                 schedule_data = json.load(file)
-                # Ensure that we have a list of dicts
                 if not isinstance(schedule_data, list):
                     raise ValueError("JSON file must contain a list of dictionaries.")
-        except (FileNotFoundError, ValueError) as e:
+        except FileNotFoundError:
+            print(f"Schedule file not found: {json_path}")
+        except ValueError as e:
             print(f"Error reading schedule file: {e}")
-            schedule_data = []
 
-        # Check if the user_id already exists
+        # Update the schedule data with new information
+        # Check if the user_id already exists in the data
         existing_user = next((item for item in schedule_data if item.get("user_id") == new_schedule["user_id"]), None)
         if existing_user:
             # Update existing user's schedule
             existing_user["schedule"] = new_schedule["schedule"]
         else:
-            # Append the new schedule information
+            # Append new schedule information
             schedule_data.append(new_schedule)
 
-        # Write the updated data back to the file
-        with open(json_path, 'w') as file:
-            json.dump(schedule_data, file, indent=4)
+        # Write the updated schedule data back to the JSON file
+        try:
+            with open(json_path, 'w') as file:
+                json.dump(schedule_data, file, indent=4)
+        except IOError as e:
+            print(f"Error writing to schedule file: {e}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from GUI.dashboard import DashboardWindow
-from GUI.facialRecognition import FacialRecognitionWindow
+#from GUI.facialRecognition import FacialRecognitionWindow
 from GUI.login import LoginWindow
-
+from GUI.refactor import FacialRecognitionWindow
 
 class WindowManager:
     def __init__(self):

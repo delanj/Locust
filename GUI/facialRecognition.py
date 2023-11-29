@@ -4,6 +4,11 @@ import pickle
 import sys
 from datetime import datetime
 
+import pyfirmata
+from playsound import playsound
+from pyfirmata import Arduino, util, STRING_DATA
+import time
+
 import cv2
 import dlib
 import numpy as np
@@ -462,12 +467,60 @@ class FacialRecognitionWindow(QMainWindow):
             self.scan_handle_label.setText("Access Granted")
             self.timer.start(5000)
 
+            #playsound("/Sounds/access-granted-87075.mp3")
+            print("LED")
+            board = Arduino("/dev/cu.usbmodem14201")
+
+            # RBG LED PIN
+            red_pin = 10
+            green_pin = 9
+            blue_pin = 6
+
+            # Set up the RGB LED
+            board.digital[red_pin].mode = pyfirmata.PWM  # Corrected line
+            board.digital[green_pin].mode = pyfirmata.PWM  # Corrected line
+            board.digital[blue_pin].mode = pyfirmata.PWM  # Corrected line
+
+            def set_rgb_color(red, green, blue):
+                board.digital[red_pin].write(red / 255)
+                board.digital[green_pin].write(green / 255)
+                board.digital[blue_pin].write(blue / 255)
+
+            set_rgb_color(0, 255, 0)
+            time.sleep(3)
+            set_rgb_color(0, 0, 0)
+
+
+
         except:
             print("error")
 
     def rejectHandle(self):
+        #playsound("/Sounds/access-denied-102628.mp3")
         self.scan_handle_label.setText("Access Denied")
         self.timer.start(5000)
+        print("LED")
+        board = Arduino("/dev/cu.usbmodem14201")
+
+        # RBG LED PIN
+        red_pin = 10
+        green_pin = 9
+        blue_pin = 6
+
+        # Set up the RGB LED
+        board.digital[red_pin].mode = pyfirmata.PWM  # Corrected line
+        board.digital[green_pin].mode = pyfirmata.PWM  # Corrected line
+        board.digital[blue_pin].mode = pyfirmata.PWM  # Corrected line
+
+        def set_rgb_color(red, green, blue):
+            board.digital[red_pin].write(red / 255)
+            board.digital[green_pin].write(green / 255)
+            board.digital[blue_pin].write(blue / 255)
+
+        set_rgb_color(255, 0, 0)
+        time.sleep(3)
+        set_rgb_color(0, 0, 0)
+
 
     def updateLabel(self):
         self.scan_handle_label.setText("")

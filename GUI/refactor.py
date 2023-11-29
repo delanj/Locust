@@ -4,6 +4,11 @@ import pickle
 import sys
 from datetime import datetime
 
+import pyfirmata
+from playsound import playsound
+from pyfirmata import Arduino, util, STRING_DATA
+import time
+import Arduino
 import cv2
 import dlib
 import numpy as np
@@ -560,17 +565,26 @@ class FacialRecognitionWindow(QMainWindow):
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
+                #playsound("/Sounds/access-granted-87075.mp3")
+                print("LED")
+                Arduino.run_arduino_controller("green")
+
+
+
+
             self.webcam_handler.handle_timer("start")
             self.scan_handle_label.setText("Scan Ready")
             self.clearUserContainer()
 
-        except:
-            print("error")
+        except Exception as e:
+            print(e)
             self.webcam_handler.handle_timer("start")
             self.scan_handle_label.setText("Scan Ready")
             self.clearUserContainer()
 
     def rejectHandle(self):
+        print("Led")
+        Arduino.run_arduino_controller("red")
         self.webcam_handler.handle_timer("start")
         self.scan_handle_label.setText("Scan Ready")
         self.clearUserContainer()

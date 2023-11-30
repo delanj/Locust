@@ -2,13 +2,14 @@ import csv
 import os
 import pickle
 import sys
+import threading
 from datetime import datetime
 
 import pyfirmata
 from playsound import playsound
 from pyfirmata import Arduino, util, STRING_DATA
 import time
-import Arduino
+import GUI.Arduino
 import cv2
 import dlib
 import numpy as np
@@ -565,9 +566,15 @@ class FacialRecognitionWindow(QMainWindow):
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
-                #playsound("/Sounds/access-granted-87075.mp3")
-                print("LED")
-                Arduino.run_arduino_controller("green")
+            #Running the arduino controller and turning the LED Green.
+            print("LED")
+            GUI.Arduino.run_arduino_controller("green")
+
+            # Using the playsound library to play a mp3 that says access granted
+            print("Sound")
+            sound_path = os.path.join(locust_directory, "GUI", "Sounds", "access-granted-87075.mp3")
+            playsound(sound_path)
+
 
 
 
@@ -583,8 +590,14 @@ class FacialRecognitionWindow(QMainWindow):
             self.clearUserContainer()
 
     def rejectHandle(self):
+        #Running the arduino controller and turning LED red
         print("Led")
-        Arduino.run_arduino_controller("red")
+        GUI.Arduino.run_arduino_controller("red")
+        #Using the playsound library to play a mp3 that says access denied
+        print("Sound")
+        sound_path = os.path.join(locust_directory, "GUI", "Sounds", "access-denied-102628.mp3")
+        playsound(sound_path)
+
         self.webcam_handler.handle_timer("start")
         self.scan_handle_label.setText("Scan Ready")
         self.clearUserContainer()

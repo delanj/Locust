@@ -9,6 +9,7 @@ import pyfirmata
 from playsound import playsound
 from pyfirmata import Arduino, util, STRING_DATA
 import time
+import json
 import GUI.Arduino
 import cv2
 import dlib
@@ -1343,12 +1344,27 @@ class WebcamHandler(QWidget):
                                         face_location.right(), face_location.bottom())
             border_color, text = (255, 0, 0), "Unknown"
             if match_found:
-                border_color, text = (0, 255, 0), best_match[0]
+                #
+                #yellow corner for people not in schedule but still in system
+                #border_color, text = (255, 255, 0), best_match[0]
+
+                #green corners for people in schedule and in the system
+                #border_color, text = (0, 255, 0), best_match[0]
                 user = next((i for i in entitiesMain.getUsers() if i.id == best_match[0].split('_')[0]), None)
                 if user:
                     text = f"{user.first_name} {user.last_name}"
                     self.user_updated.emit(user)
                     self.setUser.emit(user)
+
+                schedule_path = os.path.join(locust_directory, "Database", "DatabaseIndirectUsers", "jsonFile", "schedule.json")
+                if Scedule.check_schedule(schedule_path, user.id) == True:
+                    # green corners for people in schedule and in the system
+                    border_color, text = (0, 255, 0), best_match[0]
+                else:
+                    #yellow corner for people not in schedule but still in system
+                    border_color, text = (255, 255, 0), best_match[0]
+
+
 
 
             border_thickness = 2
@@ -1467,6 +1483,45 @@ class WebcamHandler(QWidget):
         # Optionally, clear the label or display a closing message
         self.webcam_label.clear()
         self.webcam_label.setText("Webcam closed")
+
+#Schedule class that is used to read the Json file and check if someone is in schedule
+class Scedule():
+    def is_in_schedule(schedule, current_datetime):
+        day = current_datetime.strftime('%A')
+        if day in schedule:
+            time_range = schedule[day].split('-')
+            start_time = datetime.strptime(time_range[0].strip(), '%I:%M %p').time()
+            end_time = datetime.strptime(time_range[1].strip(), '%I:%M %p').time()
+            current_time = current_datetime.time()
+
+            return start_time <= current_time <= end_time
+
+        return False
+
+    def check_schedule(schedule_path, user_id):
+        # Read JSON file
+        with open(schedule_path, 'r') as file:
+            data = json.load(file)
+
+        # Get current date and time
+        current_datetime = datetime.now()
+
+        # Check if the user is in schedule at the current time
+        for user_data in data:
+            if 'user_id' in user_data and user_data['user_id'] == user_id:
+                user_schedule = user_data.get('schedule', {})
+                if Scedule.is_in_schedule(user_schedule, current_datetime):
+                    print(f"User {user_id} is in schedule.")
+                    return True
+                else:
+                    print(f"User {user_id} is not in schedule")
+                break
+        else:
+            print(f"User {user_id} not in system.")
+
+        return False
+
+
 
 
 

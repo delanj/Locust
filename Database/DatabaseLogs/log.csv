@@ -40,3 +40,5 @@ Timestamp,TechID,UserID,FirstName,LastName,Company,Title
 2023-11-30 00:05:16,Unknown,0004,Erick,C,Locust,Dev
 2023-11-30 00:07:35,T002,0005,Ty,Hing,Bank of America,Pope
 2023-11-30 00:09:06,T002,0004,Erick,C,Locust,Dev
+2023-11-30 12:59:27,M001,0004,Erick,C,Locust,Dev
+2023-11-30 13:04:16,M001,0004,Erick,C,Locust,Dev

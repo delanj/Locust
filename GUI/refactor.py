@@ -568,8 +568,11 @@ class FacialRecognitionWindow(QMainWindow):
                 writer.writerow(data_to_append)
 
             #Running the arduino controller and turning the LED Green.
-            print("LED")
-            GUI.Arduino.run_arduino_controller("green")
+            try:
+                print("LED")
+                GUI.Arduino.run_arduino_controller("green")
+            except Exception as E:
+                print("No arduino")
 
             # Using the playsound library to play a mp3 that says access granted
             print("Sound")
@@ -592,8 +595,11 @@ class FacialRecognitionWindow(QMainWindow):
 
     def rejectHandle(self):
         #Running the arduino controller and turning LED red
-        print("Led")
-        GUI.Arduino.run_arduino_controller("red")
+        try:
+            print("LED")
+            GUI.Arduino.run_arduino_controller("red")
+        except Exception as E:
+            print("No arduino")
         #Using the playsound library to play a mp3 that says access denied
         print("Sound")
         sound_path = os.path.join(locust_directory, "GUI", "Sounds", "access-denied-102628.mp3")

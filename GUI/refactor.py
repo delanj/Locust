@@ -3,6 +3,9 @@ import os
 import pickle
 import sys
 from datetime import datetime
+import GUI.Arduino
+import threading
+from playsound import playsound
 
 import cv2
 import dlib
@@ -539,6 +542,20 @@ class FacialRecognitionWindow(QMainWindow):
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)
 
+                # Running the arduino controller and turning the LED Green.
+                try:
+                    print("LED")
+                    GUI.Arduino.run_arduino_controller("green")
+                except Exception as E:
+                    print("No arduino")
+
+                # Using the playsound library to play a mp3 that says access granted
+                print("Sound")
+                sound_path = os.path.join(locust_directory, "GUI", "Sounds", "access-granted-87075.mp3")
+                playsound(sound_path)
+
+
+
             self.webcam_handler.handle_timer("start")
             self.scan_handle_label.setText("Scan Ready")
             self.clearUserContainer()
@@ -550,6 +567,16 @@ class FacialRecognitionWindow(QMainWindow):
             self.clearUserContainer()
 
     def rejectHandle(self):
+        # Running the arduino controller and turning LED red
+        try:
+            print("LED")
+            GUI.Arduino.run_arduino_controller("red")
+        except Exception as E:
+            print("No arduino")
+        # Using the playsound library to play a mp3 that says access denied
+        print("Sound")
+        sound_path = os.path.join(locust_directory, "GUI", "Sounds", "access-denied-102628.mp3")
+        playsound(sound_path)
         self.webcam_handler.handle_timer("start")
         self.scan_handle_label.setText("Scan Ready")
         self.clearUserContainer()

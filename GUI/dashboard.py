@@ -26,7 +26,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 import Entities.entitiesMain
 
-
+from Database.firebaseDatabase import database
 from Entities import entitiesMain
 from Entities.IndirectUser import User
 from Entities.IndirectUser.User import UserDatabase
@@ -3110,17 +3110,17 @@ class Ui_addUserWidget(object):
 
 
 
-        # db_conn = database.db
-        # coll_ref = db_conn.collection("indirectUser")
-        # coll_ref.add({
-        #     "id": self.userIDLineEdit.text(),
-        #     "firstName": self.firstNameLineEdit.text(),
-        #     "lastName": self.lastNameLineEdit.text(),
-        #     "gender": self.genderComboBox.currentText(),
-        #     "company": self.companyNameLineEdit.text(),
-        #     "title": self.titleLineEdit.text()
-        # })
-        # print("data added successfully")
+        db_conn = database.db
+        coll_ref = db_conn.collection("indirectUser")
+        coll_ref.add({
+            "id": self.userIDLineEdit.text(),
+            "firstName": self.firstNameLineEdit.text(),
+            "lastName": self.lastNameLineEdit.text(),
+            "gender": self.genderComboBox.currentText(),
+            "company": self.companyNameLineEdit.text(),
+            "title": self.titleLineEdit.text()
+        })
+        print("data added successfully")
 
     def get_schedule_info(self):
         user_id = self.userIDLineEdit.text()

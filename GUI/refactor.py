@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QLabel, QHBoxLayout
 from collections import Counter
 from Entities import entitiesMain
 from Entities.entitiesMain import is_within_user_schedule
+from Database.firebaseDatabase import database
 
 # Link to data base
 
@@ -523,6 +524,17 @@ class FacialRecognitionWindow(QMainWindow):
 
             log_csv_path = os.path.join(locust_directory, "Database", "DatabaseLogs", "log.csv")
 
+            db_conn = database.db
+            coll_ref = db_conn.collection("log")
+            coll_ref.add({
+                "company": user.company,
+                "firstName": user.first_name,
+                "lastName": user.last_name,
+                "techID": e,
+                "timeStamp": formatted_time,
+                "title": user.title,
+                "userID": user.id
+            })
             with open(log_csv_path, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(data_to_append)

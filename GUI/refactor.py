@@ -1407,7 +1407,7 @@ class WebcamHandler(QWidget):
                 rgb_frame = cv2.add(rgb_frame, glow_layer)
 
                 # Update the scanner line position
-                self.scanner_line_position += 5  # Adjust the speed of the scanner line here
+                self.scanner_line_position += 10  # Adjust the speed of the scanner line here
                 if self.scanner_line_position > rgb_frame.shape[0]:
                     self.start_scanning = False
                     self.glow_effect_finished = True

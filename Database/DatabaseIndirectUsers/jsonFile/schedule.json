@@ -78,5 +78,126 @@
             "Wednesday": "10:00 AM - 6:00 PM",
             "Friday": "10:00 AM - 6:00 PM"
         }
+    },
+    {
+        "user_id": "2000",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Sunday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2001",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2002",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm",
+            "Saturday": "08:00 am - 05:00 pm",
+            "Sunday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2003",
+        "schedule": {
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2004",
+        "schedule": {
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2005",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2006",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm",
+            "Saturday": "08:00 am - 05:00 pm",
+            "Sunday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2007",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2008",
+        "schedule": {
+            "Friday": "08:00 am - 05:00 pm",
+            "Saturday": "08:00 am - 05:00 pm",
+            "Sunday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2009",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2010",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm",
+            "Friday": "08:00 am - 05:00 pm",
+            "Saturday": "08:00 am - 05:00 pm",
+            "Sunday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2011",
+        "schedule": {
+            "Saturday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2012",
+        "schedule": {
+            "Monday": "08:00 am - 05:00 pm",
+            "Tuesday": "08:00 am - 05:00 pm",
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm"
+        }
+    },
+    {
+        "user_id": "2013",
+        "schedule": {
+            "Wednesday": "08:00 am - 05:00 pm",
+            "Thursday": "08:00 am - 05:00 pm"
+        }
     }
 ]

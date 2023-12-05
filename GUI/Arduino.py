@@ -49,11 +49,11 @@ if arduino_port is not None:
     def arduino_controller(color):
         if color == "red":
             set_rgb_color(255, 0, 0)
-            time.sleep(3)
+            time.sleep(5)
             set_rgb_color(0, 0, 0)
         if color == "green":
             set_rgb_color(0, 255, 0)
-            time.sleep(3)
+            time.sleep(5)
             set_rgb_color(0, 0, 0)
 
 
